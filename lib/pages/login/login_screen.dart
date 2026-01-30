@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_fonts/google_fonts.dart' as gfonts;
 import 'package:lottie/lottie.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:pos_final/constants.dart';
-import 'package:pos_final/helpers/AppTheme.dart';
 import 'package:pos_final/locale/MyLocalizations.dart';
 
 import 'view_model_manger/login_cubit.dart';
@@ -14,7 +13,6 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
     return BlocProvider(
       create: (context) => LoginCubit(),
       child: BlocConsumer<LoginCubit, LoginState>(
@@ -22,10 +20,13 @@ class LoginScreen extends StatelessWidget {
           if (state is LoginFailed) {
             LoginCubit.get(context).isLoading = false;
             Fluttertoast.showToast(
-                fontSize: 18,
-                backgroundColor: Colors.red,
-                msg: AppLocalizations.of(context)
-                    .translate('invalid_credentials'));
+              fontSize: 14,
+              backgroundColor: Color(0xFFEF4444),
+              textColor: Colors.white,
+              msg: AppLocalizations.of(
+                context,
+              ).translate('invalid_credentials'),
+            );
           } else if (state is LoginSuccessfully) {
             LoginCubit.get(context).navigateToHome(context);
           }
@@ -33,169 +34,377 @@ class LoginScreen extends StatelessWidget {
         builder: (context, state) {
           var cubit = LoginCubit.get(context);
           return Scaffold(
-              body: SafeArea(
-            child: Container(
-              height: double.infinity,
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                Color(0xCF583C8F),
-                kDefaultColor.withValues(alpha: .9),
-              ], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+            backgroundColor: Color(0xFFF8F9FA), // Soft off-white background
+            body: SafeArea(
               child: SingleChildScrollView(
-                child: Form(
-                  key: cubit.formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Lottie.asset('assets/lottie/welcome.json',
-                          height: size.height * .1),
-                      Text(
-                        'ASAHL POS',
-                        style: cubit.themeData.textTheme.headlineMedium
-                            ?.copyWith(color: Colors.white),
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(top: size.height * 0.07),
-                        height: size.height * 0.5,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            TextFormField(
-                              style: AppTheme.getTextStyle(
-                                  cubit.themeData.textTheme.bodyLarge,
-                                  letterSpacing: 0.1,
-                                  color: cubit.themeData.colorScheme.onSurface,
-                                  fontWeight: 500),
-                              decoration: InputDecoration(
-                                hintText: AppLocalizations.of(context)
-                                    .translate('username'),
-                                hintStyle: AppTheme.getTextStyle(
-                                    cubit.themeData.textTheme.titleSmall,
-                                    letterSpacing: 0.1,
-                                    color:
-                                        cubit.themeData.colorScheme.onSurface,
-                                    fontWeight: 500),
-                                filled: true,
-                                fillColor:
-                                    const Color.fromRGBO(248, 247, 251, 1),
-                                enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(40),
-                                    borderSide: BorderSide(
-                                      color: kDefaultColor,
-                                    )),
-                                focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(40),
-                                    borderSide: BorderSide(
-                                      color: kDefaultColor,
-                                    )),
-                                suffixIcon: Icon(MdiIcons.faceMan),
-                              ),
-                              controller: cubit.usernameController,
-                              validator: (value) {
-                                if (value!.isEmpty) {
-                                  return AppLocalizations.of(context)
-                                      .translate('please_enter_username');
-                                }
-                                return null;
-                              },
-                              autofocus: true,
+                physics: BouncingScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                  ), // 8-point grid (3x8)
+                  child: Form(
+                    key: cubit.formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SizedBox(height: 90), // 8-point grid (5x8)
+                        // Logo/Animation
+                        SizedBox(height: 24), // 8-point grid (3x8)
+                        // App Title
+                        Text(
+                          'ASAHL POS',
+                          style: gfonts.GoogleFonts.inter(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF1A1A1A),
+                            letterSpacing: -0.8,
+                            height: 1.2,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+
+                        SizedBox(height: 8), // 8-point grid (1x8)
+                        // Subtitle
+                        Text(
+                          'Sign in to your account',
+                          style: gfonts.GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFF6B7280),
+                            letterSpacing: 0,
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+
+                        SizedBox(height: 40), // 8-point grid (5x8)
+                        // Username Field Label
+                        Text(
+                          AppLocalizations.of(context).translate('username'),
+                          style: gfonts.GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF374151),
+                            letterSpacing: 0,
+                          ),
+                        ),
+
+                        SizedBox(height: 8), // 8-point grid (1x8)
+                        // Username Field
+                        TextFormField(
+                          controller: cubit.usernameController,
+                          autofocus: false,
+                          style: gfonts.GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFF1A1A1A),
+                            letterSpacing: 0,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Enter your username',
+                            hintStyle: gfonts.GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF9CA3AF),
+                              letterSpacing: 0,
                             ),
-                            TextFormField(
-                              keyboardType: TextInputType.visiblePassword,
-                              style: AppTheme.getTextStyle(
-                                  cubit.themeData.textTheme.bodyLarge,
-                                  letterSpacing: 0.1,
-                                  color: cubit.themeData.colorScheme.onSurface,
-                                  fontWeight: 500),
-                              decoration: InputDecoration(
-                                hintText: AppLocalizations.of(context)
-                                    .translate('password'),
-                                hintStyle: AppTheme.getTextStyle(
-                                    cubit.themeData.textTheme.titleSmall,
-                                    letterSpacing: 0.1,
-                                    color:
-                                        cubit.themeData.colorScheme.onSurface,
-                                    fontWeight: 500),
-                                filled: true,
-                                fillColor:
-                                    const Color.fromRGBO(248, 247, 251, 1),
-                                enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(40),
-                                    borderSide: BorderSide(
-                                      color: Colors.transparent,
-                                    )),
-                                focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(40),
-                                    borderSide: BorderSide(
-                                      color: kDefaultColor,
-                                    )),
-                                suffixIcon: IconButton(
-                                  color: kDefaultColor,
-                                  icon: Icon(cubit.passwordIcon),
-                                  onPressed: () {
-                                    cubit.passwordVisible =
-                                        !cubit.passwordVisible;
-                                    /*setState(() {
-                                    _passwordVisible = !_passwordVisible;
-                                  });*/
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.person_outline,
+                              color: Color(0xFF6B7280),
+                              size: 20,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Color(0xFFE5E7EB),
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: kDefaultColor,
+                                width: 2,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Color(0xFFEF4444),
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Color(0xFFEF4444),
+                                width: 2,
+                              ),
+                            ),
+                            errorStyle: gfonts.GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFFEF4444),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppLocalizations.of(
+                                context,
+                              ).translate('please_enter_username');
+                            }
+                            return null;
+                          },
+                        ),
+
+                        SizedBox(height: 24), // 8-point grid (3x8)
+                        // Password Field Label
+                        Text(
+                          AppLocalizations.of(context).translate('password'),
+                          style: gfonts.GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF374151),
+                            letterSpacing: 0,
+                          ),
+                        ),
+
+                        SizedBox(height: 8), // 8-point grid (1x8)
+                        // Password Field
+                        TextFormField(
+                          controller: cubit.passwordController,
+                          obscureText: !cubit.passwordVisible,
+                          keyboardType: TextInputType.visiblePassword,
+                          style: gfonts.GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFF1A1A1A),
+                            letterSpacing: 0,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Enter your password',
+                            hintStyle: gfonts.GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF9CA3AF),
+                              letterSpacing: 0,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.lock_outline,
+                              color: Color(0xFF6B7280),
+                              size: 20,
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                cubit.passwordVisible
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: Color(0xFF6B7280),
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                cubit.passwordVisible = !cubit.passwordVisible;
+                              },
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Color(0xFFE5E7EB),
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: kDefaultColor,
+                                width: 2,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Color(0xFFEF4444),
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Color(0xFFEF4444),
+                                width: 2,
+                              ),
+                            ),
+                            errorStyle: gfonts.GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFFEF4444),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppLocalizations.of(
+                                context,
+                              ).translate('please_enter_password');
+                            }
+                            return null;
+                          },
+                        ),
+
+                        SizedBox(height: 40), // 8-point grid (5x8)
+                        // Login Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56, // 8-point grid (7x8)
+                          child: ElevatedButton(
+                            onPressed: cubit.isLoading
+                                ? null
+                                : () async {
+                                    await cubit.checkOnLogin(context);
                                   },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: kDefaultColor,
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: Color(0xFFE5E7EB),
+                              disabledForegroundColor: Color(0xFF9CA3AF),
+                              elevation: 0,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 16,
+                              ),
+                            ),
+                            child: cubit.isLoading
+                                ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).translate('login'),
+                                    style: gfonts.GoogleFonts.inter(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0,
+                                    ),
+                                  ),
+                          ),
+                        ),
+
+                        SizedBox(height: 32), // 8-point grid (4x8)
+                        // Divider with text
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: Color(0xFFE5E7EB),
+                                thickness: 1,
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                'or',
+                                style: gfonts.GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF6B7280),
                                 ),
                               ),
-                              obscureText: !cubit.passwordVisible,
-                              controller: cubit.passwordController,
-                              validator: (value) {
-                                if (value!.isEmpty) {
-                                  return AppLocalizations.of(context)
-                                      .translate('please_enter_password');
-                                }
-                                return null;
-                              },
                             ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                await cubit.checkOnLogin(context);
-                              },
-                              child: Text(
-                                AppLocalizations.of(context).translate('login'),
-                                style: cubit.themeData.textTheme.labelLarge,
+                            Expanded(
+                              child: Divider(
+                                color: Color(0xFFE5E7EB),
+                                thickness: 1,
                               ),
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30))),
                             ),
                           ],
                         ),
-                      ),
-                      SizedBox(
-                        height: size.height * 0.1,
-                      ),
-                      Text(
-                        AppLocalizations.of(context).translate('no_account'),
-                        style: cubit.themeData.textTheme.bodyLarge
-                            ?.copyWith(color: Colors.white),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await cubit.register();
-                        },
-                        child: Text(
-                          AppLocalizations.of(context).translate('register'),
-                          style: cubit.themeData.textTheme.labelLarge,
+
+                        SizedBox(height: 32), // 8-point grid (4x8)
+                        // Register Section
+                        Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                AppLocalizations.of(
+                                  context,
+                                ).translate('no_account'),
+                                style: gfonts.GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                              SizedBox(height: 16), // 8-point grid (2x8)
+                              SizedBox(
+                                width: double.infinity,
+                                height: 56, // 8-point grid (7x8)
+                                child: OutlinedButton(
+                                  onPressed: () async {
+                                    await cubit.register();
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: kDefaultColor,
+                                    backgroundColor: Colors.white,
+                                    elevation: 0,
+                                    side: BorderSide(
+                                      color: Color(0xFFE5E7EB),
+                                      width: 1.5,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 16,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).translate('register'),
+                                    style: gfonts.GoogleFonts.inter(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30))),
-                      )
-                    ],
+
+                        SizedBox(height: 40), // 8-point grid (5x8)
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ));
+          );
         },
       ),
     );
