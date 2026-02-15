@@ -12,14 +12,48 @@ import 'api.dart';
 class BrandsServices extends Api {
   //get Notifications for the user
   Future<ApiResponse> getBrands() async {
-    String token = await System().getToken();
-    try {
-      final Response<dynamic> response = await DioServiceHelper.getData(
-          endPoint:ApiEndPoints.allBrands,headers: this.getHeader(token));
-      return ApiResponse.withSuccess(response);
-    } catch (e) {
-      log("ERROR ${e.toString()}");
-      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
-    }
+    // ------------------ MOCK BRANDS IMPLEMENTATION ------------------
+    // String token = await System().getToken();
+    // try {
+    //   final Response<dynamic> response = await DioServiceHelper.getData(
+    //       endPoint:ApiEndPoints.allBrands,headers: this.getHeader(token));
+    //   return ApiResponse.withSuccess(response);
+    // } catch (e) {
+    //   log("ERROR ${e.toString()}");
+    //   return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    // }
+
+    await Future.delayed(Duration(milliseconds: 500));
+    return ApiResponse.withSuccess(
+      Response(
+        requestOptions: RequestOptions(path: ApiEndPoints.allBrands),
+        statusCode: 200,
+        data: {
+          'data': [
+            {
+              'id': 1,
+              'business_id': 1,
+              'name': 'Samsung',
+              'description': 'Description for Samsung',
+              'created_by': 1,
+              'deleted_at': null,
+              'created_at': DateTime.now().toIso8601String(),
+              'updated_at': DateTime.now().toIso8601String(),
+            },
+            {
+              'id': 2,
+              'business_id': 1,
+              'name': 'Apple',
+              'description': 'Description for Apple',
+              'created_by': 1,
+              'deleted_at': null,
+              'created_at': DateTime.now().toIso8601String(),
+              'updated_at': DateTime.now().toIso8601String(),
+            },
+          ],
+        },
+      ),
+    );
+    // -----------------------------------------------------------------
   }
 }

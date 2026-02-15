@@ -26,8 +26,9 @@ class AppLocalizations {
 
   Future<bool> load() async {
     // Load the language JSON file from the "lang" folder
-    String jsonString =
-        await rootBundle.loadString('i18n/${locale.languageCode}.json');
+    String jsonString = await rootBundle.loadString(
+      'i18n/${locale.languageCode}.json',
+    );
     Map<String, dynamic> jsonMap = json.decode(jsonString);
 
     _localizedStrings = jsonMap.map((key, value) {
@@ -85,7 +86,7 @@ class AppLanguage extends ChangeNotifier {
     }
   }
 
-//call this to change language
+  //call this to change language
   void changeLanguage(Locale type, value) async {
     var prefs = await SharedPreferences.getInstance();
     if (_appLocale == type) {

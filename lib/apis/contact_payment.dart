@@ -7,35 +7,50 @@ import '../models/system.dart';
 import 'api.dart';
 
 class ContactPaymentApi extends Api {
+  // ------------------ MOCK CONTACT PAYMENT IMPLEMENTATION ------------------
   //Api request for selected customer due
-  getCustomerDue(int customerId) async {
-    try {
-      var customer;
-      String url = '${ApiEndPoints.customerDue}$customerId';
-      var token = await System().getToken();
-      var response = await http.get(
-          //Encode the url
-          Uri.parse(url),
-          //only accept JSON response
-          headers: this.getHeader('$token'));
-      customer = jsonDecode(response.body);
-      return customer;
-    } catch (e) {
-      return null;
-    }
+  Future<Map<String, List<Map<String, String>>>> getCustomerDue(
+    int customerId,
+  ) async {
+    // try {
+    //   var customer;
+    //   String url = '${ApiEndPoints.customerDue}$customerId';
+    //   var token = await System().getToken();
+    //   var response = await http.get(
+    //       //Encode the url
+    //       Uri.parse(url),
+    //       //only accept JSON response
+    //       headers: this.getHeader('$token'));
+    //   customer = jsonDecode(response.body);
+    //   return customer;
+    // } catch (e) {
+    //   return null;
+    // }
+
+    await Future.delayed(Duration(milliseconds: 500));
+    return {
+      'data': [
+        {'sell_due': '500.00'},
+      ],
+    };
   }
 
   //contact payment via api
   Future<int?> postContactPayment(Map payment) async {
-    try {
-      String url = ApiEndPoints.addContactPayment;
-      var token = await System().getToken();
-      Map data = payment;
-      var response = await http.post(Uri.parse(url),
-          headers: this.getHeader('$token'), body: jsonEncode(data));
-      return response.statusCode;
-    } catch (e) {
-      return null;
-    }
+    // try {
+    //   String url = ApiEndPoints.addContactPayment;
+    //   var token = await System().getToken();
+    //   Map data = payment;
+    //   var response = await http.post(Uri.parse(url),
+    //       headers: this.getHeader('$token'), body: jsonEncode(data));
+    //   return response.statusCode;
+    // } catch (e) {
+    //   return null;
+    // }
+
+    await Future.delayed(Duration(milliseconds: 500));
+    return 200; // Success status code
   }
+
+  // -----------------------------------------------------------------
 }

@@ -10,16 +10,42 @@ import 'api.dart';
 class NotificationService extends Api {
   //get Notifications for the user
   Future<ApiResponse> getNotifications() async {
-    String token = await System().getToken();
-    try {
-      final Response<dynamic> response = await DioServiceHelper.getData(
-          endPoint:ApiEndPoints.allNotifications,headers: this.getHeader(token));
-          /* final Response<dynamic> responsev = await DioServiceHelper.getData(
-          endPoint:'/show-notification/c3e85c21-9f28-420e-91c1-b158cefabad9',headers: this.getHeader(token));*/
-      return ApiResponse.withSuccess(response);
-    } catch (e) {
-      log("ERROR ${e.toString()}");
-      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
-    }
+    // ------------------ MOCK NOTIFICATION IMPLEMENTATION ------------------
+    // String token = await System().getToken();
+    // try {
+    //   final Response<dynamic> response = await DioServiceHelper.getData(
+    //       endPoint:ApiEndPoints.allNotifications,headers: this.getHeader(token));
+    //       /* final Response<dynamic> responsev = await DioServiceHelper.getData(
+    //       endPoint:'/show-notification/c3e85c21-9f28-420e-91c1-b158cefabad9',headers: this.getHeader(token));*/
+    //   return ApiResponse.withSuccess(response);
+    // } catch (e) {
+    //   log("ERROR ${e.toString()}");
+    //   return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    // }
+
+    await Future.delayed(Duration(milliseconds: 500));
+    return ApiResponse.withSuccess(
+      Response(
+        requestOptions: RequestOptions(path: ApiEndPoints.allNotifications),
+        statusCode: 200,
+        data: {
+          'data': [
+            {
+              'id': '1',
+              'data': {
+                'title': 'Welcome',
+                'body': 'Welcome to the POS application (Mock)',
+                'icon_class': 'fas fa-bell',
+                'link': '',
+                'created_at': DateTime.now().toIso8601String(),
+              },
+              'read_at': null,
+              'created_at': DateTime.now().toIso8601String(),
+            },
+          ],
+        },
+      ),
+    );
+    // -----------------------------------------------------------------
   }
 }

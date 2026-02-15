@@ -27,7 +27,7 @@ class _ContactPaymentState extends State<ContactPayment> {
       paymentAccounts = [],
       paymentMethods = [],
       locationListMap = [
-        {'id': 0, 'name': 'set location'}
+        {'id': 0, 'name': 'set location'},
       ];
   Map<String, dynamic> selectedLocation = {'id': 0, 'name': 'set location'},
       selectedCustomer = {'id': 0, 'name': 'select customer', 'mobile': ' - '};
@@ -36,7 +36,7 @@ class _ContactPaymentState extends State<ContactPayment> {
       selectedPaymentMethod = {
         'name': 'name',
         'value': 'value',
-        'account_id': null
+        'account_id': null,
       };
 
   String symbol = '';
@@ -60,9 +60,13 @@ class _ContactPaymentState extends State<ContactPayment> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0.0,
-        title: Text(AppLocalizations.of(context).translate('contact_payment'),
-            style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-                fontWeight: 600)),
+        title: Text(
+          AppLocalizations.of(context).translate('contact_payment'),
+          style: AppTheme.getTextStyle(
+            themeData.textTheme.titleLarge,
+            fontWeight: 600,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -79,24 +83,26 @@ class _ContactPaymentState extends State<ContactPayment> {
                     Column(
                       children: [
                         Text(
-                          AppLocalizations.of(context)
-                              .translate('due')
-                              .toUpperCase(),
+                          AppLocalizations.of(
+                            context,
+                          ).translate('due').toUpperCase(),
                           style: AppTheme.getTextStyle(
-                              themeData.textTheme.titleMedium,
-                              fontWeight: 600,
-                              letterSpacing: -0.2),
+                            themeData.textTheme.titleMedium,
+                            fontWeight: 600,
+                            letterSpacing: -0.2,
+                          ),
                         ),
                         // Padding(padding: EdgeInsets.symmetric(vertical: MySize.size4)),
                         Text(
                           Helper().formatCurrency(due),
                           style: AppTheme.getTextStyle(
-                              themeData.textTheme.headlineSmall,
-                              fontWeight: 600,
-                              letterSpacing: -0.2),
+                            themeData.textTheme.headlineSmall,
+                            fontWeight: 600,
+                            letterSpacing: -0.2,
+                          ),
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
                 Padding(padding: EdgeInsets.symmetric(vertical: MySize.size4!)),
@@ -105,53 +111,59 @@ class _ContactPaymentState extends State<ContactPayment> {
                   child: Column(
                     children: [
                       TextFormField(
-                          decoration: InputDecoration(
-                            prefix: Text(symbol),
-                            labelText: AppLocalizations.of(context)
-                                .translate('payment_amount'),
-                            border: themeData.inputDecorationTheme.border,
-                            enabledBorder:
-                                themeData.inputDecorationTheme.border,
-                            focusedBorder:
-                                themeData.inputDecorationTheme.focusedBorder,
+                        decoration: InputDecoration(
+                          prefix: Text(symbol),
+                          labelText: AppLocalizations.of(
+                            context,
+                          ).translate('payment_amount'),
+                          border: themeData.inputDecorationTheme.border,
+                          enabledBorder: themeData.inputDecorationTheme.border,
+                          focusedBorder:
+                              themeData.inputDecorationTheme.focusedBorder,
+                        ),
+                        controller: payingAmount,
+                        validator: (newValue) {
+                          if ((newValue == '' ||
+                                  double.parse(newValue!) < 0.01) ||
+                              double.parse(newValue) >
+                                  double.parse(due.toString())) {
+                            return AppLocalizations.of(
+                              context,
+                            ).translate('enter_valid_payment_amount');
+                          } else {
+                            return null;
+                          }
+                        },
+                        textAlign: TextAlign.end,
+                        style: AppTheme.getTextStyle(
+                          themeData.textTheme.titleSmall,
+                          fontWeight: 400,
+                          letterSpacing: -0.2,
+                        ),
+                        inputFormatters: [
+                          // ignore: deprecated_member_use
+                          FilteringTextInputFormatter(
+                            RegExp(r'^(\d+)?\.?\d{0,2}'),
+                            allow: true,
                           ),
-                          controller: payingAmount,
-                          validator: (newValue) {
-                            if ((newValue == '' ||
-                                    double.parse(newValue!) < 0.01) ||
-                                double.parse(newValue) >
-                                    double.parse(due.toString())) {
-                              return AppLocalizations.of(context)
-                                  .translate('enter_valid_payment_amount');
-                            } else {
-                              return null;
-                            }
-                          },
-                          textAlign: TextAlign.end,
-                          style: AppTheme.getTextStyle(
-                              themeData.textTheme.titleSmall,
-                              fontWeight: 400,
-                              letterSpacing: -0.2),
-                          inputFormatters: [
-                            // ignore: deprecated_member_use
-                            FilteringTextInputFormatter(
-                                RegExp(r'^(\d+)?\.?\d{0,2}'),
-                                allow: true)
-                          ],
-                          keyboardType: TextInputType.number,
-                          onChanged: (value) {}),
+                        ],
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {},
+                      ),
                       Padding(
                         padding: EdgeInsets.all(MySize.size10!),
                         child: Row(
                           children: <Widget>[
                             Text(
-                              AppLocalizations.of(context)
-                                      .translate('location') +
+                              AppLocalizations.of(
+                                    context,
+                                  ).translate('location') +
                                   ' : ',
                               style: AppTheme.getTextStyle(
-                                  themeData.textTheme.titleLarge,
-                                  fontWeight: 700,
-                                  letterSpacing: -0.2),
+                                themeData.textTheme.titleLarge,
+                                fontWeight: 700,
+                                letterSpacing: -0.2,
+                              ),
                             ),
                             locations(),
                           ],
@@ -181,14 +193,15 @@ class _ContactPaymentState extends State<ContactPayment> {
                       child: Text(
                         AppLocalizations.of(context).translate('submit'),
                         style: AppTheme.getTextStyle(
-                            themeData.textTheme.titleLarge,
-                            color: themeData.colorScheme.onPrimary,
-                            fontWeight: 700,
-                            letterSpacing: -0.2),
+                          themeData.textTheme.titleLarge,
+                          color: themeData.colorScheme.onPrimary,
+                          fontWeight: 700,
+                          letterSpacing: -0.2,
+                        ),
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -206,29 +219,32 @@ class _ContactPaymentState extends State<ContactPayment> {
             "amount": double.parse(payingAmount.text),
             "method": selectedPaymentMethod['name'],
             "account_id": selectedPaymentMethod['account_id'],
-            "paid_on": DateFormat("yyyy-MM-dd hh:mm:ss")
-                .format(DateTime.now())
-                .toString(),
+            "paid_on": DateFormat(
+              "yyyy-MM-dd hh:mm:ss",
+            ).format(DateTime.now()).toString(),
           };
-          await ContactPaymentApi()
-              .postContactPayment(paymentMap)
-              .then((value) {
+          await ContactPaymentApi().postContactPayment(paymentMap).then((
+            value,
+          ) {
             Navigator.popUntil(context, ModalRoute.withName('/layout'));
             Fluttertoast.showToast(
-                backgroundColor: Colors.green,
-                msg: AppLocalizations.of(context)
-                    .translate('payment_successful'));
+              backgroundColor: Colors.green,
+              msg: AppLocalizations.of(context).translate('payment_successful'),
+            );
             Navigator.pushNamed(context, '/layout');
           });
         } else {
           Fluttertoast.showToast(
-              msg: AppLocalizations.of(context)
-                  .translate('error_invalid_location'));
+            msg: AppLocalizations.of(
+              context,
+            ).translate('error_invalid_location'),
+          );
         }
       }
     } else {
       Fluttertoast.showToast(
-          msg: AppLocalizations.of(context).translate('check_connectivity'));
+        msg: AppLocalizations.of(context).translate('check_connectivity'),
+      );
     }
   }
 
@@ -238,29 +254,33 @@ class _ContactPaymentState extends State<ContactPayment> {
       children: [
         Text(
           AppLocalizations.of(context).translate('select_customer') + ' : ',
-          style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-              fontWeight: 700, letterSpacing: -0.2),
+          style: AppTheme.getTextStyle(
+            themeData.textTheme.titleLarge,
+            fontWeight: 700,
+            letterSpacing: -0.2,
+          ),
         ),
         SearchChoices.single(
-          underline: Visibility(
-            child: Container(),
-            visible: false,
-          ),
+          underline: Visibility(child: Container(), visible: false),
           displayClearIcon: false,
           value: jsonEncode(selectedCustomer),
           items: customerListMap.map<DropdownMenuItem<String>>((Map value) {
             return DropdownMenuItem<String>(
-                value: jsonEncode(value),
-                child: Container(
-                  width: MySize.screenWidth! * 0.8,
-                  child: Text("${value['name']} (${value['mobile'] ?? ' - '})",
-                      softWrap: true,
-                      maxLines: 5,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTheme.getTextStyle(
-                          themeData.textTheme.bodyMedium,
-                          color: themeData.colorScheme.onSurface)),
-                ));
+              value: jsonEncode(value),
+              child: Container(
+                width: MySize.screenWidth! * 0.8,
+                child: Text(
+                  "${value['name']} (${value['mobile'] ?? ' - '})",
+                  softWrap: true,
+                  maxLines: 5,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.bodyMedium,
+                    color: themeData.colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            );
           }).toList(),
           // value: customerListMap[0],
           iconEnabledColor: Colors.blue,
@@ -281,19 +301,21 @@ class _ContactPaymentState extends State<ContactPayment> {
                         children: [
                           CircularProgressIndicator(),
                           Container(
-                              margin: EdgeInsets.only(left: 5),
-                              child: Text(AppLocalizations.of(context)
-                                  .translate('loading'))),
+                            margin: EdgeInsets.only(left: 5),
+                            child: Text(
+                              AppLocalizations.of(context).translate('loading'),
+                            ),
+                          ),
                         ],
                       ),
                     );
                   },
                 );
-                await ContactPaymentApi()
-                    .getCustomerDue(newValue)
-                    .then((value) {
+                await ContactPaymentApi().getCustomerDue(newValue).then((
+                  value,
+                ) {
                   if (value != null) {
-                    due = value['data'][0]['sell_due'].toString();
+                    due = value['data']![0]['sell_due'].toString();
                     setState(() {
                       selectedCustomerId = newValue;
                       _formKey.currentState!.reset();
@@ -303,81 +325,89 @@ class _ContactPaymentState extends State<ContactPayment> {
                 });
               } else {
                 Fluttertoast.showToast(
-                    msg: AppLocalizations.of(context)
-                        .translate('check_connectivity'));
+                  msg: AppLocalizations.of(
+                    context,
+                  ).translate('check_connectivity'),
+                );
               }
             }
           },
           isExpanded: true,
-        )
+        ),
       ],
     );
   }
 
   Widget locations() {
     return PopupMenuButton(
-        onSelected: (item) {
-          setState(() {
-            selectedLocation = item as Map<String, dynamic>;
-            setPaymentDetails().then((value) {
-              selectedPaymentMethod = paymentMethods[0];
-              selectedPaymentAccount = paymentAccounts[0];
-              paymentAccounts.forEach((element) {
-                if (selectedPaymentMethod['account_id'] == element['id']) {
-                  selectedPaymentAccount = element;
-                }
-              });
+      onSelected: (item) {
+        setState(() {
+          selectedLocation = item as Map<String, dynamic>;
+          setPaymentDetails().then((value) {
+            selectedPaymentMethod = paymentMethods[0];
+            selectedPaymentAccount = paymentAccounts[0];
+            paymentAccounts.forEach((element) {
+              if (selectedPaymentMethod['account_id'] == element['id']) {
+                selectedPaymentAccount = element;
+              }
             });
           });
-        },
-        itemBuilder: (BuildContext context) {
-          return locationListMap.map((Map value) {
-            return PopupMenuItem(
-              value: value,
-              height: MySize.size36!,
-              child: Text(value['name'],
-                  style: AppTheme.getTextStyle(themeData.textTheme.bodyMedium,
-                      color: themeData.colorScheme.onSurface)),
-            );
-          }).toList();
-        },
-        color: Colors.white,
-        child: Container(
-          padding: EdgeInsets.only(
-              left: MySize.size12!,
-              right: MySize.size12!,
-              top: MySize.size8!,
-              bottom: MySize.size8!),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(MySize.size8!)),
-            color: customAppTheme.bgLayer1,
-            border: Border.all(color: customAppTheme.bgLayer3, width: 1),
-          ),
-          child: Row(
-            children: <Widget>[
-              Text(
-                selectedLocation['name'],
-                style: AppTheme.getTextStyle(
-                  themeData.textTheme.bodyLarge,
-                  color: themeData.colorScheme.onSurface,
-                ),
+        });
+      },
+      itemBuilder: (BuildContext context) {
+        return locationListMap.map((Map value) {
+          return PopupMenuItem(
+            value: value,
+            height: MySize.size36!,
+            child: Text(
+              value['name'],
+              style: AppTheme.getTextStyle(
+                themeData.textTheme.bodyMedium,
+                color: themeData.colorScheme.onSurface,
               ),
-              Container(
-                margin: EdgeInsets.only(left: MySize.size4!),
-                child: Icon(
-                  MdiIcons.chevronDown,
-                  size: MySize.size22,
-                  color: themeData.colorScheme.onSurface,
-                ),
-              )
-            ],
-          ),
-        ));
+            ),
+          );
+        }).toList();
+      },
+      color: Colors.white,
+      child: Container(
+        padding: EdgeInsets.only(
+          left: MySize.size12!,
+          right: MySize.size12!,
+          top: MySize.size8!,
+          bottom: MySize.size8!,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(MySize.size8!)),
+          color: customAppTheme.bgLayer1,
+          border: Border.all(color: customAppTheme.bgLayer3, width: 1),
+        ),
+        child: Row(
+          children: <Widget>[
+            Text(
+              selectedLocation['name'],
+              style: AppTheme.getTextStyle(
+                themeData.textTheme.bodyLarge,
+                color: themeData.colorScheme.onSurface,
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(left: MySize.size4!),
+              child: Icon(
+                MdiIcons.chevronDown,
+                size: MySize.size22,
+                color: themeData.colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   selectCustomer() async {
     customerListMap = [
-      {'id': 0, 'name': 'select customer', 'mobile': ' - '}
+      {'id': 0, 'name': 'select customer', 'mobile': ' - '},
     ];
     await Contact().get().then((value) {
       value.forEach((Map<String, dynamic> element) {
@@ -385,7 +415,7 @@ class _ContactPaymentState extends State<ContactPayment> {
           customerListMap.add({
             'id': element['id'],
             'name': element['name'],
-            'mobile': element['mobile']
+            'mobile': element['mobile'],
           });
         });
       });
@@ -397,10 +427,7 @@ class _ContactPaymentState extends State<ContactPayment> {
     await System().get('location').then((value) {
       value.forEach((element) {
         setState(() {
-          locationListMap.add({
-            'id': element['id'],
-            'name': element['name'],
-          });
+          locationListMap.add({'id': element['id'], 'name': element['name']});
         });
       });
     });
@@ -412,10 +439,12 @@ class _ContactPaymentState extends State<ContactPayment> {
         symbol = value['symbol'];
       });
     });
-    List payments =
-        await System().get('payment_method', selectedLocation['id']);
+    List payments = await System().get(
+      'payment_method',
+      selectedLocation['id'],
+    );
     paymentAccounts = [
-      {'id': null, 'name': "None"}
+      {'id': null, 'name': "None"},
     ];
     await System().getPaymentAccounts().then((value) {
       List<String> accIds = [];
@@ -437,7 +466,7 @@ class _ContactPaymentState extends State<ContactPayment> {
           'value': element['label'],
           'account_id': (element['account_id'] != null)
               ? int.parse(element['account_id'].toString())
-              : null
+              : null,
         });
       });
     });
@@ -449,8 +478,11 @@ class _ContactPaymentState extends State<ContactPayment> {
       children: <Widget>[
         Text(
           AppLocalizations.of(context).translate('payment_method') + ' : ',
-          style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-              fontWeight: 700, letterSpacing: -0.2),
+          style: AppTheme.getTextStyle(
+            themeData.textTheme.titleLarge,
+            fontWeight: 700,
+            letterSpacing: -0.2,
+          ),
         ),
         PopupMenuButton(
           onSelected: (item) {
@@ -469,19 +501,24 @@ class _ContactPaymentState extends State<ContactPayment> {
               return PopupMenuItem(
                 value: value,
                 height: MySize.size36!,
-                child: Text(value['value'],
-                    style: AppTheme.getTextStyle(themeData.textTheme.bodyMedium,
-                        color: themeData.colorScheme.onSurface)),
+                child: Text(
+                  value['value'],
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.bodyMedium,
+                    color: themeData.colorScheme.onSurface,
+                  ),
+                ),
               );
             }).toList();
           },
           color: Colors.white,
           child: Container(
             padding: EdgeInsets.only(
-                left: MySize.size12!,
-                right: MySize.size12!,
-                top: MySize.size8!,
-                bottom: MySize.size8!),
+              left: MySize.size12!,
+              right: MySize.size12!,
+              top: MySize.size8!,
+              bottom: MySize.size8!,
+            ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(MySize.size8!)),
               color: customAppTheme.bgLayer1,
@@ -503,7 +540,7 @@ class _ContactPaymentState extends State<ContactPayment> {
                     size: MySize.size22,
                     color: themeData.colorScheme.onSurface,
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -518,8 +555,11 @@ class _ContactPaymentState extends State<ContactPayment> {
       children: <Widget>[
         Text(
           AppLocalizations.of(context).translate('payment_account') + ' : ',
-          style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-              fontWeight: 700, letterSpacing: -0.2),
+          style: AppTheme.getTextStyle(
+            themeData.textTheme.titleLarge,
+            fontWeight: 700,
+            letterSpacing: -0.2,
+          ),
         ),
         PopupMenuButton(
           onSelected: (item) {
@@ -534,19 +574,24 @@ class _ContactPaymentState extends State<ContactPayment> {
               return PopupMenuItem(
                 value: value,
                 height: MySize.size36!,
-                child: Text(value['name'],
-                    style: AppTheme.getTextStyle(themeData.textTheme.bodyMedium,
-                        color: themeData.colorScheme.onSurface)),
+                child: Text(
+                  value['name'],
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.bodyMedium,
+                    color: themeData.colorScheme.onSurface,
+                  ),
+                ),
               );
             }).toList();
           },
           color: Colors.white,
           child: Container(
             padding: EdgeInsets.only(
-                left: MySize.size12!,
-                right: MySize.size12!,
-                top: MySize.size8!,
-                bottom: MySize.size8!),
+              left: MySize.size12!,
+              right: MySize.size12!,
+              top: MySize.size8!,
+              bottom: MySize.size8!,
+            ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(MySize.size8!)),
               color: customAppTheme.bgLayer1,
@@ -568,7 +613,7 @@ class _ContactPaymentState extends State<ContactPayment> {
                     size: MySize.size22,
                     color: themeData.colorScheme.onSurface,
                   ),
-                )
+                ),
               ],
             ),
           ),

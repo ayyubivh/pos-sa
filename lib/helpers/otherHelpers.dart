@@ -49,8 +49,9 @@ class Helper {
     double convertAmount = double.parse(amount.toString());
 
     var amt = NumberFormat.currency(
-            symbol: '', decimalDigits: Config.currencyPrecision)
-        .format(convertAmount);
+      symbol: '',
+      decimalDigits: Config.currencyPrecision,
+    ).format(convertAmount);
     return amt;
   }
 
@@ -67,21 +68,23 @@ class Helper {
   String formatQuantity(amount) {
     double quantity = double.parse(amount.toString());
     var amt = NumberFormat.currency(
-            symbol: '', decimalDigits: Config.quantityPrecision)
-        .format(quantity);
+      symbol: '',
+      decimalDigits: Config.quantityPrecision,
+    ).format(quantity);
     return amt;
   }
 
   //argument model
-  Map argument(
-      {int? sellId,
-      int? locId,
-      int? taxId,
-      String? discountType,
-      double? discountAmount,
-      double? invoiceAmount,
-      int? customerId,
-      int? isQuotation}) {
+  Map argument({
+    int? sellId,
+    int? locId,
+    int? taxId,
+    String? discountType,
+    double? discountAmount,
+    double? invoiceAmount,
+    int? customerId,
+    int? isQuotation,
+  }) {
     Map args = {
       'sellId': sellId,
       'locationId': locId,
@@ -90,7 +93,7 @@ class Helper {
       'discountAmount': discountAmount,
       'invoiceAmount': invoiceAmount,
       'customerId': customerId,
-      'is_quotation': isQuotation
+      'is_quotation': isQuotation,
     };
     return args;
   }
@@ -120,8 +123,12 @@ class Helper {
   }
 
   //calculate inline tax and discount amount
-  calculateTaxAndDiscount(
-      {discountAmount, discountType, taxId, unitPrice}) async {
+  calculateTaxAndDiscount({
+    discountAmount,
+    discountType,
+    taxId,
+    unitPrice,
+  }) async {
     double disAmt = 0.0, tax = 0.00, taxAmt = 0.00;
     await System().get('tax').then((value) {
       value.forEach((element) {
@@ -177,12 +184,11 @@ class Helper {
     String _invoice = (invoice != null)
         ? invoice
         : await InvoiceFormatter().generateInvoice(sellId, taxId, context);
-    await Printing.layoutPdf(onLayout: (pd.PdfPageFormat format) async {
-      return await Printing.convertHtml(
-        format: format,
-        html: _invoice,
-      );
-    });
+    await Printing.layoutPdf(
+      onLayout: (pd.PdfPageFormat format) async {
+        return await Printing.convertHtml(format: format, html: _invoice);
+      },
+    );
   }
 
   // //request permissions
@@ -200,10 +206,12 @@ class Helper {
   jobScheduler() {
     if (Config().syncCallLog) {
       final cron = Cron();
-      cron.schedule(Schedule.parse('*/${Config.callLogSyncDuration} * * * *'),
-          () async {
-        syncCallLogs();
-      });
+      cron.schedule(
+        Schedule.parse('*/${Config.callLogSyncDuration} * * * *'),
+        () async {
+          syncCallLogs();
+        },
+      );
     }
   }
 
@@ -223,7 +231,8 @@ class Helper {
         // ignore: unused_local_variable
         int from = DateTime.now()
             .subtract(
-                Duration(minutes: (getLogBefore > 1440) ? 1440 : getLogBefore))
+              Duration(minutes: (getLogBefore > 1440) ? 1440 : getLogBefore),
+            )
             .millisecondsSinceEpoch;
         try {
           // //fetch call_log
@@ -263,16 +272,22 @@ class Helper {
     //to get file path use generatedPdfFile.path
   }
 
-  //fetch formatted business details
   Future<Map<String, dynamic>> getFormattedBusinessDetails() async {
     List business = await System().get('business');
-    String? symbol = business[0]['currency']['symbol'],
-        name = business[0]['name'],
-        logo = business[0]['logo'],
-        taxLabel = business[0]['tax_label_1'],
-        taxNumber = business[0]['tax_number_1'];
-    int? currencyPrecision = business[0]['currency_precision'],
-        quantityPrecision = business[0]['quantity_precision'];
+    Map? currency = (business.isNotEmpty && business[0]['currency'] != null)
+        ? business[0]['currency']
+        : null;
+    String? symbol = (currency != null) ? currency['symbol'] : '',
+        name = (business.isNotEmpty) ? business[0]['name'] : '',
+        logo = (business.isNotEmpty) ? business[0]['logo'] : null,
+        taxLabel = (business.isNotEmpty) ? business[0]['tax_label_1'] : null,
+        taxNumber = (business.isNotEmpty) ? business[0]['tax_number_1'] : null;
+    int? currencyPrecision = (business.isNotEmpty)
+            ? business[0]['currency_precision']
+            : null,
+        quantityPrecision = (business.isNotEmpty)
+            ? business[0]['quantity_precision']
+            : null;
     return {
       'symbol': symbol ?? '',
       'name': name ?? '',
@@ -280,7 +295,7 @@ class Helper {
       'currencyPrecision': currencyPrecision ?? Config.currencyPrecision,
       'quantityPrecision': quantityPrecision ?? Config.quantityPrecision,
       'taxLabel': (taxLabel != null) ? '$taxLabel : ' : '',
-      'taxNumber': (taxNumber != null) ? '$taxNumber' : ''
+      'taxNumber': (taxNumber != null) ? '$taxNumber' : '',
     };
   }
 
@@ -296,16 +311,21 @@ class Helper {
   }
 
   //call widget
-  Widget callDropdown(context, followUpDetails, List numbers,
-      {required String type}) {
+  Widget callDropdown(
+    context,
+    followUpDetails,
+    List numbers, {
+    required String type,
+  }) {
     numbers.removeWhere((element) => element.toString() == 'null');
     return Container(
       height: MySize.size36,
       child: PopupMenuButton<String>(
         icon: Icon(
           (type == 'call') ? MdiIcons.phone : MdiIcons.whatsapp,
-          color:
-              (type == 'call') ? themeData.colorScheme.primary : Colors.green,
+          color: (type == 'call')
+              ? themeData.colorScheme.primary
+              : Colors.green,
         ),
         onSelected: (value) async {
           if (type == 'call') {
@@ -320,10 +340,7 @@ class Helper {
           return numbers.map((item) {
             return PopupMenuItem<String>(
               value: item,
-              child: Text(
-                '$item',
-                style: TextStyle(color: Colors.black),
-              ),
+              child: Text('$item', style: TextStyle(color: Colors.black)),
             );
           }).toList();
         },
@@ -353,7 +370,7 @@ class Helper {
               color: themeData.colorScheme.onBackground,
             ),
           ),
-        )
+        ),
       ],
     );
   }

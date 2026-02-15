@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:pos_final/helpers/AppTheme.dart';
-import 'package:pos_final/helpers/SizeConfig.dart';
 import 'package:pos_final/locale/MyLocalizations.dart';
 
-class GreetingWidget extends StatefulWidget implements PreferredSizeWidget{
+class GreetingWidget extends StatefulWidget {
   const GreetingWidget({
     super.key,
-    required this.themeData, required this.userName,
+    required this.themeData,
+    required this.userName,
   });
 
   final ThemeData themeData;
   final String userName;
-  static const double _kTabHeight = 46.0;
 
   @override
   State<GreetingWidget> createState() => _GreetingWidgetState();
-
-  @override
-  Size get preferredSize =>Size.fromHeight(_kTabHeight);
 }
 
-class _GreetingWidgetState extends State<GreetingWidget>   with SingleTickerProviderStateMixin {
+class _GreetingWidgetState extends State<GreetingWidget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _offsetAnimation;
 
@@ -28,17 +25,14 @@ class _GreetingWidgetState extends State<GreetingWidget>   with SingleTickerProv
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: Duration(seconds: 1), // Adjust the duration as needed
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
     _offsetAnimation = Tween<Offset>(
-      begin: Offset(0, -1),
+      begin: const Offset(0, 0.5),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     _controller.forward();
   }
@@ -53,18 +47,31 @@ class _GreetingWidgetState extends State<GreetingWidget>   with SingleTickerProv
   Widget build(BuildContext context) {
     return SlideTransition(
       position: _offsetAnimation,
-      child: Card(
-        child: Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.all(MySize.size10!),
-          child: Text(
-              AppLocalizations.of(context).translate('welcome') +
-                  ' ${widget.userName}',
-              style: AppTheme.getTextStyle(
-                  widget.themeData.textTheme.titleMedium,
-                  fontWeight: 700,
-                  letterSpacing: -0.2)),
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppLocalizations.of(context).translate('welcome'),
+            style: AppTheme.getTextStyle(
+              widget.themeData.textTheme.bodyLarge,
+              color: widget.themeData.textTheme.bodyLarge?.color?.withOpacity(
+                0.6,
+              ),
+              fontWeight: 400,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            widget.userName,
+            style: AppTheme.getTextStyle(
+              widget.themeData.textTheme.displaySmall,
+              fontWeight: 700,
+              fontSize: 32,
+              color: widget.themeData.textTheme.titleLarge?.color,
+            ),
+          ),
+        ],
       ),
     );
   }

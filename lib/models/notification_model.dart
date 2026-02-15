@@ -15,11 +15,11 @@ class NotificationModel {
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
-      msg: json['msg'] as String,
-      iconClass: json['icon_class'] as String,
-      link: json['link'] as String,
+      msg: (json['msg'] as String?) ?? '',
+      iconClass: (json['icon_class'] as String?) ?? '',
+      link: (json['link'] as String?) ?? '',
       readAt: json['read_at'] as String?,
-      createdAt: json['created_at'] as String,
+      createdAt: (json['created_at'] as String?) ?? '',
     );
   }
 }

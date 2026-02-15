@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart' as gfonts;
 import 'package:lottie/lottie.dart';
 import 'package:pos_final/constants.dart';
 import 'package:pos_final/locale/MyLocalizations.dart';
+import 'package:pos_final/helpers/otherHelpers.dart';
 
 import 'view_model_manger/login_cubit.dart';
 
@@ -19,14 +20,27 @@ class LoginScreen extends StatelessWidget {
         listener: (context, state) {
           if (state is LoginFailed) {
             LoginCubit.get(context).isLoading = false;
-            Fluttertoast.showToast(
-              fontSize: 14,
-              backgroundColor: Color(0xFFEF4444),
-              textColor: Colors.white,
-              msg: AppLocalizations.of(
-                context,
-              ).translate('invalid_credentials'),
-            );
+
+            // Check if there's internet connectivity
+            Helper().checkConnectivity().then((hasInternet) {
+              if (!hasInternet) {
+                Fluttertoast.showToast(
+                  fontSize: 14,
+                  backgroundColor: Color(0xFFEF4444),
+                  textColor: Colors.white,
+                  msg: 'No internet connection',
+                );
+              } else {
+                Fluttertoast.showToast(
+                  fontSize: 14,
+                  backgroundColor: Color(0xFFEF4444),
+                  textColor: Colors.white,
+                  msg: AppLocalizations.of(
+                    context,
+                  ).translate('invalid_credentials'),
+                );
+              }
+            });
           } else if (state is LoginSuccessfully) {
             LoginCubit.get(context).navigateToHome(context);
           }

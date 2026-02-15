@@ -6,7 +6,8 @@ import 'package:pos_final/locale/MyLocalizations.dart';
 import 'block_widget.dart';
 
 class Statistics extends StatelessWidget {
-  Statistics({
+  const Statistics({
+    super.key,
     this.businessSymbol = '',
     this.totalSales,
     this.totalSalesAmount = 0,
@@ -20,67 +21,68 @@ class Statistics extends StatelessWidget {
   final double totalSalesAmount, totalReceivedAmount, totalDueAmount;
   final ThemeData themeData;
   static const List<Color> blocksColor = [
-    Color(0xffFF9F29),
-    Color(0xff3C6255),
-    Color(0xffF55050),
-    Color(0xff205295)
+    Color(0xff6C5CE7), // Purple for Number of Sales
+    Color(0xff00B894), // Green for Total Sales Amount
+    Color(0xff0984E3), // Blue for Paid Amount
+    Color(0xffFF7675), // Red for Due Amount
   ];
   static const List<String> blocksName = [
     'number_of_sales',
     'sales_amount',
     'paid_amount',
-    'due_amount'
+    'due_amount',
   ];
   static const List<String> blocksImagesPath = [
     'assets/images/sales.png',
     'assets/images/total_sales.png',
     'assets/images/payed_money.png',
-    'assets/images/recived_money.png'
+    'assets/images/recived_money.png',
   ];
 
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: MySize.size16!,
-          childAspectRatio: 4 / 3,
-          crossAxisSpacing: MySize.size16!,
-        ),
-        shrinkWrap: true,
-        physics: ClampingScrollPhysics(),
-        itemCount: 4,
-        padding: EdgeInsets.only(
-            left: MySize.size16!, right: MySize.size16!, top: MySize.size16!),
-        itemBuilder: (context, index) => AnimatedBlock(
-              themeData: themeData,
-              blockColor: blocksColor[index],
-              index: index,
-              image: blocksImagesPath[index],
-              subject: blocksName[index],
-              amount: (index == 0)
-                  ? Helper().formatQuantity(totalSales ?? 0)
-                  : (index == 1)
-                      ? '${businessSymbol} ' +
-                          Helper().formatCurrency(totalSalesAmount)
-                      : (index == 2)
-                          ? '${businessSymbol} ' +
-                              Helper().formatCurrency(totalReceivedAmount)
-                          : '${businessSymbol} ' +
-                              Helper().formatCurrency(totalDueAmount),
-            ));
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: MySize.size20!,
+        childAspectRatio: 0.85,
+        crossAxisSpacing: MySize.size20!,
+      ),
+      shrinkWrap: true,
+      physics: const ClampingScrollPhysics(),
+      itemCount: 4,
+      padding: EdgeInsets.symmetric(
+        horizontal: MySize.size20!,
+        vertical: MySize.size20!,
+      ),
+      itemBuilder: (context, index) => AnimatedBlock(
+        themeData: themeData,
+        blockColor: blocksColor[index],
+        index: index,
+        image: blocksImagesPath[index],
+        subject: blocksName[index],
+        amount: (index == 0)
+            ? Helper().formatQuantity(totalSales ?? 0)
+            : (index == 1)
+            ? '$businessSymbol ${Helper().formatCurrency(totalSalesAmount)}'
+            : (index == 2)
+            ? '$businessSymbol ${Helper().formatCurrency(totalReceivedAmount)}'
+            : '$businessSymbol ${Helper().formatCurrency(totalDueAmount)}',
+      ),
+    );
   }
 }
 
 class AnimatedBlock extends StatefulWidget {
-  const AnimatedBlock(
-      {super.key,
-      required this.blockColor,
-      required this.index,
-      required this.themeData,
-      this.subject,
-      this.amount,
-      this.image});
+  const AnimatedBlock({
+    super.key,
+    required this.blockColor,
+    required this.index,
+    required this.themeData,
+    this.subject,
+    this.amount,
+    this.image,
+  });
 
   final Color blockColor;
   final int index;
@@ -108,12 +110,7 @@ class _AnimatedBlockState extends State<AnimatedBlock>
     _offsetAnimation = Tween<Offset>(
       begin: Offset(direction, 0.0),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _controller.forward();
   }
 
@@ -128,11 +125,12 @@ class _AnimatedBlockState extends State<AnimatedBlock>
     return SlideTransition(
       position: _offsetAnimation,
       child: Block(
-          themeData: widget.themeData,
-          amount: widget.amount,
-          subject: AppLocalizations.of(context).translate(widget.subject!),
-          backgroundColor: widget.blockColor,
-          image: widget.image),
+        themeData: widget.themeData,
+        amount: widget.amount,
+        subject: AppLocalizations.of(context).translate(widget.subject!),
+        backgroundColor: widget.blockColor,
+        image: widget.image,
+      ),
     );
   }
 }

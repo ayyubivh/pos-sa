@@ -1,6 +1,6 @@
 abstract final class ApiEndPoints {
   static String baseUrl =
-      'https://abcpos.com'; // TODO: Update this with your actual server URL
+      'https://www.eazyerp.co'; // TODO: Update this with your actual server URL
   static String apiUrl = '/connector/api';
 
   //#region used by http

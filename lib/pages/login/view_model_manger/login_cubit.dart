@@ -33,8 +33,8 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   ///private variables
-  static int _themeType = 1;
-  ThemeData _themeData = AppTheme.getThemeFromThemeMode(_themeType);
+  static final int _themeType = 1;
+  final ThemeData _themeData = AppTheme.getThemeFromThemeMode(_themeType);
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -77,8 +77,11 @@ class LoginCubit extends Cubit<LoginState> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          content: Lottie.asset('assets/lottie/loading.json',
-              width: 200, height: 200),
+          content: Lottie.asset(
+            'assets/lottie/loading.json',
+            width: 200,
+            height: 200,
+          ),
         );
       },
     );
@@ -144,25 +147,42 @@ class LoginCubit extends Cubit<LoginState> {
       }
     }
     //Take to home page
-   // Navigator.of(context).pushReplacementNamed('/layout');
-   // Navigator.of(context).pop();
+    // Navigator.of(context).pushReplacementNamed('/layout');
+    // Navigator.of(context).pop();
   }
 
   Future<void> checkOnLogin(BuildContext context) async {
-    if (await _checkInternetConnectivity()) {
-      if (_validateOnData()) {
-        var loginResponse = await _makeALogin();
-        if (loginResponse?['success'] != null && loginResponse?['success']) {
-          Helper().jobScheduler();
-          //Get current logged in user details and save it.
-          _showLoadingDialogue(context);
-          await _loadAllData(loginResponse, context);
-          emit(LoginSuccessfully());
-        } else {
-          emit(LoginFailed());
-        }
+    // if (await _checkInternetConnectivity()) {
+    if (_validateOnData()) {
+      // Set loading state to true
+      _isLoading = true;
+      emit(LoginLoading());
+
+      var loginResponse = await _makeALogin();
+
+      // Check if loginResponse is null or if success is false
+      if (loginResponse == null) {
+        _isLoading = false;
+        emit(LoginFailed());
+        return;
+      }
+
+      if (loginResponse['success'] == true) {
+        Helper().jobScheduler();
+        //Get current logged in user details and save it.
+        _showLoadingDialogue(context);
+        await _loadAllData(loginResponse, context);
+        _isLoading = false;
+        emit(LoginSuccessfully());
+      } else {
+        _isLoading = false;
+        emit(LoginFailed());
       }
     }
+    // } else {
+    //   // No internet connection - emit a failed state
+    //   emit(LoginFailed());
+    // }
   }
 
   Future<void> register() async {

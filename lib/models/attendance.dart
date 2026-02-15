@@ -5,20 +5,26 @@ import '../apis/attendance.dart';
 import '../pages/login.dart';
 
 class Attendance {
-//check-in model
-  Future<String> doCheckIn(
-      {checkInNote, iPAddress, latitude, longitude}) async {
+  //check-in model
+  Future<String> doCheckIn({
+    checkInNote,
+    iPAddress,
+    latitude,
+    longitude,
+  }) async {
     Map<String, dynamic> checkInMap = {
       "user_id": Config.userId,
       "clock_in_time": DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now()),
       "clock_in_note": "$checkInNote",
       "ip_address": "$iPAddress",
       "latitude": "$latitude",
-      "longitude": "$longitude"
+      "longitude": "$longitude",
     };
     String message = '';
-    Map<String, dynamic>? response =
-        await AttendanceApi().checkIO(checkInMap, true);
+    Map<String, dynamic>? response = await AttendanceApi().checkIO(
+      checkInMap,
+      true,
+    );
     if (response!.containsKey('success')) {
       message = response['msg'];
     } else {
@@ -31,14 +37,17 @@ class Attendance {
   Future<String> doCheckOut({latitude, longitude, checkOutNote}) async {
     Map<String, dynamic> checkOutMap = {
       "user_id": Config.userId,
-      "clock_out_time":
-          DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now()),
+      "clock_out_time": DateFormat(
+        "yyyy-MM-dd HH:mm:ss",
+      ).format(DateTime.now()),
       "clock_out_note": "$checkOutNote",
       "latitude": "$latitude",
-      "longitude": "$longitude"
+      "longitude": "$longitude",
     };
-    Map<String, dynamic>? response =
-        await AttendanceApi().checkIO(checkOutMap, false);
+    Map<String, dynamic>? response = await AttendanceApi().checkIO(
+      checkOutMap,
+      false,
+    );
     String message = '';
     if (response!.containsKey('success')) {
       message = response['msg'];
@@ -50,19 +59,21 @@ class Attendance {
 
   Future<bool> getAttendanceStatus(userId) async {
     var result = await AttendanceApi().getAttendanceDetails(userId);
-    if (result.length > 0) {
-      if (result['clock_out_time'] != null)
+    if (result.isNotEmpty) {
+      if (result['clock_out_time'] != null) {
         return false;
-      else
+      } else {
         return true;
-    } else
+      }
+    } else {
       return false;
+    }
   }
 
   Future<String?> getCheckInTime(userId) async {
     String? checkIn;
     var result = await AttendanceApi().getAttendanceDetails(userId);
-    if (result != null && result.isNotEmpty) checkIn = result['clock_in_time'];
+    if (result.isNotEmpty) checkIn = result['clock_in_time'] as String?;
     return checkIn;
   }
 }

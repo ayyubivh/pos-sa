@@ -19,6 +19,8 @@ import '../models/system.dart';
 import '../models/variations.dart';
 
 class Products extends StatefulWidget {
+  const Products({super.key});
+
   @override
   _ProductsState createState() => _ProductsState();
 }
@@ -52,7 +54,7 @@ class _ProductsState extends State<Products> {
   List<DropdownMenuItem<bool>> _priceGroupMenuItems = [];
   Map? argument;
   List<Map<String, dynamic>> locationListMap = [
-    {'id': 0, 'name': 'set location', 'selling_price_group_id': 0}
+    {'id': 0, 'name': 'set location', 'selling_price_group_id': 0},
   ];
 
   String symbol = '';
@@ -61,7 +63,7 @@ class _ProductsState extends State<Products> {
   final searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
-  ScrollController _scrollController = new ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
@@ -93,7 +95,7 @@ class _ProductsState extends State<Products> {
     //Arguments sellId & locationId is send from edit.
     if (argument != null) {
       Future.delayed(Duration(milliseconds: 200), () {
-        if (this.mounted) {
+        if (mounted) {
           setState(() {
             selectedLocationId = argument!['locationId'];
             canChangeLocation = false;
@@ -108,7 +110,7 @@ class _ProductsState extends State<Products> {
   }
 
   //Set location & product
-  setInitDetails(selectedLocationId) async {
+  Future<void> setInitDetails(selectedLocationId) async {
     //check subscription
     var activeSubscriptionDetails = await System().get('active-subscription');
     if (activeSubscriptionDetails.length > 0) {
@@ -117,19 +119,20 @@ class _ProductsState extends State<Products> {
       });
     } else {
       Fluttertoast.showToast(
-          msg: AppLocalizations.of(context).translate('no_subscription_found'));
+        msg: AppLocalizations.of(context).translate('no_subscription_found'),
+      );
     }
     await Helper().getFormattedBusinessDetails().then((value) {
       symbol = value['symbol'] + ' ';
     });
-    await setDefaultLocation(selectedLocationId);
+    setDefaultLocation(selectedLocationId);
     products = [];
     offset = 0;
     productList();
   }
 
   //Fetch permission from database
-  getPermission() async {
+  Future<void> getPermission() async {
     if (await Helper().getPermission("direct_sell.access")) {
       canAddSell = true;
     }
@@ -139,25 +142,26 @@ class _ProductsState extends State<Products> {
   }
 
   //set selling Price Group Id
-  findSellingPriceGroupId(locId) {
+  void findSellingPriceGroupId(locId) {
     if (usePriceGroup) {
-      locationListMap.forEach((element) {
+      for (var element in locationListMap) {
         if (element['id'] == selectedLocationId &&
             element['selling_price_group_id'] != null) {
-          sellingPriceGroupId =
-              int.parse(element['selling_price_group_id'].toString());
+          sellingPriceGroupId = int.parse(
+            element['selling_price_group_id'].toString(),
+          );
         } else if (element['id'] == selectedLocationId &&
             element['selling_price_group_id'] == null) {
           sellingPriceGroupId = 0;
         }
-      });
+      }
     } else {
       sellingPriceGroupId = 0;
     }
   }
 
   //set product list
-  productList() async {
+  Future<void> productList() async {
     offset++;
     //check last sync, if difference is 10 minutes then sync again.
     String? lastSync = await System().getProductLastSync();
@@ -173,121 +177,123 @@ class _ProductsState extends State<Products> {
     findSellingPriceGroupId(selectedLocationId);
     await Variations()
         .get(
-            brandId: brandId,
-            categoryId: categoryId,
-            subCategoryId: subCategoryId,
-            inStock: inStock,
-            locationId: selectedLocationId,
-            searchTerm: searchController.text,
-            offset: offset,
-            byAlphabets: byAlphabets,
-            byPrice: byPrice)
+          brandId: brandId,
+          categoryId: categoryId,
+          subCategoryId: subCategoryId,
+          inStock: inStock,
+          locationId: selectedLocationId,
+          searchTerm: searchController.text,
+          offset: offset,
+          byAlphabets: byAlphabets,
+          byPrice: byPrice,
+        )
         .then((element) {
-      element.forEach((product) {
-        var price;
-        if (product['selling_price_group'] != null) {
-          jsonDecode(product['selling_price_group']).forEach((element) {
-            if (element['key'] == sellingPriceGroupId) {
-              price = double.parse(element['value'].toString());
+          for (var product in element) {
+            double price = 0.0;
+            if (product['selling_price_group'] != null) {
+              jsonDecode(product['selling_price_group'] as String).forEach((
+                element,
+              ) {
+                if (element['key'] == sellingPriceGroupId) {
+                  price = double.parse(element['value'].toString());
+                }
+              });
             }
-          });
-        }
-        setState(() {
-          products.add(ProductModel().product(product, price));
+            setState(() {
+              products.add(ProductModel().product(product, price));
+            });
+          }
         });
-      });
-    });
   }
 
-  categoryList() async {
+  Future<void> categoryList() async {
     List categories = await System().getCategories();
 
     _categoryMenuItems.add(
       DropdownMenuItem(
-        child: Text(AppLocalizations.of(context).translate('select_category')),
         value: 0,
+        child: Text(AppLocalizations.of(context).translate('select_category')),
       ),
     );
 
     for (var category in categories) {
       _categoryMenuItems.add(
+        DropdownMenuItem(value: category['id'], child: Text(category['name'])),
+      );
+    }
+  }
+
+  Future<void> subCategoryList(parentId) async {
+    List subCategories = await System().getSubCategories(parentId);
+    _subCategoryMenuItems = [];
+    _subCategoryMenuItems.add(
+      DropdownMenuItem(
+        value: 0,
+        child: Text(
+          AppLocalizations.of(context).translate('select_sub_category'),
+        ),
+      ),
+    );
+    for (var element in subCategories) {
+      _subCategoryMenuItems.add(
         DropdownMenuItem(
-          child: Text(category['name']),
-          value: category['id'],
+          value: jsonDecode(element['value'])['id'],
+          child: Text(jsonDecode(element['value'])['name']),
         ),
       );
     }
   }
 
-  subCategoryList(parentId) async {
-    List subCategories = await System().getSubCategories(parentId);
-    _subCategoryMenuItems = [];
-    _subCategoryMenuItems.add(
-      DropdownMenuItem(
-        child:
-            Text(AppLocalizations.of(context).translate('select_sub_category')),
-        value: 0,
-      ),
-    );
-    subCategories.forEach((element) {
-      _subCategoryMenuItems.add(
-        DropdownMenuItem(
-          child: Text(jsonDecode(element['value'])['name']),
-          value: jsonDecode(element['value'])['id'],
-        ),
-      );
-    });
-  }
-
-  brandList() async {
+  Future<void> brandList() async {
     List brands = await System().getBrands();
 
     _brandsMenuItems.add(
       DropdownMenuItem(
-        child: Text(AppLocalizations.of(context).translate('select_brand')),
         value: 0,
+        child: Text(AppLocalizations.of(context).translate('select_brand')),
       ),
     );
 
     for (var brand in brands) {
       _brandsMenuItems.add(
-        DropdownMenuItem(
-          child: Text(brand['name']),
-          value: brand['id'],
-        ),
+        DropdownMenuItem(value: brand['id'], child: Text(brand['name'])),
       );
     }
   }
 
-  priceGroupList() async {
+  Future<void> priceGroupList() async {
     setState(() {
       _priceGroupMenuItems = [];
       _priceGroupMenuItems.add(
         DropdownMenuItem(
-          child: Text(AppLocalizations.of(context)
-              .translate('no_price_group_selected')),
           value: false,
+          child: Text(
+            AppLocalizations.of(context).translate('no_price_group_selected'),
+          ),
         ),
       );
 
-      locationListMap.forEach((element) {
+      for (var element in locationListMap) {
         if (element['id'] == selectedLocationId &&
             element['selling_price_group_id'] != null) {
           _priceGroupMenuItems.add(
             DropdownMenuItem(
-              child: Text(AppLocalizations.of(context)
-                  .translate('default_price_group')),
               value: true,
+              child: Text(
+                AppLocalizations.of(context).translate('default_price_group'),
+              ),
             ),
           );
         }
-      });
+      }
     });
   }
 
   Future<String> getCartItemCount({isCompleted, sellId}) async {
-    var counts =
-        await Sell().cartItemCount(isCompleted: isCompleted, sellId: sellId);
+    var counts = await Sell().cartItemCount(
+      isCompleted: isCompleted,
+      sellId: sellId,
+    );
     setState(() {
       cartCount = int.parse(counts);
     });
@@ -311,9 +317,13 @@ class _ProductsState extends State<Products> {
         endDrawer: _filterDrawer(),
         appBar: AppBar(
           elevation: 0,
-          title: Text(AppLocalizations.of(context).translate('products'),
-              style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-                  fontWeight: 600)),
+          title: Text(
+            AppLocalizations.of(context).translate('products'),
+            style: AppTheme.getTextStyle(
+              themeData.textTheme.titleLarge,
+              fontWeight: 600,
+            ),
+          ),
           leading: null,
           actions: <Widget>[
             locations(),
@@ -321,47 +331,55 @@ class _ProductsState extends State<Products> {
               badgeStyle: BadgeStyle(badgeColor: Colors.red),
               position: BadgePosition.topStart(start: 5.0, top: 5.0),
               badgeContent: FutureBuilder(
-                  future: (argument != null && argument!['sellId'] != null)
-                      ? getCartItemCount(sellId: argument!['sellId'])
-                      : getCartItemCount(isCompleted: 0),
-                  builder: (context, AsyncSnapshot<String> snapshot) {
-                    if (snapshot.hasData) {
-                      return Center(
-                        child: Text('${snapshot.data}',
-                            style: TextStyle(color: Colors.white)),
-                      );
-                    } else
-                      return Center(
-                        child: Text("0", style: TextStyle(color: Colors.white)),
-                      );
-                  }),
+                future: (argument != null && argument!['sellId'] != null)
+                    ? getCartItemCount(sellId: argument!['sellId'])
+                    : getCartItemCount(isCompleted: 0),
+                builder: (context, AsyncSnapshot<String> snapshot) {
+                  if (snapshot.hasData) {
+                    return Center(
+                      child: Text(
+                        '${snapshot.data}',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    );
+                  } else
+                    return Center(
+                      child: Text("0", style: TextStyle(color: Colors.white)),
+                    );
+                },
+              ),
               child: IconButton(
-                  icon: Icon(
-                    IconBroken.Buy,
-                    size: 30,
-                    color: Color(0xff4c53a5),
-                  ),
-                  onPressed: () {
-                    if (argument != null) {
-                      Navigator.pushReplacementNamed(context, '/cart',
-                          arguments: Helper().argument(
-                              locId: argument!['locationId'],
-                              sellId: argument!['sellId']));
-                    } else {
-                      if (selectedLocationId != 0 && cartCount > 0) {
-                        Navigator.pushNamed(context, '/cart',
-                            arguments:
-                                Helper().argument(locId: selectedLocationId));
-                      }
-
-                      if (cartCount == 0) {
-                        Fluttertoast.showToast(
-                            msg: AppLocalizations.of(context)
-                                .translate('no_items_added_to_cart'));
-                      }
+                icon: Icon(IconBroken.Buy, size: 30, color: Color(0xff4c53a5)),
+                onPressed: () {
+                  if (argument != null) {
+                    Navigator.pushReplacementNamed(
+                      context,
+                      '/cart',
+                      arguments: Helper().argument(
+                        locId: argument!['locationId'],
+                        sellId: argument!['sellId'],
+                      ),
+                    );
+                  } else {
+                    if (selectedLocationId != 0 && cartCount > 0) {
+                      Navigator.pushNamed(
+                        context,
+                        '/cart',
+                        arguments: Helper().argument(locId: selectedLocationId),
+                      );
                     }
-                  }),
-            )
+
+                    if (cartCount == 0) {
+                      Fluttertoast.showToast(
+                        msg: AppLocalizations.of(
+                          context,
+                        ).translate('no_items_added_to_cart'),
+                      );
+                    }
+                  }
+                },
+              ),
+            ),
           ],
         ),
         body: (canViewProducts)
@@ -371,18 +389,20 @@ class _ProductsState extends State<Products> {
                 padding: EdgeInsets.all(0),
                 children: [
                   Visibility(
-                      visible: (selectedLocationId != 0),
-                      child: filter(
-                        _scaffoldKey,
-                      )),
+                    visible: (selectedLocationId != 0),
+                    child: filter(_scaffoldKey),
+                  ),
                   (selectedLocationId == 0)
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.location_on),
-                              Text(AppLocalizations.of(context)
-                                  .translate('please_set_a_location')),
+                              Text(
+                                AppLocalizations.of(
+                                  context,
+                                ).translate('please_set_a_location'),
+                              ),
                             ],
                           ),
                         )
@@ -409,14 +429,19 @@ class _ProductsState extends State<Products> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
-              padding:
-                  EdgeInsets.only(top: MySize.size24!, bottom: MySize.size24!),
+              padding: EdgeInsets.only(
+                top: MySize.size24!,
+                bottom: MySize.size24!,
+              ),
               alignment: Alignment.center,
               child: Center(
                 child: Text(
                   AppLocalizations.of(context).translate('sort'),
-                  style: AppTheme.getTextStyle(themeData.textTheme.titleMedium,
-                      fontWeight: 700, color: themeData.colorScheme.primary),
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.titleMedium,
+                    fontWeight: 700,
+                    color: themeData.colorScheme.primary,
+                  ),
                 ),
               ),
             ),
@@ -444,17 +469,19 @@ class _ProductsState extends State<Products> {
                         margin: EdgeInsets.only(left: MySize.size16!),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(MySize.size16!)),
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(MySize.size16!),
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: themeData.cardTheme.shadowColor!
-                                  .withAlpha(48),
+                              color: themeData.cardTheme.shadowColor!.withAlpha(
+                                48,
+                              ),
                               blurRadius: (byAlphabets != null) ? 5 : 0,
                               offset: (byAlphabets != null)
                                   ? Offset(3, 3)
                                   : Offset(0, 0),
-                            )
+                            ),
                           ],
                           // : null,
                         ),
@@ -464,11 +491,12 @@ class _ProductsState extends State<Products> {
                             Text(
                               "A",
                               style: AppTheme.getTextStyle(
-                                  themeData.textTheme.titleMedium,
-                                  fontWeight: 700,
-                                  color: (byAlphabets != null)
-                                      ? themeData.colorScheme.primary
-                                      : Colors.grey),
+                                themeData.textTheme.titleMedium,
+                                fontWeight: 700,
+                                color: (byAlphabets != null)
+                                    ? themeData.colorScheme.primary
+                                    : Colors.grey,
+                              ),
                             ),
                             Icon(
                               (byAlphabets == 1)
@@ -482,11 +510,12 @@ class _ProductsState extends State<Products> {
                             Text(
                               "Z",
                               style: AppTheme.getTextStyle(
-                                  themeData.textTheme.titleMedium,
-                                  fontWeight: 700,
-                                  color: (byAlphabets != null)
-                                      ? themeData.colorScheme.primary
-                                      : Colors.grey),
+                                themeData.textTheme.titleMedium,
+                                fontWeight: 700,
+                                color: (byAlphabets != null)
+                                    ? themeData.colorScheme.primary
+                                    : Colors.grey,
+                              ),
                             ),
                           ],
                         ),
@@ -511,17 +540,19 @@ class _ProductsState extends State<Products> {
                         margin: EdgeInsets.only(left: MySize.size16!),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(MySize.size16!)),
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(MySize.size16!),
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: themeData.cardTheme.shadowColor!
-                                  .withAlpha(48),
+                              color: themeData.cardTheme.shadowColor!.withAlpha(
+                                48,
+                              ),
                               blurRadius: (byPrice != null) ? 5 : 0,
                               offset: (byPrice != null)
                                   ? Offset(3, 3)
                                   : Offset(0, 0),
-                            )
+                            ),
                           ],
                           // : null,
                         ),
@@ -531,11 +562,12 @@ class _ProductsState extends State<Products> {
                             Text(
                               AppLocalizations.of(context).translate('price'),
                               style: AppTheme.getTextStyle(
-                                  themeData.textTheme.titleMedium,
-                                  fontWeight: 700,
-                                  color: (byPrice != null)
-                                      ? themeData.colorScheme.primary
-                                      : Colors.grey),
+                                themeData.textTheme.titleMedium,
+                                fontWeight: 700,
+                                color: (byPrice != null)
+                                    ? themeData.colorScheme.primary
+                                    : Colors.grey,
+                              ),
                             ),
                             Icon(
                               (byPrice == 1)
@@ -560,8 +592,11 @@ class _ProductsState extends State<Products> {
               child: Center(
                 child: Text(
                   AppLocalizations.of(context).translate('filter'),
-                  style: AppTheme.getTextStyle(themeData.textTheme.titleMedium,
-                      fontWeight: 700, color: themeData.colorScheme.primary),
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.titleMedium,
+                    fontWeight: 700,
+                    color: themeData.colorScheme.primary,
+                  ),
                 ),
               ),
             ),
@@ -569,133 +604,151 @@ class _ProductsState extends State<Products> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Container(
-                    padding: EdgeInsets.only(
-                        left: MySize.size16!, right: MySize.size16!),
-                    child: CheckboxListTile(
-                      title: Text(
-                          AppLocalizations.of(context).translate('in_stock')),
-                      controlAffinity: ListTileControlAffinity.leading,
-                      value: inStock,
-                      onChanged: (newValue) {
+                  padding: EdgeInsets.only(
+                    left: MySize.size16!,
+                    right: MySize.size16!,
+                  ),
+                  child: CheckboxListTile(
+                    title: Text(
+                      AppLocalizations.of(context).translate('in_stock'),
+                    ),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: inStock,
+                    onChanged: (newValue) {
+                      setState(() {
+                        inStock = newValue!;
+                      });
+                      products = [];
+                      offset = 0;
+                      productList();
+                    },
+                  ),
+                ),
+                Divider(),
+                Container(
+                  padding: EdgeInsets.only(
+                    left: MySize.size16!,
+                    right: MySize.size16!,
+                    top: MySize.size16!,
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context).translate('categories'),
+                    style: AppTheme.getTextStyle(
+                      themeData.textTheme.bodyLarge,
+                      fontWeight: 600,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.only(
+                    left: MySize.size16!,
+                    right: MySize.size16!,
+                    top: MySize.size8!,
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                      isExpanded: true,
+                      dropdownColor: Colors.white,
+                      icon: Icon(Icons.arrow_drop_down),
+                      value: categoryId,
+                      items: _categoryMenuItems,
+                      onChanged: (int? newValue) {
                         setState(() {
-                          inStock = newValue!;
+                          subCategoryId = 0;
+                          categoryId = newValue!;
+                          subCategoryList(categoryId);
+                        });
+
+                        products = [];
+                        offset = 0;
+                        productList();
+                      },
+                    ),
+                  ),
+                ),
+                Divider(),
+                Container(
+                  padding: EdgeInsets.only(
+                    left: MySize.size16!,
+                    right: MySize.size16!,
+                    top: MySize.size16!,
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context).translate('sub_categories'),
+                    style: AppTheme.getTextStyle(
+                      themeData.textTheme.bodyLarge,
+                      fontWeight: 600,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.only(
+                    left: MySize.size16!,
+                    right: MySize.size16!,
+                    top: MySize.size8!,
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                      isExpanded: true,
+                      dropdownColor: Colors.white,
+                      icon: Icon(Icons.arrow_drop_down),
+                      value: subCategoryId,
+                      items: _subCategoryMenuItems,
+                      onChanged: (int? newValue) {
+                        setState(() {
+                          subCategoryId = newValue!;
+                        });
+
+                        products = [];
+                        offset = 0;
+                        productList();
+                      },
+                    ),
+                  ),
+                ),
+                Divider(),
+                Container(
+                  padding: EdgeInsets.only(
+                    left: MySize.size16!,
+                    right: MySize.size16!,
+                    top: MySize.size16!,
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context).translate('brands'),
+                    style: AppTheme.getTextStyle(
+                      themeData.textTheme.bodyLarge,
+                      fontWeight: 600,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.only(
+                    left: MySize.size16!,
+                    right: MySize.size16!,
+                    top: 0,
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                      isExpanded: true,
+                      dropdownColor: Colors.white,
+                      icon: Icon(Icons.arrow_drop_down),
+                      value: brandId,
+                      items: _brandsMenuItems,
+                      onChanged: (int? newValue) {
+                        setState(() {
+                          brandId = newValue!;
                         });
                         products = [];
                         offset = 0;
                         productList();
                       },
-                    )),
-                Divider(),
-                Container(
-                  padding: EdgeInsets.only(
-                      left: MySize.size16!,
-                      right: MySize.size16!,
-                      top: MySize.size16!),
-                  child: Text(
-                    AppLocalizations.of(context).translate('categories'),
-                    style: AppTheme.getTextStyle(themeData.textTheme.bodyLarge,
-                        fontWeight: 600, letterSpacing: 0),
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.only(
-                      left: MySize.size16!,
-                      right: MySize.size16!,
-                      top: MySize.size8!),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton(
-                        isExpanded: true,
-                        dropdownColor: Colors.white,
-                        icon: Icon(
-                          Icons.arrow_drop_down,
-                        ),
-                        value: categoryId,
-                        items: _categoryMenuItems,
-                        onChanged: (int? newValue) {
-                          setState(() {
-                            subCategoryId = 0;
-                            categoryId = newValue!;
-                            subCategoryList(categoryId);
-                          });
-
-                          products = [];
-                          offset = 0;
-                          productList();
-                        }),
+                    ),
                   ),
                 ),
                 Divider(),
-                Container(
-                  padding: EdgeInsets.only(
-                      left: MySize.size16!,
-                      right: MySize.size16!,
-                      top: MySize.size16!),
-                  child: Text(
-                    AppLocalizations.of(context).translate('sub_categories'),
-                    style: AppTheme.getTextStyle(themeData.textTheme.bodyLarge,
-                        fontWeight: 600, letterSpacing: 0),
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.only(
-                      left: MySize.size16!,
-                      right: MySize.size16!,
-                      top: MySize.size8!),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton(
-                        isExpanded: true,
-                        dropdownColor: Colors.white,
-                        icon: Icon(
-                          Icons.arrow_drop_down,
-                        ),
-                        value: subCategoryId,
-                        items: _subCategoryMenuItems,
-                        onChanged: (int? newValue) {
-                          setState(() {
-                            subCategoryId = newValue!;
-                          });
-
-                          products = [];
-                          offset = 0;
-                          productList();
-                        }),
-                  ),
-                ),
-                Divider(),
-                Container(
-                  padding: EdgeInsets.only(
-                      left: MySize.size16!,
-                      right: MySize.size16!,
-                      top: MySize.size16!),
-                  child: Text(
-                    AppLocalizations.of(context).translate('brands'),
-                    style: AppTheme.getTextStyle(themeData.textTheme.bodyLarge,
-                        fontWeight: 600, letterSpacing: 0),
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.only(
-                      left: MySize.size16!, right: MySize.size16!, top: 0),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton(
-                        isExpanded: true,
-                        dropdownColor: Colors.white,
-                        icon: Icon(
-                          Icons.arrow_drop_down,
-                        ),
-                        value: brandId,
-                        items: _brandsMenuItems,
-                        onChanged: (int? newValue) {
-                          setState(() {
-                            brandId = newValue!;
-                          });
-                          products = [];
-                          offset = 0;
-                          productList();
-                        }),
-                  ),
-                ),
-                Divider()
               ],
             ),
             Container(
@@ -703,52 +756,57 @@ class _ProductsState extends State<Products> {
               child: Center(
                 child: Text(
                   AppLocalizations.of(context).translate('group_prices'),
-                  style: AppTheme.getTextStyle(themeData.textTheme.titleMedium,
-                      fontWeight: 700, color: themeData.colorScheme.primary),
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.titleMedium,
+                    fontWeight: 700,
+                    color: themeData.colorScheme.primary,
+                  ),
                 ),
               ),
             ),
             Container(
               padding: EdgeInsets.only(
-                  left: MySize.size16!, right: MySize.size16!, top: 0),
+                left: MySize.size16!,
+                right: MySize.size16!,
+                top: 0,
+              ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton(
-                    isExpanded: true,
-                    dropdownColor: Colors.white,
-                    icon: Icon(
-                      Icons.arrow_drop_down,
-                    ),
-                    value: usePriceGroup,
-                    items: _priceGroupMenuItems,
-                    onChanged: (bool? newValue) async {
-                      await _showCartResetDialogForPriceGroup();
-                      setState(() {
-                        usePriceGroup = newValue!;
-                        if (changePriceGroup) {
-                          //reset cart items
-                          Sell().resetCart();
-                          //reset all filters & search
-                          brandId = 0;
-                          categoryId = 0;
-                          searchController.clear();
-                          inStock = true;
-                          cartCount = 0;
+                  isExpanded: true,
+                  dropdownColor: Colors.white,
+                  icon: Icon(Icons.arrow_drop_down),
+                  value: usePriceGroup,
+                  items: _priceGroupMenuItems,
+                  onChanged: (bool? newValue) async {
+                    await _showCartResetDialogForPriceGroup();
+                    setState(() {
+                      usePriceGroup = newValue!;
+                      if (changePriceGroup) {
+                        //reset cart items
+                        Sell().resetCart();
+                        //reset all filters & search
+                        brandId = 0;
+                        categoryId = 0;
+                        searchController.clear();
+                        inStock = true;
+                        cartCount = 0;
 
-                          products = [];
-                          offset = 0;
-                          productList();
-                        }
-                      });
-                    }),
+                        products = [];
+                        offset = 0;
+                        productList();
+                      }
+                    });
+                  },
+                ),
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget filter(_scaffoldKey) {
+  Widget filter(scaffoldKey) {
     return Padding(
       padding: EdgeInsets.all(MySize.size16!),
       child: Row(
@@ -757,54 +815,58 @@ class _ProductsState extends State<Products> {
             child: Form(
               key: _formKey,
               child: TextFormField(
-                  style: AppTheme.getTextStyle(themeData.textTheme.titleSmall,
-                      letterSpacing: 0, fontWeight: 500),
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context).translate('search'),
-                    hintStyle: AppTheme.getTextStyle(
-                        themeData.textTheme.titleSmall,
-                        letterSpacing: 0,
-                        fontWeight: 500),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(MySize.size16!),
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(MySize.size16!),
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(MySize.size16!),
-                        ),
-                        borderSide: BorderSide.none),
-                    filled: true,
-                    fillColor: Color(0xffedecf2),
-                    prefixIcon: IconButton(
-                      icon: Icon(
-                        MdiIcons.magnify,
-                        size: MySize.size22,
-                        color: themeData.colorScheme.onSurface.withAlpha(150),
-                      ),
-                      onPressed: () {},
-                    ),
-                    isDense: true,
-                    contentPadding: EdgeInsets.only(right: MySize.size16!),
+                style: AppTheme.getTextStyle(
+                  themeData.textTheme.titleSmall,
+                  letterSpacing: 0,
+                  fontWeight: 500,
+                ),
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context).translate('search'),
+                  hintStyle: AppTheme.getTextStyle(
+                    themeData.textTheme.titleSmall,
+                    letterSpacing: 0,
+                    fontWeight: 500,
                   ),
-                  textCapitalization: TextCapitalization.sentences,
-                  controller: searchController,
-                  onEditingComplete: () {
-                    products = [];
-                    offset = 0;
-                    productList();
-                  }),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(MySize.size16!),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(MySize.size16!),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(MySize.size16!),
+                    ),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Color(0xffedecf2),
+                  prefixIcon: IconButton(
+                    icon: Icon(
+                      MdiIcons.magnify,
+                      size: MySize.size22,
+                      color: themeData.colorScheme.onSurface.withAlpha(150),
+                    ),
+                    onPressed: () {},
+                  ),
+                  isDense: true,
+                  contentPadding: EdgeInsets.only(right: MySize.size16!),
+                ),
+                textCapitalization: TextCapitalization.sentences,
+                controller: searchController,
+                onEditingComplete: () {
+                  products = [];
+                  offset = 0;
+                  productList();
+                },
+              ),
             ),
           ),
-          SizedBox(
-            width: 10,
-          ),
+          SizedBox(width: 10),
           InkWell(
             onTap: () async {
               var barcode = await Helper().barcodeScan();
@@ -820,7 +882,7 @@ class _ProductsState extends State<Products> {
                     color: themeData.cardTheme.shadowColor!.withAlpha(48),
                     blurRadius: 3,
                     offset: Offset(0, 1),
-                  )
+                  ),
                 ],
               ),
               padding: EdgeInsets.all(MySize.size12!),
@@ -833,7 +895,7 @@ class _ProductsState extends State<Products> {
           ),
           InkWell(
             onTap: () {
-              _scaffoldKey.currentState.openEndDrawer();
+              scaffoldKey.currentState.openEndDrawer();
             },
             child: Container(
               margin: EdgeInsets.only(left: MySize.size16!),
@@ -845,7 +907,7 @@ class _ProductsState extends State<Products> {
                     color: themeData.cardTheme.shadowColor!.withAlpha(48),
                     blurRadius: 3,
                     offset: Offset(0, 1),
-                  )
+                  ),
                 ],
               ),
               padding: EdgeInsets.all(MySize.size12!),
@@ -872,7 +934,7 @@ class _ProductsState extends State<Products> {
                     color: themeData.cardTheme.shadowColor!.withAlpha(48),
                     blurRadius: 3,
                     offset: Offset(0, 1),
-                  )
+                  ),
                 ],
               ),
               padding: EdgeInsets.all(MySize.size12!),
@@ -889,68 +951,82 @@ class _ProductsState extends State<Products> {
   }
 
   //add product to cart after scanning barcode
-  getScannedProduct(String barcode) async {
+  Future<void> getScannedProduct(String barcode) async {
     if (canMakeSell) {
       await Variations()
           .get(
-              locationId: selectedLocationId,
-              barcode: barcode,
-              offset: 0,
-              searchTerm: searchController.text)
+            locationId: selectedLocationId,
+            barcode: barcode,
+            offset: 0,
+            searchTerm: searchController.text,
+          )
           .then((value) async {
-        if (canAddSell) {
-          if (value.length > 0) {
-            var price;
-            var product;
-            if (value[0]['selling_price_group'] != null) {
-              jsonDecode(value[0]['selling_price_group']).forEach((element) {
-                if (element['key'] == sellingPriceGroupId) {
-                  price = element['value'];
+            if (canAddSell) {
+              if (value.isNotEmpty) {
+                var price = 0.0;
+                var product;
+                if (value[0]['selling_price_group'] != null) {
+                  jsonDecode(value[0]['selling_price_group'] as String).forEach(
+                    (element) {
+                      if (element['key'] == sellingPriceGroupId) {
+                        price = element['value'];
+                      }
+                    },
+                  );
                 }
-              });
-            }
-            setState(() {
-              product = ProductModel().product(value[0], price);
-            });
-            if (product != null && product['stock_available'] > 0) {
-              Fluttertoast.showToast(
-                  msg: AppLocalizations.of(context).translate('added_to_cart'));
-              await Sell().addToCart(
-                  product, argument != null ? argument!['sellId'] : null);
-              if (argument != null) {
-                selectedLocationId = argument!['locationId'];
+                setState(() {
+                  product = ProductModel().product(value[0], price);
+                });
+                if (product != null && product['stock_available'] > 0) {
+                  Fluttertoast.showToast(
+                    msg: AppLocalizations.of(
+                      context,
+                    ).translate('added_to_cart'),
+                  );
+                  await Sell().addToCart(
+                    product,
+                    argument != null ? argument!['sellId'] : null,
+                  );
+                  if (argument != null) {
+                    selectedLocationId = argument!['locationId'];
+                  }
+                } else {
+                  Fluttertoast.showToast(
+                    msg: AppLocalizations.of(context).translate("out_of_stock"),
+                  );
+                }
+              } else {
+                Fluttertoast.showToast(
+                  msg: AppLocalizations.of(
+                    context,
+                  ).translate("no_product_found"),
+                );
               }
             } else {
               Fluttertoast.showToast(
-                  msg:
-                      "${AppLocalizations.of(context).translate("out_of_stock")}");
+                msg: AppLocalizations.of(
+                  context,
+                ).translate("no_sells_permission"),
+              );
             }
-          } else {
-            Fluttertoast.showToast(
-                msg:
-                    "${AppLocalizations.of(context).translate("no_product_found")}");
-          }
-        } else {
-          Fluttertoast.showToast(
-              msg:
-                  "${AppLocalizations.of(context).translate("no_sells_permission")}");
-        }
-      });
+          });
     } else {
       Fluttertoast.showToast(
-          msg: AppLocalizations.of(context).translate('no_subscription_found'));
+        msg: AppLocalizations.of(context).translate('no_subscription_found'),
+      );
     }
   }
 
   Widget _productsList() {
-    return (products.length == 0)
+    return (products.isEmpty)
         ? Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.hourglass_empty),
-                Text(AppLocalizations.of(context)
-                    .translate('no_products_found')),
+                Text(
+                  AppLocalizations.of(context).translate('no_products_found'),
+                ),
               ],
             ),
           )
@@ -958,18 +1034,20 @@ class _ProductsState extends State<Products> {
             child: (gridView)
                 ? GridView.builder(
                     padding: EdgeInsets.only(
-                        bottom: MySize.size16!,
-                        left: MySize.size16!,
-                        right: MySize.size16!),
+                      bottom: MySize.size16!,
+                      left: MySize.size16!,
+                      right: MySize.size16!,
+                    ),
                     shrinkWrap: true,
                     physics: ClampingScrollPhysics(),
                     itemCount: products.length,
-                    gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       mainAxisSpacing: MySize.size16!,
                       crossAxisSpacing: MySize.size16!,
-                      childAspectRatio:
-                          findAspectRatio(MediaQuery.of(context).size.width),
+                      childAspectRatio: findAspectRatio(
+                        MediaQuery.of(context).size.width,
+                      ),
                     ),
                     itemBuilder: (context, index) {
                       return InkWell(
@@ -983,7 +1061,8 @@ class _ProductsState extends State<Products> {
                               ? products[index]['stock_available'].toString()
                               : '-',
                           price: double.parse(
-                              products[index]['unit_price'].toString()),
+                            products[index]['unit_price'].toString(),
+                          ),
                           symbol: symbol,
                         ),
                       );
@@ -1005,48 +1084,51 @@ class _ProductsState extends State<Products> {
                               ? products[index]['stock_available'].toString()
                               : '-',
                           price: double.parse(
-                              products[index]['unit_price'].toString()),
+                            products[index]['unit_price'].toString(),
+                          ),
                           symbol: symbol,
                         ),
                       );
                     },
                     separatorBuilder: (BuildContext context, int index) =>
-                        Container(
-                      height: 10,
-                      color: Colors.white,
-                    ),
+                        Container(height: 10, color: Colors.white),
                   ),
           );
   }
 
   //onTap product
-  onTapProduct(int index) async {
+  Future<void> onTapProduct(int index) async {
     if (canAddSell) {
       if (canMakeSell) {
         if (products[index]['stock_available'] > 0) {
           Fluttertoast.showToast(
-              msg: AppLocalizations.of(context).translate('added_to_cart'));
+            msg: AppLocalizations.of(context).translate('added_to_cart'),
+          );
           await Sell().addToCart(
-              products[index], argument != null ? argument!['sellId'] : null);
+            products[index],
+            argument != null ? argument!['sellId'] : null,
+          );
           if (argument != null) {
             selectedLocationId = argument!['locationId'];
           }
         } else {
           Fluttertoast.showToast(
-              msg: "${AppLocalizations.of(context).translate("out_of_stock")}");
+            msg: AppLocalizations.of(context).translate("out_of_stock"),
+          );
         }
       } else {
         Fluttertoast.showToast(
-            msg:
-                "${AppLocalizations.of(context).translate("no_sells_permission")}");
+          msg: AppLocalizations.of(context).translate("no_sells_permission"),
+        );
       }
     } else {
       Fluttertoast.showToast(
-          msg: AppLocalizations.of(context).translate('no_subscription_found'));
+        msg: AppLocalizations.of(context).translate('no_subscription_found'),
+      );
     }
   }
 
-  setLocationMap() async {
+  Future<void> setLocationMap() async {
     await System().get('location').then((value) async {
       value.forEach((element) {
         if (element['is_active'].toString() == '1') {
@@ -1054,7 +1136,7 @@ class _ProductsState extends State<Products> {
             locationListMap.add({
               'id': element['id'],
               'name': element['name'],
-              'selling_price_group_id': element['selling_price_group_id']
+              'selling_price_group_id': element['selling_price_group_id'],
             });
           });
         }
@@ -1063,7 +1145,7 @@ class _ProductsState extends State<Products> {
     });
   }
 
-  setDefaultLocation(defaultLocation) {
+  void setDefaultLocation(defaultLocation) {
     if (defaultLocation != 0) {
       setState(() {
         selectedLocationId = defaultLocation;
@@ -1078,63 +1160,67 @@ class _ProductsState extends State<Products> {
   Widget locations() {
     return DropdownButtonHideUnderline(
       child: DropdownButton(
-          dropdownColor: Colors.white,
-          icon: Icon(
-            Icons.arrow_drop_down,
-          ),
-          value: selectedLocationId,
-          items: locationListMap.map<DropdownMenuItem<int>>((Map value) {
-            return DropdownMenuItem<int>(
-                value: value['id'],
-                child: SizedBox(
-                  width: MySize.screenWidth! * 0.4,
-                  child: Text('${value['name']}',
-                      softWrap: true,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                      style: TextStyle(fontSize: 15)),
-                ));
-          }).toList(),
-          onTap: () {
-            if (locationListMap.length <= 2) {
-              canChangeLocation = false;
-            }
-          },
-          onChanged: (int? newValue) async {
-            // show a confirmation if there location is changed.
-            if (canChangeLocation) {
-              if (selectedLocationId == newValue) {
-                changeLocation = false;
-              } else if (selectedLocationId != 0) {
-                await _showCartResetDialogForLocation();
-                await priceGroupList();
-              } else {
-                changeLocation = true;
-                await priceGroupList();
-              }
-              setState(() {
-                if (changeLocation) {
-                  //reset cart items
-                  Sell().resetCart();
-                  selectedLocationId = newValue!;
-                  //reset all filters & search
-                  brandId = 0;
-                  categoryId = 0;
-                  searchController.clear();
-                  inStock = true;
-                  cartCount = 0;
-
-                  products = [];
-                  offset = 0;
-                  productList();
-                }
-              });
+        dropdownColor: Colors.white,
+        icon: Icon(Icons.arrow_drop_down),
+        value: selectedLocationId,
+        items: locationListMap.map<DropdownMenuItem<int>>((Map value) {
+          return DropdownMenuItem<int>(
+            value: value['id'],
+            child: SizedBox(
+              width: MySize.screenWidth! * 0.4,
+              child: Text(
+                '${value['name']}',
+                softWrap: true,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                style: TextStyle(fontSize: 15),
+              ),
+            ),
+          );
+        }).toList(),
+        onTap: () {
+          if (locationListMap.length <= 2) {
+            canChangeLocation = false;
+          }
+        },
+        onChanged: (int? newValue) async {
+          // show a confirmation if there location is changed.
+          if (canChangeLocation) {
+            if (selectedLocationId == newValue) {
+              changeLocation = false;
+            } else if (selectedLocationId != 0) {
+              await _showCartResetDialogForLocation();
+              await priceGroupList();
             } else {
-              Fluttertoast.showToast(
-                  msg: AppLocalizations.of(context)
-                      .translate('cannot_change_location'));
+              changeLocation = true;
+              await priceGroupList();
             }
-          }),
+            setState(() {
+              if (changeLocation) {
+                //reset cart items
+                Sell().resetCart();
+                selectedLocationId = newValue!;
+                //reset all filters & search
+                brandId = 0;
+                categoryId = 0;
+                searchController.clear();
+                inStock = true;
+                cartCount = 0;
+
+                products = [];
+                offset = 0;
+                productList();
+              }
+            });
+          } else {
+            Fluttertoast.showToast(
+              msg: AppLocalizations.of(
+                context,
+              ).translate('cannot_change_location'),
+            );
+          }
+        },
+      ),
     );
   }
 
@@ -1143,23 +1229,29 @@ class _ProductsState extends State<Products> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title:
-              Text(AppLocalizations.of(context).translate('change_location')),
-          content: Text(AppLocalizations.of(context)
-              .translate('all_items_in_cart_will_be_remove')),
+          title: Text(
+            AppLocalizations.of(context).translate('change_location'),
+          ),
+          content: Text(
+            AppLocalizations.of(
+              context,
+            ).translate('all_items_in_cart_will_be_remove'),
+          ),
           actions: [
             TextButton(
-                onPressed: () {
-                  changeLocation = false;
-                  Navigator.of(context).pop();
-                },
-                child: Text(AppLocalizations.of(context).translate('no'))),
+              onPressed: () {
+                changeLocation = false;
+                Navigator.of(context).pop();
+              },
+              child: Text(AppLocalizations.of(context).translate('no')),
+            ),
             TextButton(
-                onPressed: () {
-                  changeLocation = true;
-                  Navigator.of(context).pop();
-                },
-                child: Text(AppLocalizations.of(context).translate('yes')))
+              onPressed: () {
+                changeLocation = true;
+                Navigator.of(context).pop();
+              },
+              child: Text(AppLocalizations.of(context).translate('yes')),
+            ),
           ],
         );
       },
@@ -1171,23 +1263,31 @@ class _ProductsState extends State<Products> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)
-              .translate('change_selling_price_group')),
-          content: Text(AppLocalizations.of(context)
-              .translate('all_items_in_cart_will_be_remove')),
+          title: Text(
+            AppLocalizations.of(
+              context,
+            ).translate('change_selling_price_group'),
+          ),
+          content: Text(
+            AppLocalizations.of(
+              context,
+            ).translate('all_items_in_cart_will_be_remove'),
+          ),
           actions: [
             TextButton(
-                onPressed: () {
-                  changePriceGroup = false;
-                  Navigator.of(context).pop();
-                },
-                child: Text(AppLocalizations.of(context).translate('no'))),
+              onPressed: () {
+                changePriceGroup = false;
+                Navigator.of(context).pop();
+              },
+              child: Text(AppLocalizations.of(context).translate('no')),
+            ),
             TextButton(
-                onPressed: () {
-                  changePriceGroup = true;
-                  Navigator.of(context).pop();
-                },
-                child: Text(AppLocalizations.of(context).translate('yes')))
+              onPressed: () {
+                changePriceGroup = true;
+                Navigator.of(context).pop();
+              },
+              child: Text(AppLocalizations.of(context).translate('yes')),
+            ),
           ],
         );
       },
@@ -1200,14 +1300,14 @@ class _ProductGridWidget extends StatefulWidget {
   final String? qtyAvailable;
   final double? price;
 
-  const _ProductGridWidget(
-      {Key? key,
-      required this.name,
-      required this.image,
-      required this.qtyAvailable,
-      required this.price,
-      required this.symbol})
-      : super(key: key);
+  const _ProductGridWidget({
+    super.key,
+    required this.name,
+    required this.image,
+    required this.qtyAvailable,
+    required this.price,
+    required this.symbol,
+  });
 
   @override
   _ProductGridWidgetState createState() => _ProductGridWidgetState();
@@ -1245,17 +1345,19 @@ class _ProductGridWidgetState extends State<_ProductGridWidget> {
                 tag: key,
                 child: ClipRRect(
                   borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(MySize.size8!),
-                      topRight: Radius.circular(MySize.size8!)),
+                    topLeft: Radius.circular(MySize.size8!),
+                    topRight: Radius.circular(MySize.size8!),
+                  ),
                   child: CachedNetworkImage(
-                      width: MediaQuery.of(context).size.width,
-                      height: MySize.size140,
-                      fit: BoxFit.fitHeight,
-                      errorWidget: (context, url, error) =>
-                          Image.asset('assets/images/default_product.png'),
-                      placeholder: (context, url) =>
-                          Image.asset('assets/images/default_product.png'),
-                      imageUrl: widget.image ?? ''),
+                    width: MediaQuery.of(context).size.width,
+                    height: MySize.size140,
+                    fit: BoxFit.fitHeight,
+                    errorWidget: (context, url, error) =>
+                        Image.asset('assets/images/default_product.png'),
+                    placeholder: (context, url) =>
+                        Image.asset('assets/images/default_product.png'),
+                    imageUrl: widget.image ?? '',
+                  ),
                 ),
               ),
             ],
@@ -1267,10 +1369,15 @@ class _ProductGridWidgetState extends State<_ProductGridWidget> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(widget.name!,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTheme.getTextStyle(themeData.textTheme.titleSmall,
-                        fontWeight: 500, letterSpacing: 0)),
+                Text(
+                  widget.name!,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.titleSmall,
+                    fontWeight: 500,
+                    letterSpacing: 0,
+                  ),
+                ),
                 Container(
                   margin: EdgeInsets.only(top: MySize.size4!),
                   child: Row(
@@ -1279,20 +1386,24 @@ class _ProductGridWidgetState extends State<_ProductGridWidget> {
                       Text(
                         Helper().formatCurrency(widget.price) + widget.symbol!,
                         style: AppTheme.getTextStyle(
-                            themeData.textTheme.bodyMedium,
-                            fontWeight: 700,
-                            letterSpacing: 0),
+                          themeData.textTheme.bodyMedium,
+                          fontWeight: 700,
+                          letterSpacing: 0,
+                        ),
                       ),
                       Container(
                         decoration: BoxDecoration(
-                            color: themeData.colorScheme.primary,
-                            borderRadius: BorderRadius.all(
-                                Radius.circular(MySize.size4!))),
+                          color: themeData.colorScheme.primary,
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(MySize.size4!),
+                          ),
+                        ),
                         padding: EdgeInsets.only(
-                            left: MySize.size6!,
-                            right: MySize.size8!,
-                            top: MySize.size2!,
-                            bottom: MySize.getScaledSizeHeight(3.5)),
+                          left: MySize.size6!,
+                          right: MySize.size8!,
+                          top: MySize.size2!,
+                          bottom: MySize.getScaledSizeHeight(3.5),
+                        ),
                         child: Row(
                           children: <Widget>[
                             Icon(
@@ -1304,14 +1415,16 @@ class _ProductGridWidgetState extends State<_ProductGridWidget> {
                               margin: EdgeInsets.only(left: MySize.size4!),
                               child: (widget.qtyAvailable != '-')
                                   ? Text(
-                                      Helper()
-                                          .formatQuantity(widget.qtyAvailable),
+                                      Helper().formatQuantity(
+                                        widget.qtyAvailable,
+                                      ),
                                       style: AppTheme.getTextStyle(
-                                          themeData.textTheme.bodySmall,
-                                          fontSize: 11,
-                                          color:
-                                              themeData.colorScheme.onPrimary,
-                                          fontWeight: 600))
+                                        themeData.textTheme.bodySmall,
+                                        fontSize: 11,
+                                        color: themeData.colorScheme.onPrimary,
+                                        fontWeight: 600,
+                                      ),
+                                    )
                                   : Text('-'),
                             ),
                           ],
@@ -1334,14 +1447,14 @@ class _ProductListWidget extends StatefulWidget {
   final String? qtyAvailable;
   final double? price;
 
-  const _ProductListWidget(
-      {Key? key,
-      required this.name,
-      required this.image,
-      required this.qtyAvailable,
-      required this.price,
-      required this.symbol})
-      : super(key: key);
+  const _ProductListWidget({
+    super.key,
+    required this.name,
+    required this.image,
+    required this.qtyAvailable,
+    required this.price,
+    required this.symbol,
+  });
 
   @override
   _ProductListWidgetState createState() => _ProductListWidgetState();
@@ -1372,34 +1485,44 @@ class _ProductListWidgetState extends State<_ProductListWidget> {
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(MySize.size30!),
           child: CachedNetworkImage(
-              errorWidget: (context, url, error) =>
-                  Image.asset('assets/images/default_product.png'),
-              placeholder: (context, url) =>
-                  Image.asset('assets/images/default_product.png'),
-              imageUrl: widget.image ?? ''),
+            errorWidget: (context, url, error) =>
+                Image.asset('assets/images/default_product.png'),
+            placeholder: (context, url) =>
+                Image.asset('assets/images/default_product.png'),
+            imageUrl: widget.image ?? '',
+          ),
         ),
-        title: Text(widget.name!,
-            style: AppTheme.getTextStyle(themeData.textTheme.titleSmall,
-                fontWeight: 500, letterSpacing: 0)),
+        title: Text(
+          widget.name!,
+          style: AppTheme.getTextStyle(
+            themeData.textTheme.titleSmall,
+            fontWeight: 500,
+            letterSpacing: 0,
+          ),
+        ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
             Text(
               Helper().formatCurrency(widget.price) + widget.symbol!,
-              style: AppTheme.getTextStyle(themeData.textTheme.bodyMedium,
-                  fontWeight: 700, letterSpacing: 0),
+              style: AppTheme.getTextStyle(
+                themeData.textTheme.bodyMedium,
+                fontWeight: 700,
+                letterSpacing: 0,
+              ),
             ),
             Container(
               width: MySize.size80,
               decoration: BoxDecoration(
-                  color: themeData.colorScheme.primary,
-                  borderRadius:
-                      BorderRadius.all(Radius.circular(MySize.size4!))),
+                color: themeData.colorScheme.primary,
+                borderRadius: BorderRadius.all(Radius.circular(MySize.size4!)),
+              ),
               padding: EdgeInsets.only(
-                  left: MySize.size6!,
-                  right: MySize.size8!,
-                  top: MySize.size2!,
-                  bottom: MySize.getScaledSizeHeight(3.5)),
+                left: MySize.size6!,
+                right: MySize.size8!,
+                top: MySize.size2!,
+                bottom: MySize.getScaledSizeHeight(3.5),
+              ),
               child: Row(
                 children: <Widget>[
                   Icon(
@@ -1410,12 +1533,15 @@ class _ProductListWidgetState extends State<_ProductListWidget> {
                   Container(
                     margin: EdgeInsets.only(left: MySize.size4!),
                     child: (widget.qtyAvailable != '-')
-                        ? Text(Helper().formatQuantity(widget.qtyAvailable),
+                        ? Text(
+                            Helper().formatQuantity(widget.qtyAvailable),
                             style: AppTheme.getTextStyle(
-                                themeData.textTheme.bodySmall,
-                                fontSize: 11,
-                                color: themeData.colorScheme.onPrimary,
-                                fontWeight: 600))
+                              themeData.textTheme.bodySmall,
+                              fontSize: 11,
+                              color: themeData.colorScheme.onPrimary,
+                              fontWeight: 600,
+                            ),
+                          )
                         : Text('-'),
                   ),
                 ],
