@@ -6,8 +6,8 @@ import 'api_end_points.dart';
 class Config {
   static final String baseUrl = ApiEndPoints.baseUrl;
   static int? userId;
-  String clientId = '11',
-      clientSecret = 'okqASrLaobgrKphvxGwi0CG0Ty0YVTJUc9gn2w3L',
+  String clientId = '9',
+      clientSecret = 'xYAwuTqt8OOAquatet3Ucc0OghKmWrqwT08UByoa',
       copyright = '\u00a9',
       appName = 'app',
       version = 'V 1.7',
