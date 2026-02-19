@@ -156,47 +156,77 @@ class _SplashState extends State<Splash> {
     MySize().init(context);
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [_bgSoft, _bg],
-          ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              bottom: 36,
-              left: 14,
-              child: IgnorePointer(
-                child: CustomPaint(
-                  size: const Size(96, 96),
-                  painter: _CornerGridPainter(
-                    color: _accent.withValues(alpha: 0.12),
-                  ),
-                ),
+      backgroundColor: _bg,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: _buildLanguageAction(),
               ),
-            ),
-            SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 42,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 470),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
+              Expanded(
+                child: Center(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 400),
                       child: _buildContent(),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  String _selectedLanguageCode() {
+    final code = selectedLanguage;
+    if (code == null || code.isEmpty) {
+      return '--';
+    }
+    return code.toUpperCase();
+  }
+
+  Widget _buildLanguageAction() {
+    return OutlinedButton(
+      onPressed: _openLanguageSheet,
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(0, 40),
+        side: BorderSide(color: _outline),
+        backgroundColor: Colors.white.withValues(alpha: 0.85),
+        foregroundColor: _primary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _isLanguageLoading
+              ? const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(Icons.language_rounded, size: 16, color: _muted),
+          const SizedBox(width: 8),
+          Text(
+            _isLanguageLoading ? 'Loading...' : _selectedLanguageCode(),
+            style: AppTheme.getTextStyle(
+              themeData.textTheme.bodySmall,
+              color: _primary,
+              fontWeight: 600,
+            ),
+          ),
+          const SizedBox(width: 2),
+          Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: _muted),
+        ],
       ),
     );
   }
@@ -206,143 +236,94 @@ class _SplashState extends State<Splash> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: _outline),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withValues(alpha: 0.72),
-                _bgSoft.withValues(alpha: 0.4),
-              ],
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Lottie.asset(
+              'assets/lottie/welcome.json',
+              height: 280,
+              fit: BoxFit.contain,
             ),
-          ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    AppLocalizations.of(context).translate('welcome'),
-                    textAlign: TextAlign.center,
-                    style: AppTheme.getTextStyle(
-                      themeData.textTheme.headlineMedium,
-                      color: _primary,
-                      fontWeight: 700,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(
-                      'Streamlined POS workflow with a refined, distraction-free interface.',
-                      textAlign: TextAlign.center,
-                      style: AppTheme.getTextStyle(
-                        themeData.textTheme.bodyMedium,
-                        color: _muted,
-                        fontWeight: 500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: 196,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          width: 236,
-                          height: 150,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                _accent.withValues(alpha: 0.16),
-                                _accent.withValues(alpha: 0.02),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                        Lottie.asset(
-                          'assets/lottie/welcome.json',
-                          fit: BoxFit.contain,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 32),
+            Text(
+              AppLocalizations.of(context).translate('welcome'),
+              textAlign: TextAlign.center,
+              style: AppTheme.getTextStyle(
+                themeData.textTheme.displaySmall,
+                color: _primary,
+                fontWeight: 800,
+                letterSpacing: -1,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'Streamlined POS workflow with a refined,\ndistraction-free interface.',
+                textAlign: TextAlign.center,
+                style: AppTheme.getTextStyle(
+                  themeData.textTheme.bodyLarge,
+                  color: _muted,
+                  fontWeight: 500,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 48),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: _accent.withValues(alpha: 0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 26),
-        OutlinedButton.icon(
-          onPressed: _openLanguageSheet,
-          icon: _isLanguageLoading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.language_rounded, size: 18),
-          label: Text(
-            _isLanguageLoading
-                ? 'Loading...'
-                : AppLocalizations.of(context).translate('language'),
-            style: AppTheme.getTextStyle(
-              themeData.textTheme.bodyLarge,
-              color: _primary,
-              fontWeight: 600,
+          child: ElevatedButton(
+            onPressed: _isContinuing ? null : _handleContinue,
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size.fromHeight(64),
+              elevation: 0,
+              backgroundColor: _accent,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: _accent.withValues(alpha: 0.6),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
             ),
-          ),
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(56),
-            side: BorderSide(color: _outline),
-            foregroundColor: _primary,
-            backgroundColor: _bgSoft.withValues(alpha: 0.35),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: _isContinuing ? null : _handleContinue,
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size.fromHeight(58),
-            elevation: 0,
-            backgroundColor: _accent,
-            disabledBackgroundColor: _accent.withValues(alpha: 0.6),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-          child: _isContinuing
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
+            child: _isContinuing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context).translate('login'),
+                        style: AppTheme.getTextStyle(
+                          themeData.textTheme.titleLarge,
+                          color: Colors.white,
+                          fontWeight: 700,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_rounded, size: 20),
+                    ],
                   ),
-                )
-              : Text(
-                  AppLocalizations.of(context).translate('login'),
-                  style: AppTheme.getTextStyle(
-                    themeData.textTheme.bodyLarge,
-                    color: Colors.white,
-                    fontWeight: 700,
-                  ),
-                ),
+          ),
         ),
         if (Config().showRegister) ...[
-          const SizedBox(height: 22),
+          const SizedBox(height: 16),
           TextButton(
             onPressed: () async {
               await launchUrl(
@@ -350,6 +331,12 @@ class _SplashState extends State<Splash> {
                 mode: LaunchMode.externalApplication,
               );
             },
+            style: TextButton.styleFrom(
+              minimumSize: const Size.fromHeight(50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
             child: Text(
               AppLocalizations.of(context).translate('register'),
               style: AppTheme.getTextStyle(
@@ -362,44 +349,5 @@ class _SplashState extends State<Splash> {
         ],
       ],
     );
-  }
-}
-
-class _CornerGridPainter extends CustomPainter {
-  const _CornerGridPainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final stroke = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4
-      ..color = color
-      ..strokeCap = StrokeCap.round;
-
-    final cell = size.width / 4;
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        if ((i + j).isOdd) {
-          continue;
-        }
-        final rect = Rect.fromLTWH(
-          i * cell + 3,
-          j * cell + 3,
-          cell - 8,
-          cell - 8,
-        );
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(rect, const Radius.circular(4)),
-          stroke,
-        );
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _CornerGridPainter oldDelegate) {
-    return oldDelegate.color != color;
   }
 }
