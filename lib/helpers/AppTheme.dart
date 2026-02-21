@@ -356,7 +356,7 @@ class AppTheme {
     fontFamily: 'Cairo',
     brightness: Brightness.light,
     primaryColor: kDefaultColor,
-    canvasColor: Colors.transparent,
+    canvasColor: kSurfaceColor,
     scaffoldBackgroundColor: kBackgroundColor,
     appBarTheme: AppBarTheme(
       actionsIconTheme: IconThemeData(color: kPrimaryTextColor),
@@ -478,7 +478,7 @@ class AppTheme {
   static ThemeData darkTheme = ThemeData(
     useMaterial3: false,
     brightness: Brightness.dark,
-    canvasColor: Colors.transparent,
+    canvasColor: Color(0xff2e343b),
     primaryColor: kDefaultColor,
     scaffoldBackgroundColor: Color(0xff464c52),
     appBarTheme: AppBarTheme(

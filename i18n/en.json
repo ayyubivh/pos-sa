@@ -338,5 +338,11 @@
   "new_password": "New Password",
   "log_out": "Log Out",
   "add_customer_success": "Add Customer Success",
-  "purchases": "Purchases"
+  "purchases": "Purchases",
+  "basic_information": "Basic Information",
+  "please_enter_mobile_no": "Please enter mobile number",
+  "visit_photo": "Visit Photo",
+  "write_summarize_discussion": "Write something to summarize discussion",
+  "scheduling": "Scheduling",
+  "additional_details": "Additional Details"
 }

@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -240,82 +239,74 @@ class _ContactsState extends State<Contacts> {
 
   //lead widget
   Widget leadTab(leads) {
-    return (leads.length > 0)
-        ? ListView.builder(
-            controller: leadsListController,
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            shrinkWrap: true,
-            itemCount: leads.length + 1,
-            itemBuilder: (context, index) {
-              if (index == leads.length) {
-                return (isLoading) ? _buildProgressIndicator() : Container();
-              }
-              return Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: contactBlock(leads[index]),
-                  ),
-                ),
-              );
-            },
-          )
-        : Helper().noDataWidget(context);
+    if (leads.isEmpty) return Helper().noDataWidget(context);
+    return ListView.builder(
+      controller: leadsListController,
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      itemCount: leads.length + 1,
+      itemBuilder: (context, index) {
+        if (index == leads.length) {
+          return isLoading ? _buildProgressIndicator() : SizedBox(height: 80);
+        }
+        return Container(
+          margin: EdgeInsets.only(bottom: 16),
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: contactBlock(leads[index]),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   //customer widget
   Widget customerTab(customers) {
-    return (customers.length > 0)
-        ? ListView.builder(
-            controller: customerListController,
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            shrinkWrap: true,
-            itemCount: customers.length + 1,
-            itemBuilder: (context, index) {
-              if (index == customers.length) {
-                return (isLoading) ? _buildProgressIndicator() : Container();
-              } else {
-                return Container(
-                  margin: EdgeInsets.only(bottom: 16),
-                  child: Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: contactBlock(customers[index]),
-                    ),
-                  ),
-                );
-              }
-            },
-          )
-        : Helper().noDataWidget(context);
+    if (customers.isEmpty) return Helper().noDataWidget(context);
+    return ListView.builder(
+      controller: customerListController,
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      itemCount: customers.length + 1,
+      itemBuilder: (context, index) {
+        if (index == customers.length) {
+          return isLoading ? _buildProgressIndicator() : SizedBox(height: 80);
+        }
+        return Container(
+          margin: EdgeInsets.only(bottom: 16),
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: contactBlock(customers[index]),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   //supplier widget
   Widget supplierTab(suppliers) {
-    return (suppliers.length > 0)
-        ? ListView.builder(
-            controller: suppliersListController,
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            shrinkWrap: true,
-            itemCount: suppliers.length + 1,
-            itemBuilder: (context, index) {
-              if (index == suppliers.length) {
-                return (isLoading) ? _buildProgressIndicator() : Container();
-              } else {
-                return Container(
-                  margin: EdgeInsets.only(bottom: 16),
-                  child: Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: contactBlock(suppliers[index]),
-                    ),
-                  ),
-                );
-              }
-            },
-          )
-        : Helper().noDataWidget(context);
+    if (suppliers.isEmpty) return Helper().noDataWidget(context);
+    return ListView.builder(
+      controller: suppliersListController,
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      itemCount: suppliers.length + 1,
+      itemBuilder: (context, index) {
+        if (index == suppliers.length) {
+          return isLoading ? _buildProgressIndicator() : SizedBox(height: 80);
+        }
+        return Container(
+          margin: EdgeInsets.only(bottom: 16),
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: contactBlock(suppliers[index]),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   //filter widget
@@ -329,9 +320,10 @@ class _ContactsState extends State<Contacts> {
             children: [
               Text(
                 AppLocalizations.of(context).translate('filter'),
-                style: themeData.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: kDefaultColor,
+                style: AppTheme.getTextStyle(
+                  themeData.textTheme.headlineSmall,
+                  fontWeight: 600,
+                  color: themeData.colorScheme.primary,
                 ),
               ),
               SizedBox(height: 24),
@@ -354,8 +346,9 @@ class _ContactsState extends State<Contacts> {
                 children: [
                   Text(
                     AppLocalizations.of(context).translate('order_by'),
-                    style: themeData.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                    style: AppTheme.getTextStyle(
+                      themeData.textTheme.titleMedium,
+                      fontWeight: 600,
                     ),
                   ),
                   IconButton(
@@ -391,20 +384,24 @@ class _ContactsState extends State<Contacts> {
   }
 
   Widget _buildOrderOption(String value, String label) {
+    bool isSelected = orderByColumn == value;
     return ListTile(
       contentPadding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
       title: Text(
         label,
-        style: themeData.textTheme.bodyLarge?.copyWith(
-          fontWeight: orderByColumn == value
-              ? FontWeight.w600
-              : FontWeight.w400,
+        style: AppTheme.getTextStyle(
+          themeData.textTheme.bodyLarge,
+          fontWeight: isSelected ? 600 : 400,
+          color: isSelected
+              ? themeData.colorScheme.primary
+              : themeData.textTheme.bodyLarge?.color,
         ),
       ),
       leading: Radio<String>(
         value: value,
         groupValue: orderByColumn,
-        activeColor: kDefaultColor,
+        activeColor: themeData.colorScheme.primary,
         onChanged: (val) {
           setState(() {
             orderByColumn = val!;
@@ -423,22 +420,33 @@ class _ContactsState extends State<Contacts> {
 
   //contact widget
   Widget contactBlock(contactDetails) {
+    final bool hasBusinessName =
+        contactDetails['supplier_business_name']?.toString() != 'null' &&
+        contactDetails['supplier_business_name']?.toString().trim() != '';
+    final bool hasName =
+        contactDetails['name']?.toString() != 'null' &&
+        contactDetails['name']?.toString().trim() != '';
+    final bool hasLastFollowUp =
+        contactDetails['last_follow_up']?.toString() != 'null' &&
+        contactDetails['last_follow_up']?.toString().trim() != '';
+    final bool hasUpcomingFollowUp =
+        contactDetails['upcoming_follow_up']?.toString() != 'null' &&
+        contactDetails['upcoming_follow_up']?.toString().trim() != '';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (contactDetails['supplier_business_name']?.toString() != 'null')
-          Padding(
-            padding: EdgeInsets.only(bottom: 4),
-            child: Text(
-              '${contactDetails['supplier_business_name']}',
-              style: themeData.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: kDefaultColor,
-              ),
+        if (hasBusinessName)
+          Text(
+            '${contactDetails['supplier_business_name']}',
+            style: AppTheme.getTextStyle(
+              themeData.textTheme.titleMedium,
+              fontWeight: 600,
+              color: themeData.colorScheme.primary,
             ),
           ),
-        if (contactDetails['name']?.toString() != 'null' &&
-            contactDetails['name']?.toString().trim() != '')
+        if (hasName) ...[
+          if (hasBusinessName) SizedBox(height: 4),
           Row(
             children: [
               Icon(MdiIcons.accountOutline, size: 16, color: kMutedTextColor),
@@ -446,79 +454,94 @@ class _ContactsState extends State<Contacts> {
               Expanded(
                 child: Text(
                   '${contactDetails['name']}',
-                  style: themeData.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.bodyLarge,
+                    fontWeight: 500,
                   ),
                 ),
               ),
             ],
           ),
-        SizedBox(height: 8),
-        if (contactDetails['last_follow_up']?.toString() != 'null' &&
-            contactDetails['last_follow_up']?.toString().trim() != '')
-          Padding(
-            padding: EdgeInsets.only(top: 4),
-            child: Row(
-              children: [
-                Text(
-                  "${AppLocalizations.of(context).translate('last')} : ",
-                  style: themeData.textTheme.bodySmall,
-                ),
-                Text(
-                  '${contactDetails['last_follow_up']}',
-                  style: themeData.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
+        ],
+        if (hasLastFollowUp || hasUpcomingFollowUp) ...[
+          SizedBox(height: 12),
+          if (hasLastFollowUp)
+            Padding(
+              padding: EdgeInsets.only(bottom: 2),
+              child: Row(
+                children: [
+                  Text(
+                    "${AppLocalizations.of(context).translate('last')}: ",
+                    style: AppTheme.getTextStyle(
+                      themeData.textTheme.bodySmall,
+                      color: kMutedTextColor,
+                    ),
                   ),
-                ),
-              ],
+                  Text(
+                    '${contactDetails['last_follow_up']}',
+                    style: AppTheme.getTextStyle(
+                      themeData.textTheme.bodySmall,
+                      fontWeight: 500,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        if (contactDetails['upcoming_follow_up']?.toString() != 'null' &&
-            contactDetails['upcoming_follow_up']?.toString().trim() != '')
-          Padding(
-            padding: EdgeInsets.only(top: 2),
-            child: Row(
+          if (hasUpcomingFollowUp)
+            Row(
               children: [
                 Text(
-                  "${AppLocalizations.of(context).translate('upcoming')} : ",
-                  style: themeData.textTheme.bodySmall,
+                  "${AppLocalizations.of(context).translate('upcoming')}: ",
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.bodySmall,
+                    color: kMutedTextColor,
+                  ),
                 ),
                 Text(
                   '${contactDetails['upcoming_follow_up']}',
-                  style: themeData.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: kDefaultColor,
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.bodySmall,
+                    fontWeight: 600,
+                    color: themeData.colorScheme.primary,
                   ),
                 ),
               ],
             ),
-          ),
-        SizedBox(height: 16),
+        ],
+        SizedBox(height: 20),
         Row(
-          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Helper().callDropdown(context, contactDetails, [
-              contactDetails['mobile'],
-              contactDetails['alternate_number'],
-              contactDetails['landline'],
-            ], type: 'call'),
+            Expanded(
+              child: Helper().callDropdown(context, contactDetails, [
+                contactDetails['mobile'],
+                contactDetails['alternate_number'],
+                contactDetails['landline'],
+              ], type: 'call'),
+            ),
             SizedBox(width: 12),
-            OutlinedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FollowUpForm(contactDetails),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FollowUpForm(contactDetails),
+                    ),
+                  );
+                },
+                icon: Icon(Icons.add, size: 18),
+                label: Text(
+                  AppLocalizations.of(context).translate('add_follow_up'),
+                ),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(0, 44),
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  textStyle: AppTheme.getTextStyle(
+                    themeData.textTheme.labelLarge,
+                    fontWeight: 600,
+                    fontSize: 13,
                   ),
-                );
-              },
-              icon: Icon(Icons.add, size: 18),
-              label: Text(
-                AppLocalizations.of(context).translate('add_follow_up'),
-              ),
-              style: OutlinedButton.styleFrom(
-                minimumSize: Size(0, 40),
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                ),
               ),
             ),
           ],
@@ -592,8 +615,15 @@ class _ContactsState extends State<Contacts> {
   //show add customer alert box
   Widget newCustomer() {
     return Scaffold(
+      backgroundColor: themeData.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context).translate('create_contact')),
+        title: Text(
+          AppLocalizations.of(context).translate('create_contact'),
+          style: AppTheme.getTextStyle(
+            themeData.textTheme.titleLarge,
+            fontWeight: 600,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -603,169 +633,203 @@ class _ContactsState extends State<Contacts> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 80,
-                      child: TextFormField(
-                        controller: prefix,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(
                             context,
-                          ).translate('prefix'),
+                          ).translate('basic_information'),
+                          style: AppTheme.getTextStyle(
+                            themeData.textTheme.titleMedium,
+                            fontWeight: 600,
+                          ),
                         ),
-                        textCapitalization: TextCapitalization.sentences,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: firstName,
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return AppLocalizations.of(
+                        SizedBox(height: 16),
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 80,
+                              child: TextFormField(
+                                controller: prefix,
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(
+                                    context,
+                                  ).translate('prefix'),
+                                ),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: firstName,
+                                validator: (value) {
+                                  if (value!.isEmpty) {
+                                    return AppLocalizations.of(
+                                      context,
+                                    ).translate('please_enter_your_name');
+                                  }
+                                  return null;
+                                },
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(
+                                    context,
+                                  ).translate('first_name'),
+                                ),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: middleName,
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(
+                                    context,
+                                  ).translate('middle_name'),
+                                ),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: lastName,
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(
+                                    context,
+                                  ).translate('last_name'),
+                                ),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 16),
+                        TextFormField(
+                          controller: mobile,
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return AppLocalizations.of(
+                                context,
+                              ).translate('please_enter_mobile_no');
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.of(
                               context,
-                            ).translate('please_enter_your_name');
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(
-                            context,
-                          ).translate('first_name'),
+                            ).translate('mobile_no'),
+                            prefixIcon: Icon(MdiIcons.phoneOutline, size: 20),
+                          ),
+                          keyboardType: TextInputType.phone,
                         ),
-                        textCapitalization: TextCapitalization.sentences,
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: middleName,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(
-                            context,
-                          ).translate('middle_name'),
-                        ),
-                        textCapitalization: TextCapitalization.sentences,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: lastName,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(
-                            context,
-                          ).translate('last_name'),
-                        ),
-                        textCapitalization: TextCapitalization.sentences,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                Text(
-                  AppLocalizations.of(context).translate('address'),
-                  style: themeData.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 12),
-                TextFormField(
-                  controller: addressLine1,
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(
-                      context,
-                    ).translate('address_line_1'),
+                SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context).translate('address'),
+                          style: AppTheme.getTextStyle(
+                            themeData.textTheme.titleMedium,
+                            fontWeight: 600,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        TextFormField(
+                          controller: addressLine1,
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.of(
+                              context,
+                            ).translate('address_line_1'),
+                          ),
+                          textCapitalization: TextCapitalization.sentences,
+                        ),
+                        SizedBox(height: 12),
+                        TextFormField(
+                          controller: addressLine2,
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.of(
+                              context,
+                            ).translate('address_line_2'),
+                          ),
+                          textCapitalization: TextCapitalization.sentences,
+                        ),
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: city,
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(
+                                    context,
+                                  ).translate('city'),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: state,
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(
+                                    context,
+                                  ).translate('state'),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: country,
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(
+                                    context,
+                                  ).translate('country'),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: zip,
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(
+                                    context,
+                                  ).translate('zip_code'),
+                                ),
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  textCapitalization: TextCapitalization.sentences,
-                ),
-                SizedBox(height: 16),
-                TextFormField(
-                  controller: addressLine2,
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(
-                      context,
-                    ).translate('address_line_2'),
-                  ),
-                  textCapitalization: TextCapitalization.sentences,
-                ),
-                SizedBox(height: 16),
-                TextFormField(
-                  controller: mobile,
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return AppLocalizations.of(
-                        context,
-                      ).translate('please_enter_mobile_no');
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(
-                      context,
-                    ).translate('mobile_no'),
-                    prefixIcon: Icon(MdiIcons.phoneOutline),
-                  ),
-                  keyboardType: TextInputType.phone,
-                ),
-                SizedBox(height: 16),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: city,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(
-                            context,
-                          ).translate('city'),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: state,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(
-                            context,
-                          ).translate('state'),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: country,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(
-                            context,
-                          ).translate('country'),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: zip,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(
-                            context,
-                          ).translate('zip_code'),
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                  ],
                 ),
                 SizedBox(height: 32),
                 ElevatedButton(
@@ -811,6 +875,7 @@ class _ContactsState extends State<Contacts> {
                     AppLocalizations.of(context).translate('add_to_contact'),
                   ),
                 ),
+                SizedBox(height: 48),
               ],
             ),
           ),
