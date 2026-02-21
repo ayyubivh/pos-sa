@@ -81,43 +81,95 @@ class AppTheme {
   //App Bar Text
   static final TextTheme lightAppBarTextTheme = TextTheme(
     displayLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 102, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 102,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     displayMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 64, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 64,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     displaySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 51, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 51,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     headlineMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 36, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 36,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     headlineSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 25, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 25,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     titleLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 18, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 18,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     titleMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 17, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 17,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w500,
+      ),
     ),
     titleSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 15, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 15,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w500,
+      ),
     ),
     bodyLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 16, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 16,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w400,
+      ),
     ),
     bodyMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 14, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 14,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w400,
+      ),
     ),
     labelLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 15, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 15,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w400,
+      ),
     ),
     bodySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 13, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 13,
+        color: kMutedTextColor,
+        fontWeight: FontWeight.w400,
+      ),
     ),
     labelSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 11, color: Color(0xff495057)),
+      textStyle: TextStyle(
+        fontSize: 11,
+        color: kMutedTextColor,
+        fontWeight: FontWeight.w400,
+      ),
     ),
   );
   static final TextTheme darkAppBarTextTheme = TextTheme(
@@ -165,43 +217,95 @@ class AppTheme {
   //Text Themes
   static final TextTheme lightTextTheme = TextTheme(
     displayLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 102, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 102,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     displayMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 64, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 64,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     displaySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 51, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 51,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     headlineMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 36, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 36,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     headlineSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 25, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 25,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     titleLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 18, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 18,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     titleMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 17, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 17,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w500,
+      ),
     ),
     titleSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 15, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 15,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w500,
+      ),
     ),
     bodyLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 16, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 16,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w400,
+      ),
     ),
     bodyMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 14, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 14,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w400,
+      ),
     ),
     labelLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 15, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 15,
+        color: kPrimaryTextColor,
+        fontWeight: FontWeight.w400,
+      ),
     ),
     bodySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 13, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 13,
+        color: kMutedTextColor,
+        fontWeight: FontWeight.w400,
+      ),
     ),
     labelSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 11, color: Color(0xff4a4c4f)),
+      textStyle: TextStyle(
+        fontSize: 11,
+        color: kMutedTextColor,
+        fontWeight: FontWeight.w400,
+      ),
     ),
   );
   static final TextTheme darkTextTheme = TextTheme(
@@ -248,110 +352,128 @@ class AppTheme {
 
   //Color Themes
   static final ThemeData lightTheme = ThemeData(
-    useMaterial3: false,
+    useMaterial3: true,
     fontFamily: 'Cairo',
     brightness: Brightness.light,
     primaryColor: kDefaultColor,
     canvasColor: Colors.transparent,
-    scaffoldBackgroundColor: Color(0xffffffff),
+    scaffoldBackgroundColor: kBackgroundColor,
     appBarTheme: AppBarTheme(
-      actionsIconTheme: IconThemeData(color: Color(0xff495057)),
-      backgroundColor: Color(0xffffffff),
-      iconTheme: IconThemeData(color: Color(0xff495057), size: 24),
-    ),
-    navigationRailTheme: NavigationRailThemeData(
-      selectedIconTheme: IconThemeData(
-        color: kDefaultColor,
-        opacity: 1,
-        size: 24,
+      actionsIconTheme: IconThemeData(color: kPrimaryTextColor),
+      backgroundColor: kBackgroundColor,
+      elevation: 0,
+      iconTheme: IconThemeData(color: kPrimaryTextColor, size: 24),
+      titleTextStyle: GoogleFonts.cairo(
+        color: kPrimaryTextColor,
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
       ),
-      unselectedIconTheme: IconThemeData(
-        color: Color(0xff495057),
-        opacity: 1,
-        size: 24,
-      ),
-      backgroundColor: Color(0xffffffff),
-      elevation: 3,
-      selectedLabelTextStyle: TextStyle(color: kDefaultColor),
-      unselectedLabelTextStyle: TextStyle(color: Color(0xff495057)),
     ),
     cardTheme: CardThemeData(
-      color: Colors.white,
-      shadowColor: Colors.black.withOpacity(0.4),
-      elevation: 1,
-      margin: EdgeInsets.all(0),
+      color: kSurfaceColor,
+      shadowColor: Color(0x14000000),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+      ),
+      margin: EdgeInsets.zero,
     ),
     inputDecorationTheme: InputDecorationTheme(
-      hintStyle: TextStyle(fontSize: 15, color: Color(0xaa495057)),
+      hintStyle: TextStyle(fontSize: 15, color: kMutedTextColor),
+      fillColor: kBackgroundSoftColor,
+      filled: true,
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(4)),
+        borderRadius: BorderRadius.all(Radius.circular(12)),
         borderSide: BorderSide(width: 1, color: kDefaultColor),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(4)),
-        borderSide: BorderSide(width: 1, color: Colors.black54),
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderSide: BorderSide(width: 1, color: kOutlineColor),
       ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(4)),
-        borderSide: BorderSide(width: 1, color: Colors.black54),
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderSide: BorderSide(width: 1, color: kOutlineColor),
       ),
     ),
-    splashColor: Colors.white.withAlpha(100),
-    iconTheme: IconThemeData(color: Colors.white),
+    splashColor: kDefaultColor.withAlpha(20),
+    iconTheme: IconThemeData(color: kPrimaryTextColor),
     textTheme: lightTextTheme,
-    disabledColor: Color(0xffdcc7ff),
-    highlightColor: Colors.white,
+    disabledColor: kMutedTextColor.withAlpha(100),
+    highlightColor: Colors.transparent,
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: kDefaultColor,
       splashColor: Colors.white.withAlpha(100),
-      highlightElevation: 8,
-      elevation: 4,
-      focusColor: kDefaultColor,
-      hoverColor: kDefaultColor,
+      highlightElevation: 4,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       foregroundColor: Colors.white,
     ),
-    dividerColor: Color(0xffd1d1d1),
-    cardColor: Colors.white,
+    dividerColor: kOutlineColor,
+    cardColor: kSurfaceColor,
     popupMenuTheme: PopupMenuThemeData(
-      color: Color(0xffffffff),
+      color: kSurfaceColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       textStyle: lightTextTheme.bodyMedium!.merge(
-        TextStyle(color: Color(0xff495057)),
+        TextStyle(color: kPrimaryTextColor),
       ),
     ),
     bottomAppBarTheme: BottomAppBarThemeData(
-      color: Color(0xffffffff),
-      elevation: 2,
+      color: kSurfaceColor,
+      elevation: 8,
     ),
     tabBarTheme: TabBarThemeData(
-      unselectedLabelColor: Color(0xff495057),
+      unselectedLabelColor: kMutedTextColor,
       labelColor: kDefaultColor,
+      labelStyle: GoogleFonts.cairo(fontWeight: FontWeight.w600, fontSize: 14),
+      unselectedLabelStyle: GoogleFonts.cairo(
+        fontWeight: FontWeight.w500,
+        fontSize: 14,
+      ),
       indicatorSize: TabBarIndicatorSize.label,
       indicator: UnderlineTabIndicator(
         borderSide: BorderSide(color: kDefaultColor, width: 2.0),
       ),
     ),
-    sliderTheme: SliderThemeData(
-      activeTrackColor: kDefaultColor,
-      inactiveTrackColor: kDefaultColor.withAlpha(140),
-      trackShape: RoundedRectSliderTrackShape(),
-      trackHeight: 4.0,
-      thumbColor: kDefaultColor,
-      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10.0),
-      overlayShape: RoundSliderOverlayShape(overlayRadius: 24.0),
-      tickMarkShape: RoundSliderTickMarkShape(),
-      inactiveTickMarkColor: Colors.red[100],
-      valueIndicatorShape: PaddleSliderValueIndicatorShape(),
-      valueIndicatorTextStyle: TextStyle(color: Colors.white),
+    buttonTheme: ButtonThemeData(
+      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: kDefaultColor,
+        foregroundColor: Colors.white,
+        minimumSize: Size(88, 50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        elevation: 0,
+        textStyle: GoogleFonts.cairo(fontWeight: FontWeight.w600, fontSize: 16),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: kPrimaryTextColor,
+        side: BorderSide(color: kOutlineColor),
+        minimumSize: Size(88, 50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        textStyle: GoogleFonts.cairo(fontWeight: FontWeight.w600, fontSize: 16),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: kDefaultColor,
+        textStyle: GoogleFonts.cairo(fontWeight: FontWeight.w600, fontSize: 16),
+      ),
     ),
     colorScheme: ColorScheme.light(
       primary: kDefaultColor,
       onPrimary: Colors.white,
-      secondary: Color(0xff495057),
+      secondary: kAccentColor,
       onSecondary: Colors.white,
-      surface: Color(0xffe2e7f1),
-      onSurface: Color(0xff495057),
+      surface: kSurfaceColor,
+      onSurface: kPrimaryTextColor,
+      background: kBackgroundColor,
+      onBackground: kPrimaryTextColor,
       error: Color(0xfff0323c),
-    ).copyWith(secondary: kDefaultColor).copyWith(surface: Colors.white),
+    ),
   );
   static ThemeData darkTheme = ThemeData(
     useMaterial3: false,
@@ -453,16 +575,16 @@ class AppTheme {
   }
 
   static final CustomAppTheme lightCustomAppTheme = CustomAppTheme(
-    bgLayer1: Color(0xffffffff),
-    bgLayer2: Color(0xfff9f9f9),
-    bgLayer3: Color(0xffe8ecf4),
-    bgLayer4: Color(0xffdcdee3),
-    disabledColor: Color(0xff636363),
-    onDisabled: Color(0xffffffff),
+    bgLayer1: kSurfaceColor,
+    bgLayer2: kBackgroundColor,
+    bgLayer3: kBackgroundSoftColor,
+    bgLayer4: kOutlineColor,
+    disabledColor: kMutedTextColor.withAlpha(100),
+    onDisabled: Colors.white,
     colorInfo: Color(0xffff784b),
     colorWarning: Color(0xffffc837),
     colorSuccess: Color(0xff3cd278),
-    shadowColor: Color(0xffeaeaea),
+    shadowColor: Color(0x14000000),
     onInfo: Color(0xffffffff),
     onSuccess: Color(0xffffffff),
     onWarning: Color(0xffffffff),

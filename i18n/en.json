@@ -338,6 +338,5 @@
   "new_password": "New Password",
   "log_out": "Log Out",
   "add_customer_success": "Add Customer Success",
-  "purchases": "Purchases",
-  "amount_exceeds_due": "Amount exceeds due amount"
+  "purchases": "Purchases"
 }

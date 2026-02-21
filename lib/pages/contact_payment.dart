@@ -14,6 +14,7 @@ import '../helpers/otherHelpers.dart';
 import '../locale/MyLocalizations.dart';
 import '../models/contact_model.dart';
 import '../models/system.dart';
+import '../constants.dart';
 
 class ContactPayment extends StatefulWidget {
   const ContactPayment({super.key});
@@ -47,14 +48,6 @@ class _ContactPaymentState extends State<ContactPayment> {
   String symbol = '';
   var payingAmount = TextEditingController();
 
-  // Core Tokens from STYLE_MD.md
-  static const Color _bgColor = Color(0xFFF8FAFC);
-  static const Color _surfaceColor = Color(0xFFFFFFFF);
-  static const Color _primaryTextColor = Color(0xFF0F172A);
-  static const Color _mutedTextColor = Color(0xFF6B7280);
-  static const Color _accentColor = Color(0xFF0F4C81);
-  static const Color _outlineColor = Color(0xFFE5E7EB);
-
   static int themeType = 1;
   ThemeData themeData = AppTheme.getThemeFromThemeMode(themeType);
   CustomAppTheme customAppTheme = AppTheme.getCustomAppTheme(themeType);
@@ -71,12 +64,12 @@ class _ContactPaymentState extends State<ContactPayment> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: kBackgroundColor,
       appBar: AppBar(
         elevation: 0.0,
         backgroundColor: Colors.transparent,
         leading: IconButton(
-          icon: Icon(MdiIcons.chevronLeft, color: _primaryTextColor),
+          icon: Icon(MdiIcons.chevronLeft, color: kPrimaryTextColor),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -84,7 +77,7 @@ class _ContactPaymentState extends State<ContactPayment> {
           style: AppTheme.getTextStyle(
             themeData.textTheme.titleLarge,
             fontWeight: 600,
-            color: _primaryTextColor,
+            color: kPrimaryTextColor,
           ),
         ),
       ),
@@ -158,7 +151,7 @@ class _ContactPaymentState extends State<ContactPayment> {
     return Container(
       padding: Spacing.all(24),
       decoration: BoxDecoration(
-        color: _surfaceColor,
+        color: kSurfaceColor,
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
@@ -180,7 +173,7 @@ class _ContactPaymentState extends State<ContactPayment> {
         style: AppTheme.getTextStyle(
           themeData.textTheme.bodySmall,
           fontWeight: 600,
-          color: _mutedTextColor,
+          color: kMutedTextColor,
         ),
       ),
     );
@@ -194,7 +187,7 @@ class _ContactPaymentState extends State<ContactPayment> {
         Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: _outlineColor),
+            border: Border.all(color: kOutlineColor),
           ),
           padding: Spacing.horizontal(12),
           child: SearchChoices.single(
@@ -208,12 +201,12 @@ class _ContactPaymentState extends State<ContactPayment> {
                   "${value['name']} (${value['mobile'] ?? ' - '})",
                   style: AppTheme.getTextStyle(
                     themeData.textTheme.bodyMedium,
-                    color: _primaryTextColor,
+                    color: kPrimaryTextColor,
                   ),
                 ),
               );
             }).toList(),
-            icon: Icon(MdiIcons.chevronDown, color: _mutedTextColor),
+            icon: Icon(MdiIcons.chevronDown, color: kMutedTextColor),
             onChanged: (value) async {
               if (value == null) return;
               setState(() {
@@ -262,7 +255,7 @@ class _ContactPaymentState extends State<ContactPayment> {
             themeData.textTheme.bodySmall,
             fontWeight: 600,
             letterSpacing: 1.2,
-            color: _mutedTextColor,
+            color: kMutedTextColor,
           ),
         ),
         SizedBox(height: 4),
@@ -272,7 +265,7 @@ class _ContactPaymentState extends State<ContactPayment> {
             width: 32,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: _accentColor,
+              color: kAccentColor,
             ),
           )
         else
@@ -281,7 +274,7 @@ class _ContactPaymentState extends State<ContactPayment> {
             style: AppTheme.getTextStyle(
               themeData.textTheme.headlineSmall,
               fontWeight: 600,
-              color: _primaryTextColor,
+              color: kPrimaryTextColor,
             ),
           ),
       ],
@@ -299,7 +292,7 @@ class _ContactPaymentState extends State<ContactPayment> {
       style: AppTheme.getTextStyle(
         themeData.textTheme.titleMedium,
         fontWeight: 500,
-        color: _primaryTextColor,
+        color: kPrimaryTextColor,
       ),
       decoration: InputDecoration(
         prefixIcon: Container(
@@ -310,25 +303,25 @@ class _ContactPaymentState extends State<ContactPayment> {
             style: AppTheme.getTextStyle(
               themeData.textTheme.titleMedium,
               fontWeight: 600,
-              color: _accentColor,
+              color: kAccentColor,
             ),
           ),
         ),
         labelText: AppLocalizations.of(context).translate('payment_amount'),
-        labelStyle: TextStyle(color: _mutedTextColor),
+        labelStyle: TextStyle(color: kMutedTextColor),
         hintText: '0.00',
         contentPadding: Spacing.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: _outlineColor),
+          borderSide: BorderSide(color: kOutlineColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: _outlineColor),
+          borderSide: BorderSide(color: kOutlineColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: _accentColor, width: 2),
+          borderSide: BorderSide(color: kAccentColor, width: 2),
         ),
       ),
       validator: (newValue) {
@@ -470,8 +463,8 @@ class _ContactPaymentState extends State<ContactPayment> {
         padding: Spacing.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _outlineColor),
-          color: _bgColor,
+          border: Border.all(color: kOutlineColor),
+          color: kBackgroundColor,
         ),
         child: Row(
           children: [
@@ -480,11 +473,11 @@ class _ContactPaymentState extends State<ContactPayment> {
                 value,
                 style: AppTheme.getTextStyle(
                   themeData.textTheme.bodyLarge,
-                  color: _primaryTextColor,
+                  color: kPrimaryTextColor,
                 ),
               ),
             ),
-            Icon(MdiIcons.chevronDown, color: _mutedTextColor, size: 20),
+            Icon(MdiIcons.chevronDown, color: kMutedTextColor, size: 20),
           ],
         ),
       ),
@@ -496,7 +489,7 @@ class _ContactPaymentState extends State<ContactPayment> {
       height: 52,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: _accentColor,
+          backgroundColor: kAccentColor,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
