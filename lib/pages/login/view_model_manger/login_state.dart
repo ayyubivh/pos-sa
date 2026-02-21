@@ -4,7 +4,13 @@ part of 'login_cubit.dart';
 abstract class LoginState {}
 
 class LoginInitial extends LoginState {}
-class LoginChangePasswordVisibility extends LoginState{}
-class LoginShowLoadingDialogue extends LoginState{}
-class LoginSuccessfully extends LoginState{}
-class LoginFailed extends LoginState{}
+
+class LoginChangePasswordVisibility extends LoginState {}
+
+class LoginLoadingChanged extends LoginState {}
+
+class LoginShowLoadingDialogue extends LoginState {}
+
+class LoginSuccessfully extends LoginState {}
+
+class LoginFailed extends LoginState {}

@@ -58,7 +58,10 @@ class LoginCubit extends Cubit<LoginState> {
   IconData get passwordIcon => _passwordIcon;
 
   ///Setters
-  set isLoading(bool isLoading) => _isLoading = isLoading;
+  set isLoading(bool isLoading) {
+    _isLoading = isLoading;
+    emit(LoginLoadingChanged());
+  }
 
   set passwordVisible(bool passwordVisible) {
     _passwordVisible = passwordVisible;
@@ -77,8 +80,11 @@ class LoginCubit extends Cubit<LoginState> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          content: Lottie.asset('assets/lottie/loading.json',
-              width: 200, height: 200),
+          content: Lottie.asset(
+            'assets/lottie/loading.json',
+            width: 200,
+            height: 200,
+          ),
         );
       },
     );
@@ -144,21 +150,29 @@ class LoginCubit extends Cubit<LoginState> {
       }
     }
     //Take to home page
-   // Navigator.of(context).pushReplacementNamed('/layout');
-   // Navigator.of(context).pop();
+    // Navigator.of(context).pushReplacementNamed('/layout');
+    // Navigator.of(context).pop();
   }
 
   Future<void> checkOnLogin(BuildContext context) async {
     if (await _checkInternetConnectivity()) {
       if (_validateOnData()) {
-        var loginResponse = await _makeALogin();
-        if (loginResponse?['success'] != null && loginResponse?['success']) {
-          Helper().jobScheduler();
-          //Get current logged in user details and save it.
-          _showLoadingDialogue(context);
-          await _loadAllData(loginResponse, context);
-          emit(LoginSuccessfully());
-        } else {
+        isLoading = true;
+        try {
+          var loginResponse = await _makeALogin();
+          if (loginResponse?['success'] != null && loginResponse?['success']) {
+            Helper().jobScheduler();
+            //Get current logged in user details and save it.
+            _showLoadingDialogue(context);
+            await _loadAllData(loginResponse, context);
+            isLoading = false;
+            emit(LoginSuccessfully());
+          } else {
+            isLoading = false;
+            emit(LoginFailed());
+          }
+        } catch (_) {
+          isLoading = false;
           emit(LoginFailed());
         }
       }

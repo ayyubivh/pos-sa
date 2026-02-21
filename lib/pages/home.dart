@@ -15,8 +15,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config.dart';
 import '../helpers/AppTheme.dart';
-import '../helpers/SizeConfig.dart';
-import '../helpers/icons.dart';
 import '../helpers/otherHelpers.dart';
 import '../locale/MyLocalizations.dart';
 import '../models/attendance.dart';
@@ -70,6 +68,13 @@ class _HomeState extends State<Home> {
   static int themeType = 1;
   ThemeData themeData = AppTheme.getThemeFromThemeMode(themeType);
   CustomAppTheme customAppTheme = AppTheme.getCustomAppTheme(themeType);
+  static const Color _bg = Color(0xFFF8FAFC);
+  static const Color _bgSoft = Color(0xFFF1F5F9);
+  static const Color _surface = Color(0xFFFFFFFF);
+  static const Color _primaryText = Color(0xFF0F172A);
+  static const Color _mutedText = Color(0xFF6B7280);
+  static const Color _accent = Color(0xFF0F4C81);
+  static const Color _outline = Color(0xFFE5E7EB);
 
   @override
   void initState() {
@@ -83,7 +88,8 @@ class _HomeState extends State<Home> {
   homepageData() async {
     var prefs = await SharedPreferences.getInstance();
     user = await System().get('loggedInUser');
-    userName = ((user['surname'] != null) ? user['surname'] : "") +
+    userName =
+        ((user['surname'] != null) ? user['surname'] : "") +
         ' ' +
         user['first_name'];
     await loadPaymentDetails();
@@ -137,652 +143,555 @@ class _HomeState extends State<Home> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: homePageDrawer(),
+      backgroundColor: _bg,
       appBar: AppBar(
+        backgroundColor: _surface,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: true,
-        title: Text(AppLocalizations.of(context).translate('home'),
-            style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-                fontWeight: 600)),
-        actions: <Widget>[
-          IconButton(
-              onPressed: () async {
-                (await Helper().checkConnectivity())
-                    ? await sync()
-                    : Fluttertoast.showToast(
-                        msg: AppLocalizations.of(context)
-                            .translate('check_connectivity'));
-              },
-              icon: Icon(
-                MdiIcons.syncIcon,
-                color: Colors.orange,
-              )),
-          IconButton(
-              onPressed: () async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await SellDatabase().getNotSyncedSells().then((value) {
-                  if (value.isEmpty) {
-                    //saving userId in disk
-                    prefs.setInt('prevUserId', Config.userId!);
-                    prefs.remove('userId');
-                    Navigator.pushReplacementNamed(context, '/login');
-                  } else {
-                    Fluttertoast.showToast(
-                        msg: AppLocalizations.of(context)
-                            .translate('sync_all_sales_before_logout'));
-                  }
-                });
-              },
-              icon: Icon(IconBroken.Logout)),
-        ],
-        leading: Row(
-          children: [
-            Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: GestureDetector(
-                  child: Icon(Icons.list),
-                  onTap: () => _scaffoldKey.currentState?.openDrawer(),
-                )),
-            SizedBox(
-              width: 10,
-            ),
-            BlocBuilder<NotificationsCubit, NotificationsState>(
-              builder: (context, state) {
-                return Badge.count(
-                    smallSize: 10,
-                    largeSize: 15,
-                    alignment: AlignmentDirectional.topEnd,
-                    count: NotificationsCubit.get(context).notificationsCount,
-                    child: GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context, '/notify');
-                        },
-                        child: Icon(
-                          IconBroken.Notification,
-                          color: Color(0xff4c53a5),
-                        )));
-              },
-            )
-          ],
+        title: Text(
+          AppLocalizations.of(context).translate('home'),
+          style: themeData.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w500,
+            color: _primaryText,
+          ),
         ),
-        leadingWidth: 75,
+        leading: IconButton(
+          tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          icon: const Icon(Icons.menu_rounded, color: _primaryText),
+        ),
+        actions: <Widget>[
+          BlocBuilder<NotificationsCubit, NotificationsState>(
+            builder: (context, state) {
+              return Badge.count(
+                smallSize: 8,
+                largeSize: 16,
+                alignment: AlignmentDirectional.topEnd,
+                count: NotificationsCubit.get(context).notificationsCount,
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/notify');
+                  },
+                  icon: const Icon(Icons.notifications_none_rounded),
+                  color: _primaryText,
+                ),
+              );
+            },
+          ),
+          IconButton(
+            onPressed: () async {
+              (await Helper().checkConnectivity())
+                  ? await sync()
+                  : Fluttertoast.showToast(
+                      msg: AppLocalizations.of(
+                        context,
+                      ).translate('check_connectivity'),
+                    );
+            },
+            icon: Icon(MdiIcons.syncIcon, color: _accent),
+          ),
+          IconButton(
+            onPressed: () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await SellDatabase().getNotSyncedSells().then((value) {
+                if (value.isEmpty) {
+                  //saving userId in disk
+                  prefs.setInt('prevUserId', Config.userId!);
+                  prefs.remove('userId');
+                  Navigator.pushReplacementNamed(context, '/login');
+                } else {
+                  Fluttertoast.showToast(
+                    msg: AppLocalizations.of(
+                      context,
+                    ).translate('sync_all_sales_before_logout'),
+                  );
+                }
+              });
+            },
+            icon: const Icon(Icons.logout_rounded, color: _primaryText),
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            GreetingWidget(themeData: themeData, userName: userName),
-            Statistics(
-              themeData: themeData,
-              businessSymbol: businessSymbol,
-              totalDueAmount: totalDueAmount,
-              totalReceivedAmount: totalReceivedAmount,
-              totalSales: totalSales,
-              totalSalesAmount: totalSalesAmount,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [_bgSoft, _bg],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: Column(
+                  children: <Widget>[
+                    GreetingWidget(themeData: themeData, userName: userName),
+                    const SizedBox(height: 12),
+                    Statistics(
+                      themeData: themeData,
+                      businessSymbol: businessSymbol,
+                      totalDueAmount: totalDueAmount,
+                      totalReceivedAmount: totalReceivedAmount,
+                      totalSales: totalSales,
+                      totalSalesAmount: totalSalesAmount,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildQuickActionsCard(),
+                    const SizedBox(height: 16),
+                    paymentDetails(),
+                  ],
+                ),
+              ),
             ),
-            SizedBox(
-              height: 30,
-            ),
-            Column(
-              //TODO Make this if client choose to i hope he dose not
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 90,
-                      decoration: BoxDecoration(
-                          color: Color(0xffedecf2),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: GestureDetector(
-                        onTap: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                    actions: [
-                                      TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Text('Close'))
-                                    ],
-                                    title: Text(
-                                      AppLocalizations.of(context)
-                                          .translate('language'),
-                                    ),
-                                    content: changeAppLanguage(),
-                                  ));
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)
-                                    .translate('language'),
-                                style: TextStyle(color: Color(0xff4c53a5)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 90,
-                      decoration: BoxDecoration(
-                          color: Color(0xffedecf2),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: GestureDetector(
-                        onTap: () async {
-                          if (await Helper().checkConnectivity()) {
-                            Navigator.pushNamed(context, '/expense');
-                          } else {
-                            Fluttertoast.showToast(
-                                msg: AppLocalizations.of(context)
-                                    .translate('check_connectivity'));
-                          }
-                        },
-                        child: Container(
-                          width: 80,
-                          height: 50,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)
-                                    .translate('expenses'),
-                                style: TextStyle(color: Color(0xff4c53a5)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 90,
-                      decoration: BoxDecoration(
-                          color: Color(0xffedecf2),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: GestureDetector(
-                        onTap: () async {
-                          if (await Helper().checkConnectivity()) {
-                            Navigator.pushNamed(context, '/contactPayment');
-                          } else {
-                            Fluttertoast.showToast(
-                                msg: AppLocalizations.of(context)
-                                    .translate('check_connectivity'));
-                          }
-                        },
-                        child: Container(
-                          alignment: Alignment.center,
-                          width: 50,
-                          height: 50,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Center(
-                                child: Text(
-                                  AppLocalizations.of(context)
-                                      .translate('contact_payment'),
-                                  style: TextStyle(
-                                      fontSize: 12, color: Color(0xff4c53a5)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Container(
-                      width: 90,
-                      decoration: BoxDecoration(
-                          color: Color(0xffedecf2),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: GestureDetector(
-                        onTap: () async {
-                          if (await Helper().checkConnectivity()) {
-                            Navigator.pushNamed(context, '/leads');
-                            // await CallLog.get().then(
-                            //         (value) =>
-                            //         Navigator.pushNamed(context, '/leads'));
-                          } else {
-                            Fluttertoast.showToast(
-                                msg: AppLocalizations.of(context)
-                                    .translate('check_connectivity'));
-                          }
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Center(
-                                child: Text(
-                                  AppLocalizations.of(context)
-                                      .translate('follow_ups'),
-                                  style: TextStyle(
-                                      color: Color(0xff4c53a5), fontSize: 12),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 90,
-                      decoration: BoxDecoration(
-                          color: Color(0xffedecf2),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: GestureDetector(
-                        onTap: () async {
-                          if (await Helper().checkConnectivity()) {
-                            Navigator.pushNamed(context, '/leads');
-                            // await CallLog.get().then(
-                            //         (value) =>
-                            //         Navigator.push(context, '/leads'));
-                          } else {
-                            Fluttertoast.showToast(
-                                msg: AppLocalizations.of(context)
-                                    .translate('check_connectivity'));
-                          }
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)
-                                    .translate('suppliersC'),
-                                style: TextStyle(
-                                    color: Color(0xff4c53a5), fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 90,
-                      decoration: BoxDecoration(
-                          color: Color(0xffedecf2),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context, '/shipment');
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)
-                                    .translate('shipment'),
-                                style: TextStyle(color: Color(0xff4c53a5)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Container(
-                      width: 90,
-                      decoration: BoxDecoration(
-                          color: Color(0xffedecf2),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context, '/sale');
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)
-                                    .translate('payments'),
-                                style: TextStyle(
-                                    color: Color(0xff4c53a5), fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 90,
-                      decoration: BoxDecoration(
-                          color: Color(0xffedecf2),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context, ReportScreen.routeName);
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)
-                                    .translate('reports'),
-                                style: TextStyle(color: Color(0xff4c53a5)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 90,
-                      decoration: BoxDecoration(
-                          color: Color(0xffedecf2),
-                          borderRadius: BorderRadius.circular(5)),
-                      child: GestureDetector(
-                        onTap: () {},
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)
-                                    .translate('settings'),
-                                style: TextStyle(color: Color(0xff4c53a5)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ), //T
-            paymentDetails(),
-          ],
+          ),
         ),
       ),
     );
   }
 
-//homepage drawer
-  Widget homePageDrawer() {
-    return Drawer(
-      child: Container(
-        color: Colors.white,
-        child: Column(
-          children: <Widget>[
-            Container(
-              height: MySize.scaleFactorHeight! * 70,
+  Widget _buildQuickActionsCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: _outline),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 28,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Quick Actions',
+            style: themeData.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: _primaryText,
             ),
-            Expanded(
-              flex: 9,
-              child: ListView(
-                shrinkWrap: true,
-                padding: EdgeInsets.zero,
-                children: <Widget>[
-                  ListTile(
-                    leading: Icon(
-                      Icons.language,
-                      color: themeData.colorScheme.onSurface,
-                    ),
-                    onTap: () {
-                      showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text('Close'))
-                                ],
-                                title: Text(
-                                  AppLocalizations.of(context)
-                                      .translate('language'),
-                                ),
-                                content: changeAppLanguage(),
-                              ));
-                    },
-                    title: Text(
-                        AppLocalizations.of(context).translate('language')),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Shortcuts for your most-used workflows.',
+            style: themeData.textTheme.bodyMedium?.copyWith(
+              color: _mutedText,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 16),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final tileWidth = (constraints.maxWidth - 12) / 2;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  _quickActionTile(
+                    width: tileWidth,
+                    label: AppLocalizations.of(context).translate('language'),
+                    icon: Icons.language_rounded,
+                    onTap: _showLanguageDialog,
                   ),
-                  Visibility(
-                    visible: accessExpenses,
-                    child: ListTile(
-                      leading: Image.asset(
-                        'assets/images/money.png',
-                        color: Color(0xff42855B),
-                        width: 30,
-                      ),
-                      onTap: () async {
-                        if (await Helper().checkConnectivity()) {
-                          Navigator.pushNamed(context, '/expense');
-                        } else {
-                          Fluttertoast.showToast(
-                              msg: AppLocalizations.of(context)
-                                  .translate('check_connectivity'));
-                        }
-                      },
-                      title: Text(
-                        AppLocalizations.of(context).translate('expenses'),
-                        style: AppTheme.getTextStyle(
-                            themeData.textTheme.titleSmall,
-                            fontWeight: 600),
-                      ),
+                  if (accessExpenses)
+                    _quickActionTile(
+                      width: tileWidth,
+                      label: AppLocalizations.of(context).translate('expenses'),
+                      icon: Icons.receipt_long_rounded,
+                      onTap: () => _navigateIfOnline('/expense'),
                     ),
+                  _quickActionTile(
+                    width: tileWidth,
+                    label: AppLocalizations.of(
+                      context,
+                    ).translate('contact_payment'),
+                    icon: Icons.payments_rounded,
+                    onTap: () => _navigateIfOnline('/contactPayment'),
                   ),
-                  ListTile(
-                    leading: Image.asset(
-                      'assets/images/payed_money.png',
-                      color: Color(0xff820000),
-                      width: 30,
-                    ),
-                    title: Text(
-                      AppLocalizations.of(context).translate('contact_payment'),
-                      style: AppTheme.getTextStyle(
-                          themeData.textTheme.titleSmall,
-                          fontWeight: 600),
-                    ),
-                    onTap: () async {
-                      if (await Helper().checkConnectivity()) {
-                        Navigator.pushNamed(context, '/contactPayment');
-                      } else {
-                        Fluttertoast.showToast(
-                            msg: AppLocalizations.of(context)
-                                .translate('check_connectivity'));
-                      }
-                    },
+                  _quickActionTile(
+                    width: tileWidth,
+                    label: AppLocalizations.of(context).translate('follow_ups'),
+                    icon: Icons.support_agent_rounded,
+                    onTap: () => _navigateIfOnline('/followUp'),
                   ),
-                  ListTile(
-                    leading: Image.asset(
-                      'assets/images/support.png',
-                      color: Color(0xff301E67),
-                      width: 30,
-                    ),
-                    title: Text(
-                      AppLocalizations.of(context).translate('follow_ups'),
-                      style: AppTheme.getTextStyle(
-                          themeData.textTheme.titleSmall,
-                          fontWeight: 600),
-                    ),
-                    onTap: () async {
-                      if (await Helper().checkConnectivity()) {
-                        Navigator.pushNamed(context, '/followUp');
-                        // await CallLog.get().then((value) =>
-                        //     Navigator.push(context, '/followUp'));
-                      } else {
-                        Fluttertoast.showToast(
-                            msg: AppLocalizations.of(context)
-                                .translate('check_connectivity'));
-                      }
-                    },
+                  _quickActionTile(
+                    width: tileWidth,
+                    label: AppLocalizations.of(context).translate('suppliersC'),
+                    icon: Icons.groups_rounded,
+                    onTap: () => _navigateIfOnline('/leads'),
                   ),
-                  Visibility(
-                    visible: Config().showFieldForce,
-                    child: ListTile(
-                      leading: Icon(
-                        MdiIcons.humanMale,
-                        color: themeData.colorScheme.onSurface,
-                      ),
-                      onTap: () async {
-                        if (await Helper().checkConnectivity()) {
-                          Navigator.pushNamed(context, '/fieldForce');
-                        } else {
-                          Fluttertoast.showToast(
-                              msg: AppLocalizations.of(context)
-                                  .translate('check_connectivity'));
-                        }
-                      },
-                      title: Text(
-                        AppLocalizations.of(context)
-                            .translate('field_force_visits'),
-                        style: AppTheme.getTextStyle(
-                            themeData.textTheme.titleSmall,
-                            fontWeight: 600),
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    leading: Image.asset(
-                      'assets/images/contact.png',
-                      color: Color(0xff0064e5),
-                      width: 30,
-                    ),
-                    title: Text(
-                      AppLocalizations.of(context).translate('contacts'),
-                      style: AppTheme.getTextStyle(
-                          themeData.textTheme.titleSmall,
-                          fontWeight: 600),
-                    ),
-                    onTap: () async {
-                      if (await Helper().checkConnectivity()) {
-                        Navigator.pushNamed(context, '/leads');
-                        // await CallLog.get().then(
-                        //         (value) =>
-                        //         Navigator.push(context, '/leads'));
-                      } else {
-                        Fluttertoast.showToast(
-                            msg: AppLocalizations.of(context)
-                                .translate('check_connectivity'));
-                      }
-                    },
-                  ),
-                  ListTile(
-                    leading: Image.asset(
-                      'assets/images/delivery.png',
-                      color: Color(0xffF2921D),
-                      width: 30,
-                    ),
-                    title: Text(
-                      AppLocalizations.of(context).translate('shipment'),
-                      style: AppTheme.getTextStyle(
-                          themeData.textTheme.titleSmall,
-                          fontWeight: 600),
-                    ),
+                  _quickActionTile(
+                    width: tileWidth,
+                    label: AppLocalizations.of(context).translate('shipment'),
+                    icon: Icons.local_shipping_rounded,
                     onTap: () {
                       Navigator.pushNamed(context, '/shipment');
                     },
                   ),
-                  /*ListTile(
-                    leading: Image.asset(
-                      'assets/images/money.png',
-                      color: Color(0xff42855B),
-                      width: 30,
-                    ),
-                    onTap: () async {
-                      if (await Helper().checkConnectivity()) {
-                        Navigator.pushNamed(context, '/purchases');
-                      } else {
-                        Fluttertoast.showToast(
-                            msg: AppLocalizations.of(context)
-                                .translate('check_connectivity'));
-                      }
+                  _quickActionTile(
+                    width: tileWidth,
+                    label: AppLocalizations.of(context).translate('payments'),
+                    icon: Icons.request_quote_rounded,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/sale');
                     },
-                    title: Text(
-                      AppLocalizations.of(context).translate('purchases'),
-                      style: AppTheme.getTextStyle(
-                          themeData.textTheme.titleSmall,
-                          fontWeight: 600),
-                    ),
-                  )*/
+                  ),
+                  _quickActionTile(
+                    width: tileWidth,
+                    label: AppLocalizations.of(context).translate('reports'),
+                    icon: Icons.analytics_rounded,
+                    onTap: () {
+                      Navigator.pushNamed(context, ReportScreen.routeName);
+                    },
+                  ),
                 ],
-              ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _quickActionTile({
+    required double width,
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: width,
+      child: Material(
+        color: const Color(0xFFFAFBFD),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 52),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: _outline),
             ),
-            Expanded(
-                flex: 1,
-                child: Container(
-                    alignment: Alignment.bottomCenter,
-                    margin: EdgeInsets.all(10),
-                    child: Text(
-                        AppLocalizations.of(context).translate('version'))))
-          ],
+            child: Row(
+              children: [
+                Icon(icon, color: _accent, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: themeData.textTheme.bodySmall?.copyWith(
+                      color: _primaryText,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  //multi language option
-  Widget changeAppLanguage() {
-    var appLanguage = Provider.of<AppLanguage>(context);
-    return Container(
-      child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-        dropdownColor: themeData.colorScheme.onPrimary,
-        onChanged: (String? newValue) {
-          appLanguage.changeLanguage(Locale(newValue!), newValue);
-          selectedLanguage = newValue;
-          Navigator.pop(context);
-        },
-        value: selectedLanguage,
-        items: Config().lang.map<DropdownMenuItem<String>>((Map locale) {
-          return DropdownMenuItem<String>(
-            value: locale['languageCode'],
-            child: Text(
-              locale['name'],
-              style: AppTheme.getTextStyle(themeData.textTheme.titleSmall,
-                  fontWeight: 600),
-            ),
-          );
-        }).toList(),
-      )),
+  Future<void> _navigateIfOnline(String routeName) async {
+    if (await Helper().checkConnectivity()) {
+      Navigator.pushNamed(context, routeName);
+      return;
+    }
+
+    Fluttertoast.showToast(
+      msg: AppLocalizations.of(context).translate('check_connectivity'),
     );
+  }
+
+  Future<void> _showLanguageDialog() async {
+    final appLanguage = Provider.of<AppLanguage>(context, listen: false);
+    final currentLanguage =
+        selectedLanguage?.toString() ?? Config().defaultLanguage;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: _surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (bottomSheetContext) {
+        final sheetMaxHeight =
+            MediaQuery.of(bottomSheetContext).size.height * 0.55;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 6, 14, 10),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: sheetMaxHeight),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context).translate('language'),
+                    style: themeData.textTheme.titleSmall?.copyWith(
+                      color: _primaryText,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: Config().lang.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 6),
+                      itemBuilder: (context, index) {
+                        final locale = Config().lang[index];
+                        final code = locale['languageCode'] as String;
+                        final isSelected = code == currentLanguage;
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(10),
+                            onTap: () {
+                              appLanguage.changeLanguage(Locale(code), code);
+                              setState(() {
+                                selectedLanguage = code;
+                              });
+                              Navigator.pop(bottomSheetContext);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: isSelected
+                                    ? _accent.withValues(alpha: 0.08)
+                                    : const Color(0xFFFAFBFD),
+                                border: Border.all(
+                                  color: isSelected ? _accent : _outline,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isSelected
+                                        ? Icons.radio_button_checked_rounded
+                                        : Icons.radio_button_off_rounded,
+                                    size: 18,
+                                    color: isSelected ? _accent : _mutedText,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      locale['name'] as String,
+                                      style: themeData.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            color: _primaryText,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  //homepage drawer
+  Widget homePageDrawer() {
+    return Drawer(
+      backgroundColor: _bg,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+          child: Column(
+            children: <Widget>[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                decoration: BoxDecoration(
+                  color: _surface,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: _outline),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: _accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.menu_rounded,
+                        color: _accent,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      AppLocalizations.of(context).translate('home'),
+                      style: themeData.textTheme.titleMedium?.copyWith(
+                        color: _primaryText,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: <Widget>[
+                    _drawerItem(
+                      icon: Icons.language_rounded,
+                      title: AppLocalizations.of(context).translate('language'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showLanguageDialog();
+                      },
+                    ),
+                    if (accessExpenses)
+                      _drawerItem(
+                        icon: Icons.receipt_long_rounded,
+                        title: AppLocalizations.of(
+                          context,
+                        ).translate('expenses'),
+                        onTap: () => _navigateFromDrawer('/expense'),
+                      ),
+                    _drawerItem(
+                      icon: Icons.payments_rounded,
+                      title: AppLocalizations.of(
+                        context,
+                      ).translate('contact_payment'),
+                      onTap: () => _navigateFromDrawer('/contactPayment'),
+                    ),
+                    _drawerItem(
+                      icon: Icons.support_agent_rounded,
+                      title: AppLocalizations.of(
+                        context,
+                      ).translate('follow_ups'),
+                      onTap: () => _navigateFromDrawer('/followUp'),
+                    ),
+                    if (Config().showFieldForce)
+                      _drawerItem(
+                        icon: MdiIcons.humanMale,
+                        title: AppLocalizations.of(
+                          context,
+                        ).translate('field_force_visits'),
+                        onTap: () => _navigateFromDrawer('/fieldForce'),
+                      ),
+                    _drawerItem(
+                      icon: Icons.contacts_rounded,
+                      title: AppLocalizations.of(context).translate('contacts'),
+                      onTap: () => _navigateFromDrawer('/leads'),
+                    ),
+                    _drawerItem(
+                      icon: Icons.local_shipping_rounded,
+                      title: AppLocalizations.of(context).translate('shipment'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/shipment');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  AppLocalizations.of(context).translate('version'),
+                  style: themeData.textTheme.bodyMedium?.copyWith(
+                    color: _mutedText,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _drawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: _surface,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: _outline),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: _accent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: 20, color: _accent),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: themeData.textTheme.titleSmall?.copyWith(
+                      color: _primaryText,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: _mutedText,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _navigateFromDrawer(String routeName) async {
+    Navigator.pop(context);
+    await _navigateIfOnline(routeName);
   }
 
   //on sync
@@ -798,9 +707,11 @@ class _HomeState extends State<Home> {
               children: [
                 CircularProgressIndicator(),
                 Container(
-                    margin: EdgeInsets.only(left: 5),
-                    child: Text(AppLocalizations.of(context)
-                        .translate('sync_in_progress'))),
+                  margin: EdgeInsets.only(left: 5),
+                  child: Text(
+                    AppLocalizations.of(context).translate('sync_in_progress'),
+                  ),
+                ),
               ],
             ),
           );
@@ -817,63 +728,88 @@ class _HomeState extends State<Home> {
   //widget for payment details
   Widget paymentDetails() {
     return Container(
-      padding: EdgeInsets.all(MySize.size8!),
-      margin: EdgeInsets.all(MySize.size16!),
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(MySize.size8!)),
-        color: customAppTheme.bgLayer1,
-        border: Border.all(color: customAppTheme.bgLayer4, width: 1.2),
+        color: _surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: _outline),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 28,
+            offset: Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(AppLocalizations.of(context).translate('payment_details'),
-              style: AppTheme.getTextStyle(
-                themeData.textTheme.titleMedium,
-                fontWeight: 700,
-              )),
+          Text(
+            AppLocalizations.of(context).translate('payment_details'),
+            style: themeData.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: _primaryText,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (method.isEmpty)
+            Text(
+              'No payment data available yet.',
+              style: themeData.textTheme.bodyMedium?.copyWith(
+                color: _mutedText,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ListView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.all(10),
-              itemCount: method.length,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return Container(
-                  padding: EdgeInsets.only(bottom: 5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Container(
-                                height: 30,
-                                width: 2,
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.withValues(alpha: 0.5),
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(4.0)),
-                                ),
-                              ),
-                              Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 2)),
-                              Text(method[index]['key']),
-                            ],
-                          )
-                        ],
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: method.length,
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFAFBFD),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _outline),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: _accent.withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
-                      Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            Text('$businessSymbol ' +
-                                Helper().formatCurrency(method[index]['value']))
-                          ])
-                    ],
-                  ),
-                );
-              })
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        method[index]['key'],
+                        style: themeData.textTheme.bodyMedium?.copyWith(
+                          color: _primaryText,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '$businessSymbol ${Helper().formatCurrency(method[index]['value'])}',
+                      style: themeData.textTheme.bodyMedium?.copyWith(
+                        color: _primaryText,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -891,17 +827,17 @@ class _HomeState extends State<Home> {
     await Helper()
         .getPermission('essentials.allow_users_for_attendance_from_api')
         .then((value) {
-      if (value == true) {
-        checkIOButtonDisplay();
-        setState(() {
-          attendancePermission = true;
+          if (value == true) {
+            checkIOButtonDisplay();
+            setState(() {
+              attendancePermission = true;
+            });
+          } else {
+            setState(() {
+              checkedIn = null;
+            });
+          }
         });
-      } else {
-        setState(() {
-          checkedIn = null;
-        });
-      }
-    });
 
     if (await Helper().getPermission('all_expense.access') ||
         await Helper().getPermission('view_own_expense')) {
@@ -913,21 +849,25 @@ class _HomeState extends State<Home> {
 
   //checkIn and checkOut button
 
-//load statistics
+  //load statistics
   Future<List> loadStatistics() async {
     List result = await SellDatabase().getSells();
     totalSales = result.length;
     setState(() {
       result.forEach((sell) async {
-        List payment =
-            await PaymentDatabase().get(sell['id'], allColumns: true);
+        List payment = await PaymentDatabase().get(
+          sell['id'],
+          allColumns: true,
+        );
         var paidAmount = 0.0;
         var returnAmount = 0.0;
         payment.forEach((element) {
           if (element['is_return'] == 0) {
             paidAmount += element['amount'];
-            payments
-                .add({'key': element['method'], 'value': element['amount']});
+            payments.add({
+              'key': element['method'],
+              'value': element['amount'],
+            });
           } else {
             returnAmount += element['amount'];
           }
@@ -941,7 +881,7 @@ class _HomeState extends State<Home> {
     return result;
   }
 
-//load payment details
+  //load payment details
   loadPaymentDetails() async {
     var paymentMethod = [];
     //fetch different payment methods

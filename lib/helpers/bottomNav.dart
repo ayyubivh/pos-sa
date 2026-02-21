@@ -7,7 +7,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pos_final/pages/category_screen.dart';
 import 'package:pos_final/pages/home.dart';
-import 'package:pos_final/pages/home/home_screen.dart';
 import 'package:pos_final/pages/products.dart';
 import 'package:pos_final/pages/sales.dart';
 
@@ -19,10 +18,8 @@ import '../models/attendance.dart';
 import '../models/paymentDatabase.dart';
 import '../models/sellDatabase.dart';
 import '../models/system.dart';
-import '../pages/login.dart';
 import 'AppTheme.dart';
 import 'SizeConfig.dart';
-import 'icons.dart';
 import 'otherHelpers.dart';
 
 class Layout extends StatefulWidget {
@@ -77,7 +74,7 @@ class _LayoutState extends State<Layout> {
     Home(),
     CategoryScreen(),
     Products(),
-    Sales()
+    Sales(),
   ];
   @override
   void initState() {
@@ -120,7 +117,8 @@ class _LayoutState extends State<Layout> {
   Future<void> homepageData() async {
     var prefs = await SharedPreferences.getInstance();
     user = await System().get('loggedInUser');
-    userName = ((user['surname'] != null) ? user['surname'] : "") +
+    userName =
+        ((user['surname'] != null) ? user['surname'] : "") +
         ' ' +
         user['first_name'];
     await loadPaymentDetails();
@@ -146,19 +144,19 @@ class _LayoutState extends State<Layout> {
         onItemSelected: _changePage,
         items: [
           FlashyTabBarItem(
-            icon: Icon(IconBroken.Home),
+            icon: const Icon(Icons.home_rounded),
             title: Text(AppLocalizations.of(context).translate('home')),
           ),
           FlashyTabBarItem(
-            icon: Icon(IconBroken.Category),
+            icon: const Icon(Icons.category_rounded),
             title: Text(AppLocalizations.of(context).translate('Categories')),
           ),
           FlashyTabBarItem(
-            icon: Icon(IconBroken.Buy),
+            icon: const Icon(Icons.inventory_2_rounded),
             title: Text(AppLocalizations.of(context).translate('products')),
           ),
           FlashyTabBarItem(
-            icon: Icon(IconBroken.Chart),
+            icon: const Icon(Icons.bar_chart_rounded),
             title: Text(AppLocalizations.of(context).translate('sales')),
           ),
         ],
@@ -184,58 +182,69 @@ class _LayoutState extends State<Layout> {
       ),
       child: Column(
         children: <Widget>[
-          Text(AppLocalizations.of(context).translate('payment_details'),
-              style: AppTheme.getTextStyle(themeData.textTheme.titleMedium,
-                  fontWeight: 700, letterSpacing: -0.2)),
+          Text(
+            AppLocalizations.of(context).translate('payment_details'),
+            style: AppTheme.getTextStyle(
+              themeData.textTheme.titleMedium,
+              fontWeight: 700,
+              letterSpacing: -0.2,
+            ),
+          ),
           ListView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.all(10),
-              itemCount: method.length,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return Container(
-                  padding: EdgeInsets.only(bottom: 5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Container(
-                                height: 30,
-                                width: 2,
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.withOpacity(0.5),
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(4.0)),
+            physics: NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.all(10),
+            itemCount: method.length,
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              return Container(
+                padding: EdgeInsets.only(bottom: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Container(
+                              height: 30,
+                              width: 2,
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withOpacity(0.5),
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(4.0),
                                 ),
                               ),
-                              Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 2)),
-                              Text(method[index]['key']),
-                            ],
-                          )
-                        ],
-                      ),
-                      Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
-                      Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            Text('$businessSymbol ' +
-                                Helper().formatCurrency(method[index]['value']))
-                          ])
-                    ],
-                  ),
-                );
-              })
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 2),
+                            ),
+                            Text(method[index]['key']),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Text(
+                          '$businessSymbol ' +
+                              Helper().formatCurrency(method[index]['value']),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
   }
 
-//get permission
+  //get permission
   Future<void> getPermission() async {
     List<PermissionStatus> status = [
       await Permission.location.status,
@@ -247,17 +256,17 @@ class _LayoutState extends State<Layout> {
     await Helper()
         .getPermission('essentials.allow_users_for_attendance_from_api')
         .then((value) {
-      if (value == true) {
-        checkIOButtonDisplay();
-        setState(() {
-          attendancePermission = true;
+          if (value == true) {
+            checkIOButtonDisplay();
+            setState(() {
+              attendancePermission = true;
+            });
+          } else {
+            setState(() {
+              checkedIn = null;
+            });
+          }
         });
-      } else {
-        setState(() {
-          checkedIn = null;
-        });
-      }
-    });
 
     if (await Helper().getPermission('all_expense.access') ||
         await Helper().getPermission('view_own_expense')) {
@@ -267,7 +276,7 @@ class _LayoutState extends State<Layout> {
     }
   }
 
-//checkIn and checkOut button
+  //checkIn and checkOut button
   Widget checkIO() {
     if (checkedIn != null) {
       return Padding(
@@ -283,151 +292,172 @@ class _LayoutState extends State<Layout> {
               onPressed: () async {
                 Helper().syncCallLogs();
                 showDialog(
-                    barrierDismissible: true,
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text(
-                            (!checkedIn!)
-                                ? AppLocalizations.of(context)
-                                    .translate('check_in_note')
-                                : AppLocalizations.of(context)
-                                    .translate('check_out_note'),
-                            textAlign: TextAlign.center,
-                            style: AppTheme.getTextStyle(
-                                themeData.textTheme.titleLarge,
-                                color: themeData.colorScheme.onSurface,
-                                fontWeight: 600,
-                                muted: true)),
-                        content: TextFormField(
-                            controller: note,
-                            autofocus: true,
-                            style: AppTheme.getTextStyle(
-                                themeData.textTheme.bodyLarge,
-                                color: themeData.colorScheme.onSurface,
-                                fontWeight: 600,
-                                muted: true)),
-                        actions: <Widget>[
-                          TextButton(
-                            style: TextButton.styleFrom(
-                              foregroundColor: themeData.colorScheme.primary,
-                            ),
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              if (await Helper().checkConnectivity()) {
+                  barrierDismissible: true,
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text(
+                        (!checkedIn!)
+                            ? AppLocalizations.of(
+                                context,
+                              ).translate('check_in_note')
+                            : AppLocalizations.of(
+                                context,
+                              ).translate('check_out_note'),
+                        textAlign: TextAlign.center,
+                        style: AppTheme.getTextStyle(
+                          themeData.textTheme.titleLarge,
+                          color: themeData.colorScheme.onSurface,
+                          fontWeight: 600,
+                          muted: true,
+                        ),
+                      ),
+                      content: TextFormField(
+                        controller: note,
+                        autofocus: true,
+                        style: AppTheme.getTextStyle(
+                          themeData.textTheme.bodyLarge,
+                          color: themeData.colorScheme.onSurface,
+                          fontWeight: 600,
+                          muted: true,
+                        ),
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: themeData.colorScheme.primary,
+                          ),
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            if (await Helper().checkConnectivity()) {
+                              try {
+                                await Geolocator.getCurrentPosition(
+                                  desiredAccuracy: LocationAccuracy.high,
+                                ).then((Position position) {
+                                  // currentLoc = LatLng(position.latitude,
+                                  //     position.longitude);
+                                });
+                              } catch (e) {}
+                              if (checkedIn == false) {
+                                //get ip address
+                                var ipAddress = IpAddress(
+                                  type: RequestType.json,
+                                );
+
+                                /// Get the IpAddress based on requestType.
+                                dynamic data = await ipAddress.getIpAddress();
+                                String iP = data.toString();
+
+                                //get current location
                                 try {
                                   await Geolocator.getCurrentPosition(
-                                          desiredAccuracy:
-                                              LocationAccuracy.high)
-                                      .then((Position position) {
-                                    // currentLoc = LatLng(position.latitude,
-                                    //     position.longitude);
+                                    desiredAccuracy: LocationAccuracy.high,
+                                  ).then((Position position) {
+                                    currentLoc = LatLng(
+                                      position.latitude,
+                                      position.longitude,
+                                    );
                                   });
                                 } catch (e) {}
-                                if (checkedIn == false) {
-                                  //get ip address
-                                  var ipAddress =
-                                      IpAddress(type: RequestType.json);
 
-                                  /// Get the IpAddress based on requestType.
-                                  dynamic data = await ipAddress.getIpAddress();
-                                  String iP = data.toString();
+                                var checkInMap = await Attendance().doCheckIn(
+                                  checkInNote: note.text,
+                                  iPAddress: iP,
+                                  latitude: (currentLoc != null)
+                                      ? currentLoc!.latitude
+                                      : '',
+                                  longitude: (currentLoc != null)
+                                      ? currentLoc!.longitude
+                                      : '',
+                                );
+                                Fluttertoast.showToast(msg: checkInMap);
+                                note.clear();
+                              } else {
+                                //get current location
+                                try {
+                                  await Geolocator.getCurrentPosition(
+                                    desiredAccuracy: LocationAccuracy.high,
+                                  ).then((Position position) {
+                                    currentLoc = LatLng(
+                                      position.latitude,
+                                      position.longitude,
+                                    );
+                                  });
+                                } catch (e) {}
 
-                                  //get current location
-                                  try {
-                                    await Geolocator.getCurrentPosition(
-                                            desiredAccuracy:
-                                                LocationAccuracy.high)
-                                        .then((Position position) {
-                                      currentLoc = LatLng(position.latitude,
-                                          position.longitude);
-                                    });
-                                  } catch (e) {}
-
-                                  var checkInMap = await Attendance().doCheckIn(
-                                      checkInNote: note.text,
-                                      iPAddress: iP,
-                                      latitude: (currentLoc != null)
-                                          ? currentLoc!.latitude
-                                          : '',
-                                      longitude: (currentLoc != null)
-                                          ? currentLoc!.longitude
-                                          : '');
-                                  Fluttertoast.showToast(msg: checkInMap);
-                                  note.clear();
-                                } else {
-                                  //get current location
-                                  try {
-                                    await Geolocator.getCurrentPosition(
-                                            desiredAccuracy:
-                                                LocationAccuracy.high)
-                                        .then((Position position) {
-                                      currentLoc = LatLng(position.latitude,
-                                          position.longitude);
-                                    });
-                                  } catch (e) {}
-
-                                  var checkOutMap = await Attendance()
-                                      .doCheckOut(
-                                          latitude: (currentLoc != null)
-                                              ? currentLoc!.latitude
-                                              : '',
-                                          longitude: (currentLoc != null)
-                                              ? currentLoc!.longitude
-                                              : '',
-                                          checkOutNote: note.text);
-                                  Fluttertoast.showToast(msg: checkOutMap);
-                                  note.clear();
-                                }
-                                checkedIn = await Attendance()
-                                    .getAttendanceStatus(Config.userId);
-                                await Attendance()
-                                    .getCheckInTime(Config.userId)
-                                    .then((value) {
-                                  if (value != null) {
-                                    clockInTime = DateTime.parse(value);
-                                  }
-                                });
-                                setState(() {});
-                              } else
-                                Fluttertoast.showToast(
-                                    msg: AppLocalizations.of(context)
-                                        .translate('check_connectivity'));
-                            },
-                            child: Text(
-                                AppLocalizations.of(context).translate('ok')),
+                                var checkOutMap = await Attendance().doCheckOut(
+                                  latitude: (currentLoc != null)
+                                      ? currentLoc!.latitude
+                                      : '',
+                                  longitude: (currentLoc != null)
+                                      ? currentLoc!.longitude
+                                      : '',
+                                  checkOutNote: note.text,
+                                );
+                                Fluttertoast.showToast(msg: checkOutMap);
+                                note.clear();
+                              }
+                              checkedIn = await Attendance()
+                                  .getAttendanceStatus(Config.userId);
+                              await Attendance()
+                                  .getCheckInTime(Config.userId)
+                                  .then((value) {
+                                    if (value != null) {
+                                      clockInTime = DateTime.parse(value);
+                                    }
+                                  });
+                              setState(() {});
+                            } else
+                              Fluttertoast.showToast(
+                                msg: AppLocalizations.of(
+                                  context,
+                                ).translate('check_connectivity'),
+                              );
+                          },
+                          child: Text(
+                            AppLocalizations.of(context).translate('ok'),
                           ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text(AppLocalizations.of(context)
-                                .translate('cancel')),
-                          )
-                        ],
-                      );
-                    });
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            AppLocalizations.of(context).translate('cancel'),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
               },
               child: (!checkedIn!)
-                  ? Text(AppLocalizations.of(context).translate('check_in'),
+                  ? Text(
+                      AppLocalizations.of(context).translate('check_in'),
                       style: AppTheme.getTextStyle(
-                          themeData.textTheme.titleLarge,
-                          color: themeData.colorScheme.surface,
-                          fontWeight: 600))
-                  : Text(AppLocalizations.of(context).translate('check_out'),
+                        themeData.textTheme.titleLarge,
+                        color: themeData.colorScheme.surface,
+                        fontWeight: 600,
+                      ),
+                    )
+                  : Text(
+                      AppLocalizations.of(context).translate('check_out'),
                       style: AppTheme.getTextStyle(
-                          themeData.textTheme.titleLarge,
-                          color: themeData.colorScheme.primary,
-                          fontWeight: 600)),
+                        themeData.textTheme.titleLarge,
+                        color: themeData.colorScheme.primary,
+                        fontWeight: 600,
+                      ),
+                    ),
             ),
             Text(
-                (!checkedIn!)
-                    ? ''
-                    : DateTime.now().difference(clockInTime).toString(),
-                style: AppTheme.getTextStyle(
-                  themeData.textTheme.titleSmall,
-                  color: themeData.colorScheme.onSurface,
-                )),
+              (!checkedIn!)
+                  ? ''
+                  : DateTime.now().difference(clockInTime).toString(),
+              style: AppTheme.getTextStyle(
+                themeData.textTheme.titleSmall,
+                color: themeData.colorScheme.onSurface,
+              ),
+            ),
           ],
         ),
       );
@@ -435,21 +465,25 @@ class _LayoutState extends State<Layout> {
       return Container();
   }
 
-//load statistics
+  //load statistics
   Future<List> loadStatistics() async {
     List result = await SellDatabase().getSells();
     totalSales = result.length;
     setState(() {
       result.forEach((sell) async {
-        List payment =
-            await PaymentDatabase().get(sell['id'], allColumns: true);
+        List payment = await PaymentDatabase().get(
+          sell['id'],
+          allColumns: true,
+        );
         var paidAmount = 0.0;
         var returnAmount = 0.0;
         payment.forEach((element) {
           if (element['is_return'] == 0) {
             paidAmount += element['amount'];
-            payments
-                .add({'key': element['method'], 'value': element['amount']});
+            payments.add({
+              'key': element['method'],
+              'value': element['amount'],
+            });
           } else {
             returnAmount += element['amount'];
           }
@@ -463,7 +497,7 @@ class _LayoutState extends State<Layout> {
     return result;
   }
 
-//load payment details
+  //load payment details
   Future<void> loadPaymentDetails() async {
     var paymentMethod = [];
     //fetch different payment methods
