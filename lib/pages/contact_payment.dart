@@ -16,6 +16,8 @@ import '../models/contact_model.dart';
 import '../models/system.dart';
 
 class ContactPayment extends StatefulWidget {
+  const ContactPayment({super.key});
+
   @override
   _ContactPaymentState createState() => _ContactPaymentState();
 }
@@ -23,24 +25,35 @@ class ContactPayment extends StatefulWidget {
 class _ContactPaymentState extends State<ContactPayment> {
   final _formKey = GlobalKey<FormState>();
   int selectedCustomerId = 0;
+  bool _isSubmitting = false;
+  bool _isFetchingDue = false;
+
   List<Map<String, dynamic>> customerListMap = [],
       paymentAccounts = [],
       paymentMethods = [],
-      locationListMap = [
-        {'id': 0, 'name': 'set location'}
-      ];
+      locationListMap = [];
+
   Map<String, dynamic> selectedLocation = {'id': 0, 'name': 'set location'},
       selectedCustomer = {'id': 0, 'name': 'select customer', 'mobile': ' - '};
+
   String due = '0.00';
   Map<String, dynamic> selectedPaymentAccount = {'id': null, 'name': "None"},
       selectedPaymentMethod = {
         'name': 'name',
         'value': 'value',
-        'account_id': null
+        'account_id': null,
       };
 
   String symbol = '';
-  var payingAmount = new TextEditingController();
+  var payingAmount = TextEditingController();
+
+  // Core Tokens from STYLE_MD.md
+  static const Color _bgColor = Color(0xFFF8FAFC);
+  static const Color _surfaceColor = Color(0xFFFFFFFF);
+  static const Color _primaryTextColor = Color(0xFF0F172A);
+  static const Color _mutedTextColor = Color(0xFF6B7280);
+  static const Color _accentColor = Color(0xFF0F4C81);
+  static const Color _outlineColor = Color(0xFFE5E7EB);
 
   static int themeType = 1;
   ThemeData themeData = AppTheme.getThemeFromThemeMode(themeType);
@@ -58,138 +71,82 @@ class _ContactPaymentState extends State<ContactPayment> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _bgColor,
       appBar: AppBar(
         elevation: 0.0,
-        title: Text(AppLocalizations.of(context).translate('contact_payment'),
-            style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-                fontWeight: 600)),
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(MdiIcons.chevronLeft, color: _primaryTextColor),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          AppLocalizations.of(context).translate('contact_payment'),
+          style: AppTheme.getTextStyle(
+            themeData.textTheme.titleLarge,
+            fontWeight: 600,
+            color: _primaryTextColor,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Container(
-          padding: EdgeInsets.all(MySize.size10!),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                customerList(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Column(
+          padding: Spacing.symmetric(horizontal: 20, vertical: 16),
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 480),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildSectionCard(
+                    child: Column(
                       children: [
-                        Text(
-                          AppLocalizations.of(context)
-                              .translate('due')
-                              .toUpperCase(),
-                          style: AppTheme.getTextStyle(
-                              themeData.textTheme.titleMedium,
-                              fontWeight: 600,
-                              letterSpacing: -0.2),
-                        ),
-                        // Padding(padding: EdgeInsets.symmetric(vertical: MySize.size4)),
-                        Text(
-                          Helper().formatCurrency(due),
-                          style: AppTheme.getTextStyle(
-                              themeData.textTheme.headlineSmall,
-                              fontWeight: 600,
-                              letterSpacing: -0.2),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-                Padding(padding: EdgeInsets.symmetric(vertical: MySize.size4!)),
-                Visibility(
-                  visible: (selectedCustomerId != 0),
-                  child: Column(
-                    children: [
-                      TextFormField(
-                          decoration: InputDecoration(
-                            prefix: Text(symbol),
-                            labelText: AppLocalizations.of(context)
-                                .translate('payment_amount'),
-                            border: themeData.inputDecorationTheme.border,
-                            enabledBorder:
-                                themeData.inputDecorationTheme.border,
-                            focusedBorder:
-                                themeData.inputDecorationTheme.focusedBorder,
+                        _buildCustomerSelector(),
+                        if (selectedCustomerId != 0) ...[
+                          Padding(
+                            padding: Spacing.vertical(24),
+                            child: _buildDueSection(),
                           ),
-                          controller: payingAmount,
-                          validator: (newValue) {
-                            if ((newValue == '' ||
-                                    double.parse(newValue!) < 0.01) ||
-                                double.parse(newValue) >
-                                    double.parse(due.toString())) {
-                              return AppLocalizations.of(context)
-                                  .translate('enter_valid_payment_amount');
-                            } else {
-                              return null;
-                            }
-                          },
-                          textAlign: TextAlign.end,
-                          style: AppTheme.getTextStyle(
-                              themeData.textTheme.titleSmall,
-                              fontWeight: 400,
-                              letterSpacing: -0.2),
-                          inputFormatters: [
-                            // ignore: deprecated_member_use
-                            FilteringTextInputFormatter(
-                                RegExp(r'^(\d+)?\.?\d{0,2}'),
-                                allow: true)
-                          ],
-                          keyboardType: TextInputType.number,
-                          onChanged: (value) {}),
-                      Padding(
-                        padding: EdgeInsets.all(MySize.size10!),
-                        child: Row(
-                          children: <Widget>[
-                            Text(
-                              AppLocalizations.of(context)
-                                      .translate('location') +
-                                  ' : ',
-                              style: AppTheme.getTextStyle(
-                                  themeData.textTheme.titleLarge,
-                                  fontWeight: 700,
-                                  letterSpacing: -0.2),
-                            ),
-                            locations(),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(MySize.size10!),
-                        child: paymentOptions(),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(MySize.size10!),
-                        child: paymentAccount(),
-                      ),
-                    ],
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: themeData.colorScheme.primary,
-                      ),
-                      onPressed: () async {
-                        await onSubmit();
-                      },
-                      child: Text(
-                        AppLocalizations.of(context).translate('submit'),
-                        style: AppTheme.getTextStyle(
-                            themeData.textTheme.titleLarge,
-                            color: themeData.colorScheme.onPrimary,
-                            fontWeight: 700,
-                            letterSpacing: -0.2),
+                  if (selectedCustomerId != 0) ...[
+                    SizedBox(height: 16),
+                    _buildSectionCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildAmountInput(),
+                          SizedBox(height: 20),
+                          _buildLabel(
+                            AppLocalizations.of(context).translate('location'),
+                          ),
+                          _buildLocationSelector(),
+                          SizedBox(height: 16),
+                          _buildLabel(
+                            AppLocalizations.of(
+                              context,
+                            ).translate('payment_method'),
+                          ),
+                          _buildPaymentMethodSelector(),
+                          SizedBox(height: 16),
+                          _buildLabel(
+                            AppLocalizations.of(
+                              context,
+                            ).translate('payment_account'),
+                          ),
+                          _buildPaymentAccountSelector(),
+                        ],
                       ),
                     ),
                   ],
-                )
-              ],
+                  SizedBox(height: 32),
+                  _buildSubmitButton(),
+                  SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),
@@ -197,383 +154,503 @@ class _ContactPaymentState extends State<ContactPayment> {
     );
   }
 
-  onSubmit() async {
-    if (await Helper().checkConnectivity()) {
-      if (_formKey.currentState!.validate()) {
-        if (selectedLocation['id'] != 0) {
-          Map<String, dynamic> paymentMap = {
-            "contact_id": selectedCustomerId,
-            "amount": double.parse(payingAmount.text),
-            "method": selectedPaymentMethod['name'],
-            "account_id": selectedPaymentMethod['account_id'],
-            "paid_on": DateFormat("yyyy-MM-dd hh:mm:ss")
-                .format(DateTime.now())
-                .toString(),
-          };
-          await ContactPaymentApi()
-              .postContactPayment(paymentMap)
-              .then((value) {
-            Navigator.popUntil(context, ModalRoute.withName('/layout'));
-            Fluttertoast.showToast(
-                backgroundColor: Colors.green,
-                msg: AppLocalizations.of(context)
-                    .translate('payment_successful'));
-            Navigator.pushNamed(context, '/layout');
-          });
-        } else {
-          Fluttertoast.showToast(
-              msg: AppLocalizations.of(context)
-                  .translate('error_invalid_location'));
-        }
-      }
-    } else {
-      Fluttertoast.showToast(
-          msg: AppLocalizations.of(context).translate('check_connectivity'));
-    }
+  Widget _buildSectionCard({required Widget child}) {
+    return Container(
+      padding: Spacing.all(24),
+      decoration: BoxDecoration(
+        color: _surfaceColor,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 28,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: child,
+    );
   }
 
-  //dropdown widget for selecting customer
-  Widget customerList() {
-    return Column(
-      children: [
-        Text(
-          AppLocalizations.of(context).translate('select_customer') + ' : ',
-          style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-              fontWeight: 700, letterSpacing: -0.2),
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: Spacing.only(bottom: 8),
+      child: Text(
+        text,
+        style: AppTheme.getTextStyle(
+          themeData.textTheme.bodySmall,
+          fontWeight: 600,
+          color: _mutedTextColor,
         ),
-        SearchChoices.single(
-          underline: Visibility(
-            child: Container(),
-            visible: false,
+      ),
+    );
+  }
+
+  Widget _buildCustomerSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(AppLocalizations.of(context).translate('select_customer')),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _outlineColor),
           ),
-          displayClearIcon: false,
-          value: jsonEncode(selectedCustomer),
-          items: customerListMap.map<DropdownMenuItem<String>>((Map value) {
-            return DropdownMenuItem<String>(
+          padding: Spacing.horizontal(12),
+          child: SearchChoices.single(
+            underline: SizedBox.shrink(),
+            displayClearIcon: false,
+            value: jsonEncode(selectedCustomer),
+            items: customerListMap.map<DropdownMenuItem<String>>((Map value) {
+              return DropdownMenuItem<String>(
                 value: jsonEncode(value),
-                child: Container(
-                  width: MySize.screenWidth! * 0.8,
-                  child: Text("${value['name']} (${value['mobile'] ?? ' - '})",
-                      softWrap: true,
-                      maxLines: 5,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTheme.getTextStyle(
-                          themeData.textTheme.bodyMedium,
-                          color: themeData.colorScheme.onSurface)),
-                ));
-          }).toList(),
-          // value: customerListMap[0],
-          iconEnabledColor: Colors.blue,
-          iconDisabledColor: Colors.black,
-          onChanged: (value) async {
-            setState(() {
-              selectedCustomer = jsonDecode(value);
-            });
-            var newValue = selectedCustomer['id'];
-            if (newValue != 0) {
-              if (await Helper().checkConnectivity()) {
-                showDialog(
-                  barrierDismissible: false,
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      content: Row(
-                        children: [
-                          CircularProgressIndicator(),
-                          Container(
-                              margin: EdgeInsets.only(left: 5),
-                              child: Text(AppLocalizations.of(context)
-                                  .translate('loading'))),
-                        ],
-                      ),
-                    );
-                  },
-                );
-                await ContactPaymentApi()
-                    .getCustomerDue(newValue)
-                    .then((value) {
-                  if (value != null) {
-                    due = value['data'][0]['sell_due'].toString();
-                    setState(() {
-                      selectedCustomerId = newValue;
-                      _formKey.currentState!.reset();
-                    });
-                  }
-                  Navigator.pop(context);
-                });
-              } else {
-                Fluttertoast.showToast(
-                    msg: AppLocalizations.of(context)
-                        .translate('check_connectivity'));
+                child: Text(
+                  "${value['name']} (${value['mobile'] ?? ' - '})",
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.bodyMedium,
+                    color: _primaryTextColor,
+                  ),
+                ),
+              );
+            }).toList(),
+            icon: Icon(MdiIcons.chevronDown, color: _mutedTextColor),
+            onChanged: (value) async {
+              if (value == null) return;
+              setState(() {
+                selectedCustomer = jsonDecode(value);
+              });
+              var newValue = selectedCustomer['id'];
+              if (newValue != 0) {
+                _onCustomerChanged(newValue);
               }
-            }
-          },
-          isExpanded: true,
-        )
+            },
+            isExpanded: true,
+          ),
+        ),
       ],
     );
   }
 
-  Widget locations() {
-    return PopupMenuButton(
-        onSelected: (item) {
+  void _onCustomerChanged(int customerId) async {
+    if (await Helper().checkConnectivity()) {
+      setState(() => _isFetchingDue = true);
+      try {
+        var value = await ContactPaymentApi().getCustomerDue(customerId);
+        if (value != null) {
+          due = value['data'][0]['sell_due'].toString();
           setState(() {
-            selectedLocation = item as Map<String, dynamic>;
-            setPaymentDetails().then((value) {
-              selectedPaymentMethod = paymentMethods[0];
-              selectedPaymentAccount = paymentAccounts[0];
-              paymentAccounts.forEach((element) {
-                if (selectedPaymentMethod['account_id'] == element['id']) {
-                  selectedPaymentAccount = element;
-                }
-              });
-            });
+            selectedCustomerId = customerId;
+            _formKey.currentState!.reset();
           });
-        },
-        itemBuilder: (BuildContext context) {
-          return locationListMap.map((Map value) {
-            return PopupMenuItem(
-              value: value,
-              height: MySize.size36!,
-              child: Text(value['name'],
-                  style: AppTheme.getTextStyle(themeData.textTheme.bodyMedium,
-                      color: themeData.colorScheme.onSurface)),
-            );
-          }).toList();
-        },
-        color: Colors.white,
-        child: Container(
-          padding: EdgeInsets.only(
-              left: MySize.size12!,
-              right: MySize.size12!,
-              top: MySize.size8!,
-              bottom: MySize.size8!),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(MySize.size8!)),
-            color: customAppTheme.bgLayer1,
-            border: Border.all(color: customAppTheme.bgLayer3, width: 1),
+        }
+      } finally {
+        setState(() => _isFetchingDue = false);
+      }
+    } else {
+      Fluttertoast.showToast(
+        msg: AppLocalizations.of(context).translate('check_connectivity'),
+      );
+    }
+  }
+
+  Widget _buildDueSection() {
+    return Column(
+      children: [
+        Text(
+          AppLocalizations.of(context).translate('due').toUpperCase(),
+          style: AppTheme.getTextStyle(
+            themeData.textTheme.bodySmall,
+            fontWeight: 600,
+            letterSpacing: 1.2,
+            color: _mutedTextColor,
           ),
-          child: Row(
-            children: <Widget>[
-              Text(
-                selectedLocation['name'],
+        ),
+        SizedBox(height: 4),
+        if (_isFetchingDue)
+          SizedBox(
+            height: 32,
+            width: 32,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: _accentColor,
+            ),
+          )
+        else
+          Text(
+            Helper().formatCurrency(due),
+            style: AppTheme.getTextStyle(
+              themeData.textTheme.headlineSmall,
+              fontWeight: 600,
+              color: _primaryTextColor,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAmountInput() {
+    return TextFormField(
+      controller: payingAmount,
+      textAlign: TextAlign.right,
+      keyboardType: TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+      ],
+      style: AppTheme.getTextStyle(
+        themeData.textTheme.titleMedium,
+        fontWeight: 500,
+        color: _primaryTextColor,
+      ),
+      decoration: InputDecoration(
+        prefixIcon: Container(
+          width: 40,
+          alignment: Alignment.center,
+          child: Text(
+            symbol,
+            style: AppTheme.getTextStyle(
+              themeData.textTheme.titleMedium,
+              fontWeight: 600,
+              color: _accentColor,
+            ),
+          ),
+        ),
+        labelText: AppLocalizations.of(context).translate('payment_amount'),
+        labelStyle: TextStyle(color: _mutedTextColor),
+        hintText: '0.00',
+        contentPadding: Spacing.symmetric(horizontal: 16, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: _outlineColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: _outlineColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: _accentColor, width: 2),
+        ),
+      ),
+      validator: (newValue) {
+        if (newValue == null || newValue.isEmpty) {
+          return AppLocalizations.of(
+            context,
+          ).translate('enter_valid_payment_amount');
+        }
+        double? val = double.tryParse(newValue);
+        if (val == null || val < 0.01) {
+          return AppLocalizations.of(
+            context,
+          ).translate('enter_valid_payment_amount');
+        }
+        if (val > double.parse(due)) {
+          return AppLocalizations.of(context).translate('amount_exceeds_due');
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildLocationSelector() {
+    return _buildDropdownTrigger(
+      value: selectedLocation['name'],
+      onTap: () => _showLocationPopup(),
+    );
+  }
+
+  void _showLocationPopup() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: Spacing.vertical(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: locationListMap.map((loc) {
+              return ListTile(
+                title: Text(loc['name']),
+                onTap: () {
+                  setState(() {
+                    selectedLocation = loc;
+                    _updatePaymentOptions();
+                  });
+                  Navigator.pop(context);
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPaymentMethodSelector() {
+    return _buildDropdownTrigger(
+      value: selectedPaymentMethod['value'],
+      onTap: () => _showPaymentMethodPopup(),
+    );
+  }
+
+  void _showPaymentMethodPopup() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: Spacing.vertical(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: paymentMethods.map((method) {
+              return ListTile(
+                title: Text(method['value']),
+                onTap: () {
+                  setState(() {
+                    selectedPaymentMethod = method;
+                    _matchPaymentAccount();
+                  });
+                  Navigator.pop(context);
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPaymentAccountSelector() {
+    return _buildDropdownTrigger(
+      value: selectedPaymentAccount['name'],
+      onTap: () => _showPaymentAccountPopup(),
+    );
+  }
+
+  void _showPaymentAccountPopup() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: Spacing.vertical(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: paymentAccounts.map((acc) {
+              return ListTile(
+                title: Text(acc['name']),
+                onTap: () {
+                  setState(() {
+                    selectedPaymentAccount = acc;
+                    selectedPaymentMethod['account_id'] = acc['id'];
+                  });
+                  Navigator.pop(context);
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDropdownTrigger({
+    required String value,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: Spacing.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _outlineColor),
+          color: _bgColor,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                value,
                 style: AppTheme.getTextStyle(
                   themeData.textTheme.bodyLarge,
-                  color: themeData.colorScheme.onSurface,
+                  color: _primaryTextColor,
                 ),
               ),
-              Container(
-                margin: EdgeInsets.only(left: MySize.size4!),
-                child: Icon(
-                  MdiIcons.chevronDown,
-                  size: MySize.size22,
-                  color: themeData.colorScheme.onSurface,
+            ),
+            Icon(MdiIcons.chevronDown, color: _mutedTextColor, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return SizedBox(
+      height: 52,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _accentColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          elevation: 0,
+        ),
+        onPressed: _isSubmitting ? null : () => onSubmit(),
+        child: _isSubmitting
+            ? SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
                 ),
               )
-            ],
-          ),
-        ));
+            : Text(
+                AppLocalizations.of(context).translate('submit'),
+                style: AppTheme.getTextStyle(
+                  themeData.textTheme.titleMedium,
+                  color: Colors.white,
+                  fontWeight: 600,
+                ),
+              ),
+      ),
+    );
   }
 
-  selectCustomer() async {
-    customerListMap = [
-      {'id': 0, 'name': 'select customer', 'mobile': ' - '}
-    ];
-    await Contact().get().then((value) {
-      value.forEach((Map<String, dynamic> element) {
-        setState(() {
-          customerListMap.add({
-            'id': element['id'],
-            'name': element['name'],
-            'mobile': element['mobile']
-          });
-        });
-      });
-    });
+  void _updatePaymentOptions() async {
+    await setPaymentDetails();
+    if (paymentMethods.isNotEmpty) {
+      selectedPaymentMethod = paymentMethods[0];
+      _matchPaymentAccount();
+    }
   }
 
-  setLocationMap() async {
-    locationListMap = [];
-    await System().get('location').then((value) {
-      value.forEach((element) {
-        setState(() {
-          locationListMap.add({
-            'id': element['id'],
-            'name': element['name'],
-          });
-        });
-      });
-    });
+  void _matchPaymentAccount() {
+    selectedPaymentAccount = paymentAccounts[0];
+    for (var acc in paymentAccounts) {
+      if (selectedPaymentMethod['account_id'] == acc['id']) {
+        selectedPaymentAccount = acc;
+        break;
+      }
+    }
   }
 
-  setPaymentDetails() async {
-    await Helper().getFormattedBusinessDetails().then((value) {
-      setState(() {
-        symbol = value['symbol'];
-      });
-    });
-    List payments =
-        await System().get('payment_method', selectedLocation['id']);
-    paymentAccounts = [
-      {'id': null, 'name': "None"}
-    ];
-    await System().getPaymentAccounts().then((value) {
-      List<String> accIds = [];
-      value.forEach((element) {
-        payments.forEach((payment) {
-          if ((payment['account_id'].toString() == element['id'].toString()) &&
-              !accIds.contains(element['id'].toString())) {
-            accIds.add(element['id'].toString());
-            paymentAccounts.add({'id': element['id'], 'name': element['name']});
+  Future<void> onSubmit() async {
+    if (await Helper().checkConnectivity()) {
+      if (_formKey.currentState!.validate()) {
+        if (selectedLocation['id'] != 0) {
+          setState(() => _isSubmitting = true);
+          try {
+            Map<String, dynamic> paymentMap = {
+              "contact_id": selectedCustomerId,
+              "amount": double.parse(payingAmount.text),
+              "method": selectedPaymentMethod['name'],
+              "account_id": selectedPaymentMethod['account_id'],
+              "paid_on": DateFormat(
+                "yyyy-MM-dd hh:mm:ss",
+              ).format(DateTime.now()),
+            };
+            await ContactPaymentApi().postContactPayment(paymentMap);
+            Fluttertoast.showToast(
+              backgroundColor: Colors.green,
+              msg: AppLocalizations.of(context).translate('payment_successful'),
+            );
+            Navigator.popUntil(context, ModalRoute.withName('/layout'));
+            Navigator.pushNamed(context, '/layout');
+          } catch (e) {
+            Fluttertoast.showToast(msg: e.toString());
+          } finally {
+            setState(() => _isSubmitting = false);
           }
+        } else {
+          Fluttertoast.showToast(
+            msg: AppLocalizations.of(
+              context,
+            ).translate('error_invalid_location'),
+          );
+        }
+      }
+    } else {
+      Fluttertoast.showToast(
+        msg: AppLocalizations.of(context).translate('check_connectivity'),
+      );
+    }
+  }
+
+  Future<void> selectCustomer() async {
+    customerListMap = [
+      {'id': 0, 'name': 'select customer', 'mobile': ' - '},
+    ];
+    var contacts = await Contact().get();
+    for (var element in contacts) {
+      setState(() {
+        customerListMap.add({
+          'id': element['id'],
+          'name': element['name'],
+          'mobile': element['mobile'],
         });
       });
+    }
+  }
+
+  Future<void> setLocationMap() async {
+    locationListMap = [];
+    var locations = await System().get('location');
+    for (var element in locations) {
+      setState(() {
+        locationListMap.add({'id': element['id'], 'name': element['name']});
+      });
+    }
+    if (locationListMap.isNotEmpty && selectedLocation['id'] == 0) {
+      // Optional: set first location as default if none selected
+    }
+  }
+
+  Future setPaymentDetails() async {
+    var details = await Helper().getFormattedBusinessDetails();
+    setState(() {
+      symbol = details['symbol'];
     });
+
+    List payments = await System().get(
+      'payment_method',
+      selectedLocation['id'],
+    );
+    paymentAccounts = [
+      {'id': null, 'name': "None"},
+    ];
+
+    var accs = await System().getPaymentAccounts();
+    List<String> accIds = [];
+    for (var element in accs) {
+      for (var payment in payments) {
+        if ((payment['account_id'].toString() == element['id'].toString()) &&
+            !accIds.contains(element['id'].toString())) {
+          accIds.add(element['id'].toString());
+          paymentAccounts.add({'id': element['id'], 'name': element['name']});
+        }
+      }
+    }
+
     paymentMethods = [];
-    payments.forEach((element) {
+    for (var element in payments) {
       setState(() {
         paymentMethods.add({
           'name': element['name'],
           'value': element['label'],
           'account_id': (element['account_id'] != null)
               ? int.parse(element['account_id'].toString())
-              : null
+              : null,
         });
       });
-    });
-  }
-
-  //contact payment widget
-  Widget paymentOptions() {
-    return Row(
-      children: <Widget>[
-        Text(
-          AppLocalizations.of(context).translate('payment_method') + ' : ',
-          style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-              fontWeight: 700, letterSpacing: -0.2),
-        ),
-        PopupMenuButton(
-          onSelected: (item) {
-            setState(() {
-              selectedPaymentMethod = item as Map<String, dynamic>;
-              selectedPaymentAccount = paymentAccounts[0];
-              paymentAccounts.forEach((element) {
-                if (selectedPaymentMethod['account_id'] == element['id']) {
-                  selectedPaymentAccount = element;
-                }
-              });
-            });
-          },
-          itemBuilder: (BuildContext context) {
-            return paymentMethods.map((Map value) {
-              return PopupMenuItem(
-                value: value,
-                height: MySize.size36!,
-                child: Text(value['value'],
-                    style: AppTheme.getTextStyle(themeData.textTheme.bodyMedium,
-                        color: themeData.colorScheme.onSurface)),
-              );
-            }).toList();
-          },
-          color: Colors.white,
-          child: Container(
-            padding: EdgeInsets.only(
-                left: MySize.size12!,
-                right: MySize.size12!,
-                top: MySize.size8!,
-                bottom: MySize.size8!),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(MySize.size8!)),
-              color: customAppTheme.bgLayer1,
-              border: Border.all(color: customAppTheme.bgLayer3, width: 1),
-            ),
-            child: Row(
-              children: <Widget>[
-                Text(
-                  selectedPaymentMethod['value'],
-                  style: AppTheme.getTextStyle(
-                    themeData.textTheme.bodyLarge,
-                    color: themeData.colorScheme.onSurface,
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: MySize.size4!),
-                  child: Icon(
-                    MdiIcons.chevronDown,
-                    size: MySize.size22,
-                    color: themeData.colorScheme.onSurface,
-                  ),
-                )
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  //payment account widget
-  Widget paymentAccount() {
-    return Row(
-      children: <Widget>[
-        Text(
-          AppLocalizations.of(context).translate('payment_account') + ' : ',
-          style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-              fontWeight: 700, letterSpacing: -0.2),
-        ),
-        PopupMenuButton(
-          onSelected: (item) {
-            Map<String, dynamic> selectedItem = item as Map<String, dynamic>;
-            setState(() {
-              selectedPaymentAccount = item;
-              selectedPaymentMethod['account_id'] = selectedItem['id'];
-            });
-          },
-          itemBuilder: (BuildContext context) {
-            return paymentAccounts.map((Map value) {
-              return PopupMenuItem(
-                value: value,
-                height: MySize.size36!,
-                child: Text(value['name'],
-                    style: AppTheme.getTextStyle(themeData.textTheme.bodyMedium,
-                        color: themeData.colorScheme.onSurface)),
-              );
-            }).toList();
-          },
-          color: Colors.white,
-          child: Container(
-            padding: EdgeInsets.only(
-                left: MySize.size12!,
-                right: MySize.size12!,
-                top: MySize.size8!,
-                bottom: MySize.size8!),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(MySize.size8!)),
-              color: customAppTheme.bgLayer1,
-              border: Border.all(color: customAppTheme.bgLayer3, width: 1),
-            ),
-            child: Row(
-              children: <Widget>[
-                Text(
-                  selectedPaymentAccount['name'],
-                  style: AppTheme.getTextStyle(
-                    themeData.textTheme.bodyLarge,
-                    color: themeData.colorScheme.onSurface,
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: MySize.size4!),
-                  child: Icon(
-                    MdiIcons.chevronDown,
-                    size: MySize.size22,
-                    color: themeData.colorScheme.onSurface,
-                  ),
-                )
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
+    }
   }
 }

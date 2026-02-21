@@ -338,5 +338,6 @@
   "new_password": "كلمه المرور الجديده",
   "log_out": "تسجيل الخروج",
   "add_customer_success": "تم اضافه العميل بنجاح",
-  "purchases": "المشتريات"
+  "purchases": "المشتريات",
+  "amount_exceeds_due": "المبلغ يتجاوز المبلغ المستحق"
 }

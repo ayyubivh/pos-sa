@@ -251,6 +251,7 @@ class _SplashState extends State<Splash> {
               textAlign: TextAlign.center,
               style: AppTheme.getTextStyle(
                 themeData.textTheme.displaySmall,
+                fontSize: 36,
                 color: _primary,
                 fontWeight: 800,
                 letterSpacing: -1,
