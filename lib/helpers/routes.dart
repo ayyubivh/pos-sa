@@ -12,7 +12,7 @@ import '../pages/customer.dart';
 import '../pages/expenses.dart';
 import '../pages/field_force.dart';
 import '../pages/follow_up.dart';
-import '../pages/home/home_screen.dart';
+import '../pages/home.dart';
 
 import '../pages/notifications/notify.dart';
 import '../pages/on_boarding/on_boarding.dart';
@@ -33,8 +33,7 @@ class Routes {
       '/onBoarding': (context) => OnBoardingScreen(),
       // '/login': (context) => Login(),
       '/login': (context) => LoginScreen(),
-      //'/home': (context) => Home(),
-      '/home': (context) => HomeScreen(),
+      '/home': (context) => Home(),
       '/products': (context) => Products(),
       '/layout': (context) => Layout(),
       '/Categories': (context) => CategoryScreen(),
