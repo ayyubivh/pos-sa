@@ -49,8 +49,9 @@ class Helper {
     double convertAmount = double.parse(amount.toString());
 
     var amt = NumberFormat.currency(
-            symbol: '', decimalDigits: Config.currencyPrecision)
-        .format(convertAmount);
+      symbol: '',
+      decimalDigits: Config.currencyPrecision,
+    ).format(convertAmount);
     return amt;
   }
 
@@ -67,21 +68,23 @@ class Helper {
   String formatQuantity(amount) {
     double quantity = double.parse(amount.toString());
     var amt = NumberFormat.currency(
-            symbol: '', decimalDigits: Config.quantityPrecision)
-        .format(quantity);
+      symbol: '',
+      decimalDigits: Config.quantityPrecision,
+    ).format(quantity);
     return amt;
   }
 
   //argument model
-  Map argument(
-      {int? sellId,
-      int? locId,
-      int? taxId,
-      String? discountType,
-      double? discountAmount,
-      double? invoiceAmount,
-      int? customerId,
-      int? isQuotation}) {
+  Map argument({
+    int? sellId,
+    int? locId,
+    int? taxId,
+    String? discountType,
+    double? discountAmount,
+    double? invoiceAmount,
+    int? customerId,
+    int? isQuotation,
+  }) {
     Map args = {
       'sellId': sellId,
       'locationId': locId,
@@ -90,7 +93,7 @@ class Helper {
       'discountAmount': discountAmount,
       'invoiceAmount': invoiceAmount,
       'customerId': customerId,
-      'is_quotation': isQuotation
+      'is_quotation': isQuotation,
     };
     return args;
   }
@@ -120,8 +123,12 @@ class Helper {
   }
 
   //calculate inline tax and discount amount
-  calculateTaxAndDiscount(
-      {discountAmount, discountType, taxId, unitPrice}) async {
+  Future<Map<String, double>> calculateTaxAndDiscount({
+    discountAmount,
+    discountType,
+    taxId,
+    unitPrice,
+  }) async {
     double disAmt = 0.0, tax = 0.00, taxAmt = 0.00;
     await System().get('tax').then((value) {
       value.forEach((element) {
@@ -142,7 +149,12 @@ class Helper {
   }
 
   //calculate price including tax
-  calculateTotal({unitPrice, discountType, discountAmount, taxId}) async {
+  Future<String> calculateTotal({
+    unitPrice,
+    discountType,
+    discountAmount,
+    taxId,
+  }) async {
     double tax = 0.00;
     double subTotal = 0.00;
     double amount = 0.0;
@@ -174,19 +186,18 @@ class Helper {
 
   //function for formatting invoice
   Future<void> printDocument(sellId, taxId, context, {invoice}) async {
-    String _invoice = (invoice != null)
+    String invoice0 = (invoice != null)
         ? invoice
         : await InvoiceFormatter().generateInvoice(sellId, taxId, context);
-    await Printing.layoutPdf(onLayout: (pd.PdfPageFormat format) async {
-      return await Printing.convertHtml(
-        format: format,
-        html: _invoice,
-      );
-    });
+    await Printing.layoutPdf(
+      onLayout: (pd.PdfPageFormat format) async {
+        return await Printing.convertHtml(format: format, html: invoice0);
+      },
+    );
   }
 
   // //request permissions
-  requestAppPermission() async {
+  Future<Map<Permission, PermissionStatus>> requestAppPermission() async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.location,
       Permission.storage,
@@ -197,18 +208,20 @@ class Helper {
   }
 
   //job scheduler
-  jobScheduler() {
+  void jobScheduler() {
     if (Config().syncCallLog) {
       final cron = Cron();
-      cron.schedule(Schedule.parse('*/${Config.callLogSyncDuration} * * * *'),
-          () async {
-        syncCallLogs();
-      });
+      cron.schedule(
+        Schedule.parse('*/${Config.callLogSyncDuration} * * * *'),
+        () async {
+          syncCallLogs();
+        },
+      );
     }
   }
 
   //post call_logs in api
-  syncCallLogs() async {
+  Future<void> syncCallLogs() async {
     if (await Permission.phone.status == PermissionStatus.granted) {
       if (Config().syncCallLog && await Helper().checkConnectivity()) {
         // ignore: unused_local_variable
@@ -223,7 +236,8 @@ class Helper {
         // ignore: unused_local_variable
         int from = DateTime.now()
             .subtract(
-                Duration(minutes: (getLogBefore > 1440) ? 1440 : getLogBefore))
+              Duration(minutes: (getLogBefore > 1440) ? 1440 : getLogBefore),
+            )
             .millisecondsSinceEpoch;
         try {
           // //fetch call_log
@@ -247,8 +261,8 @@ class Helper {
   }
 
   //share invoice
-  savePdf(sellId, taxId, context, invoiceNo, {invoice}) async {
-    String _invoice = (invoice != null)
+  Future<void> savePdf(sellId, taxId, context, invoiceNo, {invoice}) async {
+    String invoice0 = (invoice != null)
         ? invoice
         : await InvoiceFormatter().generateInvoice(sellId, taxId, context);
     var targetPath = await getTemporaryDirectory();
@@ -256,7 +270,7 @@ class Helper {
     final String path = targetPath.path + targetFileName;
     final pdfDocument = await Printing.convertHtml(
       format: pd.PdfPageFormat(5595.44, 841),
-      html: _invoice,
+      html: invoice0,
     );
     await File(path).writeAsBytes(pdfDocument);
     await Printing.sharePdf(bytes: pdfDocument, filename: targetFileName);
@@ -280,7 +294,7 @@ class Helper {
       'currencyPrecision': currencyPrecision ?? Config.currencyPrecision,
       'quantityPrecision': quantityPrecision ?? Config.quantityPrecision,
       'taxLabel': (taxLabel != null) ? '$taxLabel : ' : '',
-      'taxNumber': (taxNumber != null) ? '$taxNumber' : ''
+      'taxNumber': (taxNumber != null) ? taxNumber : '',
     };
   }
 
@@ -288,7 +302,7 @@ class Helper {
   Future<bool> getPermission(String permissionFor) async {
     bool permission = false;
     await System().getPermission().then((value) {
-      if (value[0] == 'all' || value.contains("$permissionFor")) {
+      if (value[0] == 'all' || value.contains(permissionFor)) {
         permission = true;
       }
     });
@@ -296,16 +310,21 @@ class Helper {
   }
 
   //call widget
-  Widget callDropdown(context, followUpDetails, List numbers,
-      {required String type}) {
+  Widget callDropdown(
+    context,
+    followUpDetails,
+    List numbers, {
+    required String type,
+  }) {
     numbers.removeWhere((element) => element.toString() == 'null');
-    return Container(
+    return SizedBox(
       height: MySize.size36,
       child: PopupMenuButton<String>(
         icon: Icon(
           (type == 'call') ? MdiIcons.phone : MdiIcons.whatsapp,
-          color:
-              (type == 'call') ? themeData.colorScheme.primary : Colors.green,
+          color: (type == 'call')
+              ? themeData.colorScheme.primary
+              : Colors.green,
         ),
         onSelected: (value) async {
           if (type == 'call') {
@@ -320,10 +339,7 @@ class Helper {
           return numbers.map((item) {
             return PopupMenuItem<String>(
               value: item,
-              child: Text(
-                '$item',
-                style: TextStyle(color: Colors.black),
-              ),
+              child: Text('$item', style: TextStyle(color: Colors.black)),
             );
           }).toList();
         },
@@ -332,7 +348,7 @@ class Helper {
   }
 
   //noData widget
-  noDataWidget(context) {
+  Column noDataWidget(context) {
     return Column(
       children: [
         Expanded(
@@ -350,10 +366,10 @@ class Helper {
             style: AppTheme.getTextStyle(
               themeData.textTheme.headlineSmall,
               fontWeight: 600,
-              color: themeData.colorScheme.onBackground,
+              color: themeData.colorScheme.onSurface,
             ),
           ),
-        )
+        ),
       ],
     );
   }

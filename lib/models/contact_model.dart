@@ -4,7 +4,6 @@ import 'package:pos_final/config.dart';
 
 import '../helpers/AppTheme.dart';
 import '../helpers/SizeConfig.dart';
-import '../pages/login.dart';
 import 'database.dart';
 
 class FollowUpModel {
@@ -14,7 +13,7 @@ class FollowUpModel {
   ThemeData themeData = AppTheme.getThemeFromThemeMode(themeType);
   CustomAppTheme customAppTheme = AppTheme.getCustomAppTheme(themeType);
 
-  followUpForm(customerDetail) {
+  dynamic followUpForm(customerDetail) {
     followUpMap = {
       'id': customerDetail['contact_id'],
       'followUpId': customerDetail['id'],
@@ -27,27 +26,28 @@ class FollowUpModel {
       if (customerDetail['followup_category'] != null)
         'followup_category': {
           'id': int.parse(customerDetail['followup_category']['id'].toString()),
-          'name': customerDetail['followup_category']['name']
+          'name': customerDetail['followup_category']['name'],
         },
       'schedule_type': '${customerDetail['schedule_type']}',
       'start_datetime': '${customerDetail['start_datetime']}',
       'end_datetime': '${customerDetail['end_datetime']}',
-      'description': customerDetail['description'] ?? ''
+      'description': customerDetail['description'] ?? '',
     };
     return followUpMap;
   }
 
-  submitFollowUp(
-      {id,
-      contactId,
-      title,
-      scheduleType,
-      status,
-      followUpCategoryId,
-      startDate,
-      endDate,
-      description,
-      duration}) {
+  dynamic submitFollowUp({
+    id,
+    contactId,
+    title,
+    scheduleType,
+    status,
+    followUpCategoryId,
+    startDate,
+    endDate,
+    description,
+    duration,
+  }) {
     createFollowUpMap = {
       'title': title,
       'contact_id': contactId,
@@ -60,7 +60,7 @@ class FollowUpModel {
       'description': '$description',
       'followup_additional_info': (duration != null && scheduleType == 'call')
           ? {'call duration': '$duration'}
-          : ''
+          : '',
     };
     return createFollowUpMap;
   }
@@ -78,14 +78,11 @@ class FollowUpModel {
             color: themeData.cardTheme.shadowColor!.withAlpha(48),
             blurRadius: 3,
             offset: Offset(0, 1),
-          )
+          ),
         ],
       ),
       padding: EdgeInsets.all(MySize.size4!),
-      child: Icon(
-        Icons.call,
-        color: themeData.colorScheme.background,
-      ),
+      child: Icon(Icons.call, color: themeData.colorScheme.surface),
     );
   }
 }
@@ -94,7 +91,7 @@ class Contact {
   late DbProvider dbProvider;
 
   Contact() {
-    dbProvider = new DbProvider();
+    dbProvider = DbProvider();
   }
 
   Map<String, dynamic> contactModel(element) {
@@ -108,24 +105,27 @@ class Contact {
       'address_line_1': element['address_line_1'],
       'address_line_2': element['address_line_2'],
       'zip_code': element['zip_code'],
-      'mobile': element['mobile']
+      'mobile': element['mobile'],
     };
     return customer;
   }
 
   //save contact
-  insertContact(customer) async {
+  Future<int> insertContact(customer) async {
     final db = await dbProvider.database;
     var response = await db.insert('contact', customer);
     return response;
   }
 
   //get customer name by contact_id
-  getCustomerDetailById(id) async {
+  Future<dynamic> getCustomerDetailById(id) async {
     final db = await dbProvider.database;
-    List response =
-        await db.query('contact', where: 'id = ?', whereArgs: ['$id']);
-    var customerDetail = (response.length > 0) ? response[0] : null;
+    List response = await db.query(
+      'contact',
+      where: 'id = ?',
+      whereArgs: ['$id'],
+    );
+    var customerDetail = (response.isNotEmpty) ? response[0] : null;
     return customerDetail;
   }
 
@@ -136,14 +136,17 @@ class Contact {
       List<Map<String, dynamic>> customers = await db.query('contact');
       return customers;
     } else {
-      List<Map<String, dynamic>> customers = await db.query('contact',
-          columns: ['id', 'name', 'mobile'], orderBy: 'name ASC');
+      List<Map<String, dynamic>> customers = await db.query(
+        'contact',
+        columns: ['id', 'name', 'mobile'],
+        orderBy: 'name ASC',
+      );
       return customers;
     }
   }
 
   //empty contact table
-  emptyContact() async {
+  Future<int> emptyContact() async {
     final db = await dbProvider.database;
     var response = await db.delete('contact');
     return response;

@@ -9,7 +9,6 @@ import 'package:search_choices/search_choices.dart';
 import '../apis/field_force.dart';
 import '../config.dart';
 import '../helpers/AppTheme.dart';
-import '../helpers/SizeConfig.dart';
 import '../helpers/otherHelpers.dart';
 import '../locale/MyLocalizations.dart';
 import '../models/contact_model.dart';
@@ -49,12 +48,12 @@ class _NewVisitFormState extends State<NewVisitForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: themeData.scaffoldBackgroundColor,
       appBar: AppBar(
-        elevation: 0,
         title: Text(
           AppLocalizations.of(context).translate('add_visit'),
           style: AppTheme.getTextStyle(
-            themeData.textTheme.titleMedium,
+            themeData.textTheme.titleLarge,
             fontWeight: 600,
           ),
         ),
@@ -63,369 +62,425 @@ class _NewVisitFormState extends State<NewVisitForm> {
         child: (isLoading)
             ? Helper().loadingIndicator(context)
             : Container(
-                height: MediaQuery.of(context).size.height,
-                padding: EdgeInsets.only(
-                  top: 8,
-                  bottom: 8,
-                  left: 16,
-                  right: 16,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      Row(
-                        children: [
-                          Text(
-                            "${AppLocalizations.of(context).translate('Whom_you_will_be_visiting')}*",
-                            style: AppTheme.getTextStyle(
-                              themeData.textTheme.titleLarge,
-                              fontWeight: 600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Radio(
-                            value: true,
-                            groupValue: fromContact,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                fromContact = value!;
-                              });
-                            },
-                            toggleable: true,
-                          ),
-                          Padding(
-                            padding: EdgeInsets.all(MySize.size6!),
-                            child: Text(
-                              AppLocalizations.of(
-                                context,
-                              ).translate('contacts'),
-                            ),
-                          ),
-                          Padding(padding: EdgeInsets.all(MySize.size14!)),
-                          Radio(
-                            value: false,
-                            groupValue: fromContact,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                fromContact = value!;
-                              });
-                            },
-                            toggleable: true,
-                          ),
-                          Padding(
-                            padding: EdgeInsets.all(MySize.size6!),
-                            child: Text(
-                              AppLocalizations.of(context).translate('others'),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Visibility(
-                        visible: (fromContact == false),
-                        child: Column(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${AppLocalizations.of(context).translate('person_or_company')} : ",
-                                  style: AppTheme.getTextStyle(
-                                    themeData.textTheme.titleMedium,
-                                    fontWeight: 600,
-                                  ),
+                      Card(
+                        child: Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                AppLocalizations.of(
+                                  context,
+                                ).translate('Whom_you_will_be_visiting'),
+                                style: AppTheme.getTextStyle(
+                                  themeData.textTheme.titleMedium,
+                                  fontWeight: 600,
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                    top: MySize.size4!,
-                                    bottom: MySize.size10!,
-                                  ),
-                                  child: TextFormField(
-                                    controller: nameController,
-                                    validator: (value) {
-                                      if (nameController.text.trim() == "") {
-                                        return AppLocalizations.of(
-                                          context,
-                                        ).translate(
-                                          'pLease_provide_person_or_company_name',
-                                        );
-                                      } else {
-                                        return null;
-                                      }
-                                    },
-                                    decoration: InputDecoration(
-                                      border:
-                                          themeData.inputDecorationTheme.border,
-                                      enabledBorder:
-                                          themeData.inputDecorationTheme.border,
-                                      focusedBorder: themeData
-                                          .inputDecorationTheme
-                                          .focusedBorder,
-                                    ),
-                                    textCapitalization:
-                                        TextCapitalization.sentences,
-                                    style: AppTheme.getTextStyle(
-                                      themeData.textTheme.bodyLarge,
-                                      fontWeight: 500,
-                                      color: themeData.colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${AppLocalizations.of(context).translate('visit_address')} : ",
-                                  style: AppTheme.getTextStyle(
-                                    themeData.textTheme.titleMedium,
-                                    fontWeight: 600,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                    top: MySize.size4!,
-                                    bottom: MySize.size10!,
-                                  ),
-                                  child: TextFormField(
-                                    controller: addressController,
-                                    validator: (value) {
-                                      if (addressController.text.trim() == "") {
-                                        return AppLocalizations.of(
-                                          context,
-                                        ).translate(
-                                          'please_enter_visit_address',
-                                        );
-                                      } else {
-                                        return null;
-                                      }
-                                    },
-                                    minLines: 2,
-                                    maxLines: 6,
-                                    decoration: InputDecoration(
-                                      border:
-                                          themeData.inputDecorationTheme.border,
-                                      enabledBorder:
-                                          themeData.inputDecorationTheme.border,
-                                      focusedBorder: themeData
-                                          .inputDecorationTheme
-                                          .focusedBorder,
-                                    ),
-                                    textCapitalization:
-                                        TextCapitalization.sentences,
-                                    style: AppTheme.getTextStyle(
-                                      themeData.textTheme.bodyLarge,
-                                      fontWeight: 500,
-                                      color: themeData.colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Visibility(
-                        visible: (fromContact == true),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${AppLocalizations.of(context).translate('contacts')} : ",
-                              style: AppTheme.getTextStyle(
-                                themeData.textTheme.titleMedium,
-                                fontWeight: 600,
                               ),
-                            ),
-                            customerList(),
-                          ],
+                              SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () =>
+                                          setState(() => fromContact = true),
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: fromContact
+                                              ? themeData.colorScheme.primary
+                                                    .withValues(alpha: 0.1)
+                                              : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: fromContact
+                                                ? themeData.colorScheme.primary
+                                                : themeData.dividerColor,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.contact_page_outlined,
+                                              size: 20,
+                                              color: fromContact
+                                                  ? themeData
+                                                        .colorScheme
+                                                        .primary
+                                                  : themeData.disabledColor,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              AppLocalizations.of(
+                                                context,
+                                              ).translate('contacts'),
+                                              style: AppTheme.getTextStyle(
+                                                themeData.textTheme.bodyMedium,
+                                                color: fromContact
+                                                    ? themeData
+                                                          .colorScheme
+                                                          .primary
+                                                    : themeData.disabledColor,
+                                                fontWeight: fromContact
+                                                    ? 600
+                                                    : 400,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 16),
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () =>
+                                          setState(() => fromContact = false),
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: !fromContact
+                                              ? themeData.colorScheme.primary
+                                                    .withValues(alpha: 0.1)
+                                              : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: !fromContact
+                                                ? themeData.colorScheme.primary
+                                                : themeData.dividerColor,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.person_add_outlined,
+                                              size: 20,
+                                              color: !fromContact
+                                                  ? themeData
+                                                        .colorScheme
+                                                        .primary
+                                                  : themeData.disabledColor,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              AppLocalizations.of(
+                                                context,
+                                              ).translate('others'),
+                                              style: AppTheme.getTextStyle(
+                                                themeData.textTheme.bodyMedium,
+                                                color: !fromContact
+                                                    ? themeData
+                                                          .colorScheme
+                                                          .primary
+                                                    : themeData.disabledColor,
+                                                fontWeight: !fromContact
+                                                    ? 600
+                                                    : 400,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (!fromContact) ...[
+                                SizedBox(height: 24),
+                                Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate('person_or_company'),
+                                  style: AppTheme.getTextStyle(
+                                    themeData.textTheme.titleSmall,
+                                    fontWeight: 600,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                TextFormField(
+                                  controller: nameController,
+                                  validator: (value) {
+                                    if (nameController.text.trim() == "") {
+                                      return AppLocalizations.of(
+                                        context,
+                                      ).translate(
+                                        'pLease_provide_person_or_company_name',
+                                      );
+                                    }
+                                    return null;
+                                  },
+                                  decoration: InputDecoration(
+                                    hintText: AppLocalizations.of(
+                                      context,
+                                    ).translate('person_or_company'),
+                                  ),
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate('visit_address'),
+                                  style: AppTheme.getTextStyle(
+                                    themeData.textTheme.titleSmall,
+                                    fontWeight: 600,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                TextFormField(
+                                  controller: addressController,
+                                  validator: (value) {
+                                    if (addressController.text.trim() == "") {
+                                      return AppLocalizations.of(
+                                        context,
+                                      ).translate('please_enter_visit_address');
+                                    }
+                                    return null;
+                                  },
+                                  minLines: 2,
+                                  maxLines: 4,
+                                  decoration: InputDecoration(
+                                    hintText: AppLocalizations.of(
+                                      context,
+                                    ).translate('visit_address'),
+                                  ),
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                ),
+                              ] else ...[
+                                SizedBox(height: 24),
+                                Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate('select_contact'),
+                                  style: AppTheme.getTextStyle(
+                                    themeData.textTheme.titleSmall,
+                                    fontWeight: 600,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: themeData
+                                        .inputDecorationTheme
+                                        .fillColor,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: themeData.dividerColor,
+                                    ),
+                                  ),
+                                  child: customerList(),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "${AppLocalizations.of(context).translate('visit_on')} : ",
-                            style: AppTheme.getTextStyle(
-                              themeData.textTheme.titleMedium,
-                              fontWeight: 600,
-                            ),
-                          ),
-                          Card(
-                            margin: EdgeInsets.all(MySize.size5!),
-                            child: InkWell(
-                              onTap: () async {
-                                final DateTime? pickedDate =
-                                    await showDatePicker(
-                                      context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime.now(),
-                                      lastDate: DateTime.now().add(
-                                        Duration(days: 366),
-                                      ),
-                                    );
-
-                                if (pickedDate != null) {
-                                  final TimeOfDay? pickedTime =
-                                      await showTimePicker(
+                      SizedBox(height: 16),
+                      Card(
+                        child: Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                AppLocalizations.of(
+                                  context,
+                                ).translate('visit_details'),
+                                style: AppTheme.getTextStyle(
+                                  themeData.textTheme.titleMedium,
+                                  fontWeight: 600,
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                AppLocalizations.of(
+                                  context,
+                                ).translate('visit_on'),
+                                style: AppTheme.getTextStyle(
+                                  themeData.textTheme.titleSmall,
+                                  fontWeight: 600,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              InkWell(
+                                onTap: () async {
+                                  final DateTime? pickedDate =
+                                      await showDatePicker(
                                         context: context,
-                                        initialTime: TimeOfDay.now(),
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime.now(),
+                                        lastDate: DateTime.now().add(
+                                          Duration(days: 366),
+                                        ),
                                       );
 
-                                  if (pickedTime != null) {
-                                    final DateTime combinedDateTime = DateTime(
-                                      pickedDate.year,
-                                      pickedDate.month,
-                                      pickedDate.day,
-                                      pickedTime.hour,
-                                      pickedTime.minute,
-                                    );
+                                  if (pickedDate != null) {
+                                    final TimeOfDay? pickedTime =
+                                        await showTimePicker(
+                                          context: context,
+                                          initialTime: TimeOfDay.now(),
+                                        );
 
-                                    setState(() {
-                                      visitOn = DateFormat(
-                                        'yyyy-MM-dd HH:mm:ss',
-                                      ).format(combinedDateTime);
-                                    });
-                                  }
-                                }
-                              },
-                              child: Padding(
-                                padding: EdgeInsets.all(12.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      DateFormat('yyyy-MM-dd  hh:mm a').format(
-                                        DateFormat(
+                                    if (pickedTime != null) {
+                                      final DateTime combinedDateTime =
+                                          DateTime(
+                                            pickedDate.year,
+                                            pickedDate.month,
+                                            pickedDate.day,
+                                            pickedTime.hour,
+                                            pickedTime.minute,
+                                          );
+
+                                      setState(() {
+                                        visitOn = DateFormat(
                                           'yyyy-MM-dd HH:mm:ss',
-                                        ).parse(visitOn),
+                                        ).format(combinedDateTime);
+                                      });
+                                    }
+                                  }
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: themeData
+                                        .inputDecorationTheme
+                                        .fillColor,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: themeData.dividerColor,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        DateFormat(
+                                          'yyyy-MM-dd  hh:mm a',
+                                        ).format(
+                                          DateFormat(
+                                            'yyyy-MM-dd HH:mm:ss',
+                                          ).parse(visitOn),
+                                        ),
+                                        style: AppTheme.getTextStyle(
+                                          themeData.textTheme.bodyLarge,
+                                          color: themeData.colorScheme.primary,
+                                          fontWeight: 500,
+                                        ),
                                       ),
-                                      style: AppTheme.getTextStyle(
-                                        themeData.textTheme.bodyLarge,
-                                        fontWeight: 700,
+                                      Icon(
+                                        Icons.calendar_month_outlined,
                                         color: themeData.colorScheme.primary,
+                                        size: 20,
                                       ),
-                                    ),
-                                    Icon(
-                                      Icons.calendar_today,
-                                      color: themeData.colorScheme.primary,
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "${AppLocalizations.of(context).translate('purpose_of_visiting')} : ",
-                            style: AppTheme.getTextStyle(
-                              themeData.textTheme.titleMedium,
-                              fontWeight: 600,
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(
-                              top: MySize.size4!,
-                              bottom: MySize.size10!,
-                            ),
-                            child: TextFormField(
-                              controller: visitForController,
-                              minLines: 2,
-                              maxLines: 6,
-                              decoration: InputDecoration(
-                                border: themeData.inputDecorationTheme.border,
-                                enabledBorder:
-                                    themeData.inputDecorationTheme.border,
-                                focusedBorder: themeData
-                                    .inputDecorationTheme
-                                    .focusedBorder,
-                              ),
-                              textCapitalization: TextCapitalization.sentences,
-                              style: AppTheme.getTextStyle(
-                                themeData.textTheme.bodyLarge,
-                                fontWeight: 500,
-                                color: themeData.colorScheme.onSurface,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(top: 16),
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              vertical: 8,
-                              horizontal: 48,
-                            ),
-                            backgroundColor: themeData.colorScheme.primary,
-                          ),
-                          onPressed: () async {
-                            bool validated = true;
-                            if (fromContact && selectedCustomer['id'] == 0) {
-                              validated = false;
-                              Fluttertoast.showToast(
-                                msg: AppLocalizations.of(
+                              SizedBox(height: 16),
+                              Text(
+                                AppLocalizations.of(
                                   context,
-                                ).translate('please_set_contact'),
-                              );
-                            }
-
-                            if (await Helper().checkConnectivity()) {
-                              if (_formKey.currentState!.validate() &&
-                                  validated) {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                                Map visitDetails = {
-                                  if (fromContact == true)
-                                    'contact_id': selectedCustomer['id'],
-                                  if (fromContact == false)
-                                    'visit_to': nameController.text,
-                                  if (fromContact == false)
-                                    'visit_address': addressController.text,
-                                  'assigned_to': Config.userId,
-                                  'visit_on': DateFormat(
-                                    'yyyy-MM-dd HH:mm:ss',
-                                  ).format(DateTime.now()),
-                                  'visit_for': visitForController.text,
-                                };
-                                FieldForceApi().create(visitDetails).then((
-                                  value,
-                                ) {
-                                  if (value != null) {
-                                    Fluttertoast.showToast(
-                                      msg: AppLocalizations.of(
-                                        context,
-                                      ).translate('status_updated'),
-                                    );
-                                  }
-                                  Navigator.pop(context);
-                                });
-                              }
-                            }
-                          },
-                          child: Text(
-                            AppLocalizations.of(context).translate('save'),
-                            style: AppTheme.getTextStyle(
-                              themeData.textTheme.bodyLarge,
-                              color: themeData.colorScheme.onPrimary,
-                              letterSpacing: 0.3,
-                            ),
+                                ).translate('purpose_of_visiting'),
+                                style: AppTheme.getTextStyle(
+                                  themeData.textTheme.titleSmall,
+                                  fontWeight: 600,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              TextFormField(
+                                controller: visitForController,
+                                minLines: 2,
+                                maxLines: 4,
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(
+                                    context,
+                                  ).translate('purpose_of_visiting'),
+                                ),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                                style: AppTheme.getTextStyle(
+                                  themeData.textTheme.bodyLarge,
+                                  fontWeight: 500,
+                                  color: themeData.colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
                           ),
+                        ),
+                      ),
+                      SizedBox(height: 32),
+                      ElevatedButton(
+                        onPressed: () async {
+                          bool validated = true;
+                          if (fromContact && selectedCustomer['id'] == 0) {
+                            validated = false;
+                            Fluttertoast.showToast(
+                              msg: AppLocalizations.of(
+                                context,
+                              ).translate('please_set_contact'),
+                            );
+                          }
+
+                          if (await Helper().checkConnectivity()) {
+                            if (_formKey.currentState!.validate() &&
+                                validated) {
+                              setState(() {
+                                isLoading = true;
+                              });
+                              Map visitDetails = {
+                                if (fromContact == true)
+                                  'contact_id': selectedCustomer['id'],
+                                if (fromContact == false)
+                                  'visit_to': nameController.text,
+                                if (fromContact == false)
+                                  'visit_address': addressController.text,
+                                'assigned_to': Config.userId,
+                                'visit_on': DateFormat(
+                                  'yyyy-MM-dd HH:mm:ss',
+                                ).format(DateTime.now()),
+                                'visit_for': visitForController.text,
+                              };
+                              FieldForceApi().create(visitDetails).then((
+                                value,
+                              ) {
+                                if (value != null) {
+                                  Fluttertoast.showToast(
+                                    msg: AppLocalizations.of(
+                                      context,
+                                    ).translate('status_updated'),
+                                  );
+                                }
+                                Navigator.pop(context);
+                              });
+                            }
+                          }
+                        },
+                        child: Text(
+                          AppLocalizations.of(context).translate('save'),
                         ),
                       ),
                     ],
@@ -445,17 +500,14 @@ class _NewVisitFormState extends State<NewVisitForm> {
       items: customerListMap.map<DropdownMenuItem<String>>((Map value) {
         return DropdownMenuItem<String>(
           value: jsonEncode(value),
-          child: SizedBox(
-            width: MySize.screenWidth! * 0.8,
-            child: Text(
-              "${value['name']} (${value['mobile'] ?? ' - '})",
-              softWrap: true,
-              maxLines: 5,
-              overflow: TextOverflow.ellipsis,
-              style: AppTheme.getTextStyle(
-                themeData.textTheme.bodyMedium,
-                color: themeData.colorScheme.onSurface,
-              ),
+          child: Text(
+            "${value['name']} (${value['mobile'] ?? ' - '})",
+            softWrap: true,
+            maxLines: 5,
+            overflow: TextOverflow.ellipsis,
+            style: AppTheme.getTextStyle(
+              themeData.textTheme.bodyMedium,
+              color: themeData.colorScheme.onSurface,
             ),
           ),
         );
