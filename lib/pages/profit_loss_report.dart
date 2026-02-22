@@ -1,5 +1,4 @@
 import 'dart:developer' as dev;
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -7,12 +6,11 @@ import '../apis/profit_loss_report.dart';
 import '../helpers/AppTheme.dart';
 import '../locale/MyLocalizations.dart';
 import '../models/profit_loss_report_model.dart';
+import '../constants.dart';
 
 class ProfitLossReportScreen extends StatefulWidget {
   static const String routeName = '/ProfitLossReport';
-  ProfitLossReportScreen({
-    Key? key,
-  }) : super(key: key);
+  ProfitLossReportScreen({Key? key}) : super(key: key);
 
   static int themeType = 1;
 
@@ -21,54 +19,40 @@ class ProfitLossReportScreen extends StatefulWidget {
 }
 
 class _ProfitLossReportScreenState extends State<ProfitLossReportScreen> {
-  TextStyle textStyle(
-    BuildContext context,
-  ) {
-    return TextStyle(
-      fontSize: MediaQuery.of(context).size.width / 25,
-      fontWeight: FontWeight.bold,
-    );
-  }
+  ThemeData themeData = AppTheme.getThemeFromThemeMode(
+    ProfitLossReportScreen.themeType,
+  );
 
-  ThemeData themeData =
-      AppTheme.getThemeFromThemeMode(ProfitLossReportScreen.themeType);
+  CustomAppTheme customAppTheme = AppTheme.getCustomAppTheme(
+    ProfitLossReportScreen.themeType,
+  );
 
-  CustomAppTheme customAppTheme =
-      AppTheme.getCustomAppTheme(ProfitLossReportScreen.themeType);
-
-  List<Color> myColors = [
-    Colors.white,
-    Color(0xff3d63ff).withValues(alpha: .3),
-    Colors.blue[100] as Color,
-    Colors.red[100] as Color,
-    Colors.yellow[100] as Color,
-    Colors.green[100] as Color,
-    Colors.grey[100] as Color,
-    Colors.purple[100] as Color,
-  ];
   ProfitLossReportModel? profitLossReportModel;
-  late bool loading;
-  Map<String, dynamic>? mapData;
-  List myReports = [];
+  bool loading = true;
+  List<Map<String, dynamic>> myReports = [];
 
   Future<void> _getProfitLossReport() async {
     dev.log("Start");
 
-    loading = true;
+    setState(() {
+      loading = true;
+      myReports = [];
+    });
 
     var result = await ProfitLossReportService().getProfitLossReport();
-    if (result == null) {
+    if (result != null) {
       setState(() {
-        loading = true;
+        profitLossReportModel = result;
+        Map<String, dynamic> mapData = profitLossReportModel!.toJson();
+        mapData.forEach((key, value) {
+          if (value != null && key != 'net_profit') {
+            myReports.add({"title": key, "data": value});
+          }
+        });
+        loading = false;
       });
     } else {
       setState(() {
-        profitLossReportModel = result;
-        mapData = profitLossReportModel!.toJson();
-        mapData!.forEach((key, value) {
-          myReports.add({"title": key, "data": value});
-        });
-        dev.log("myReports ${myReports[0]}");
         loading = false;
       });
     }
@@ -83,62 +67,163 @@ class _ProfitLossReportScreenState extends State<ProfitLossReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBackgroundColor,
       appBar: AppBar(
         elevation: 0,
-        title: Text(AppLocalizations.of(context).translate('reports'),
-            style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-                fontWeight: 600)),
+        backgroundColor: kBackgroundColor,
+        title: Text(
+          AppLocalizations.of(context).translate('profit_loss_report'),
+          style: AppTheme.getTextStyle(
+            themeData.textTheme.titleLarge,
+            fontWeight: 600,
+            color: kPrimaryTextColor,
+          ),
+        ),
+        iconTheme: IconThemeData(color: kPrimaryTextColor),
       ),
-      body: SizedBox(
-        child: loading
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
-            : SingleChildScrollView(
-                child: Table(
-                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                    //  defaultColumnWidth: const FixedColumnWidth(120.0),
-                    border: TableBorder.all(
-                        color: Colors.black,
-                        style: BorderStyle.solid,
-                        width: 1),
-                    children: List.generate(
-                        myReports.length,
-                        (index) => myCellWidget(
-                            title: AppLocalizations.of(context)
-                                .translate(myReports[index]['title']),
-                            data: myReports[index]['data'].toString(),
-                            context: context))),
+      body: loading
+          ? Center(child: CircularProgressIndicator(color: kDefaultColor))
+          : RefreshIndicator(
+              onRefresh: _getProfitLossReport,
+              color: kDefaultColor,
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (profitLossReportModel?.netProfit != null)
+                      _buildSummaryCard(),
+                    SizedBox(height: 24),
+                    Text(
+                      AppLocalizations.of(context).translate('report_details'),
+                      style: AppTheme.getTextStyle(
+                        themeData.textTheme.titleMedium,
+                        fontWeight: 600,
+                        color: kPrimaryTextColor,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: myReports.length,
+                      separatorBuilder: (context, index) =>
+                          SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        return _buildReportItem(
+                          title: AppLocalizations.of(
+                            context,
+                          ).translate(myReports[index]['title']),
+                          data: myReports[index]['data'].toString(),
+                        );
+                      },
+                    ),
+                    SizedBox(height: 32),
+                  ],
+                ),
               ),
+            ),
+    );
+  }
+
+  Widget _buildSummaryCard() {
+    final netProfit = profitLossReportModel?.netProfit ?? 0.0;
+    final isProfit = netProfit >= 0;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: kSurfaceColor,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 28,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            AppLocalizations.of(context).translate('net_profit'),
+            style: AppTheme.getTextStyle(
+              themeData.textTheme.bodyMedium,
+              color: kMutedTextColor,
+              fontWeight: 500,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            netProfit.toStringAsFixed(2),
+            style: AppTheme.getTextStyle(
+              themeData.textTheme.displaySmall,
+              color: isProfit ? Color(0xFF10B981) : Color(0xFFEF4444),
+              fontWeight: 600,
+            ),
+          ),
+          if (profitLossReportModel?.grossProfit != null) ...[
+            SizedBox(height: 16),
+            Divider(color: kOutlineColor, height: 1),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  AppLocalizations.of(context).translate('gross_profit'),
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.bodyMedium,
+                    color: kMutedTextColor,
+                  ),
+                ),
+                Text(
+                  profitLossReportModel!.grossProfit!,
+                  style: AppTheme.getTextStyle(
+                    themeData.textTheme.bodyLarge,
+                    color: kPrimaryTextColor,
+                    fontWeight: 600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
 
-  TableRow myCellWidget({String? title, String? data, BuildContext? context}) {
-    return TableRow(
-        decoration: BoxDecoration(
-          color: myColors[Random().nextInt(7)],
-          border: Border.all(
-            width: 1,
-          ),
-        ),
+  Widget _buildReportItem({required String title, required String data}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: BoxDecoration(
+        color: kSurfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kOutlineColor, width: 1),
+      ),
+      child: Row(
         children: [
-          Padding(
-            padding: EdgeInsets.all(5),
+          Expanded(
             child: Text(
-              title!,
-              textAlign: TextAlign.center,
-              style: textStyle(context!),
+              title,
+              style: AppTheme.getTextStyle(
+                themeData.textTheme.bodyMedium,
+                color: kMutedTextColor,
+                fontWeight: 500,
+              ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.all(5),
-            child: Text(
-              data!,
-              textAlign: TextAlign.center,
-              style: textStyle(context),
+          Text(
+            data,
+            style: AppTheme.getTextStyle(
+              themeData.textTheme.bodyLarge,
+              color: kPrimaryTextColor,
+              fontWeight: 600,
             ),
           ),
-        ]);
+        ],
+      ),
+    );
   }
 }

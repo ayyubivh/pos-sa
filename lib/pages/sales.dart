@@ -14,7 +14,6 @@ import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import '../apis/api.dart';
 import '../apis/sell.dart';
 import '../helpers/AppTheme.dart';
-import '../helpers/SizeConfig.dart';
 import '../helpers/otherHelpers.dart';
 import '../locale/MyLocalizations.dart';
 import '../models/contact_model.dart';
@@ -109,7 +108,7 @@ class _SalesState extends State<Sales> {
       child: Scaffold(
         backgroundColor: themeData.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: themeData.scaffoldBackgroundColor,
+          backgroundColor: kBackgroundColor,
           elevation: 0,
           centerTitle: false,
           title: Text(
@@ -117,98 +116,61 @@ class _SalesState extends State<Sales> {
             style: AppTheme.getTextStyle(
               themeData.textTheme.titleLarge,
               fontWeight: 600,
-              fontSize: 20,
+              fontSize: 22,
               color: kPrimaryTextColor,
             ),
           ),
           actions: <Widget>[
             Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: TextButton.icon(
-                onPressed: () async {
-                  if (await Helper().checkConnectivity()) {
-                    showDialog(
-                      barrierDismissible: true,
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          content: Row(
-                            children: [
-                              CircularProgressIndicator(strokeWidth: 3),
-                              SizedBox(width: 16),
-                              Expanded(
-                                child: Text(
-                                  AppLocalizations.of(
-                                    context,
-                                  ).translate('sync_in_progress'),
-                                  style: AppTheme.getTextStyle(
-                                    themeData.textTheme.bodyMedium,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                    await Sell().createApiSell(syncAll: true).then((value) {
-                      Navigator.pop(context);
-                      setState(() {
-                        synced = true;
-                        sells();
-                      });
-                    });
-                  } else {
-                    Fluttertoast.showToast(
-                      msg: AppLocalizations.of(
-                        context,
-                      ).translate('check_connectivity'),
-                    );
-                  }
-                },
-                icon: Icon(
-                  synced ? Icons.sync : Icons.sync_problem,
-                  size: 20,
-                  color: synced ? kDefaultColor : Colors.orange,
-                ),
-                label: Text(
-                  AppLocalizations.of(context).translate('sync'),
-                  style: AppTheme.getTextStyle(
-                    themeData.textTheme.titleSmall,
-                    fontWeight: (synced) ? 500 : 700,
-                    color: kDefaultColor,
-                  ),
-                ),
-              ),
+              padding: const EdgeInsets.only(right: 12.0),
+              child: _buildSyncButton(),
             ),
           ],
-          bottom: TabBar(
-            isScrollable: false,
-            indicatorSize: TabBarIndicatorSize.tab,
-            indicatorPadding: EdgeInsets.symmetric(horizontal: 20),
-            tabs: [
-              Tab(
-                child: Text(
-                  AppLocalizations.of(context).translate('recent_sales'),
-                  style: AppTheme.getTextStyle(
-                    themeData.textTheme.titleSmall,
-                    fontWeight: 600,
-                  ),
-                ),
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(60),
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: kBackgroundSoftColor,
+                borderRadius: BorderRadius.circular(16),
               ),
-              Tab(
-                child: Text(
-                  AppLocalizations.of(context).translate('all_sales'),
-                  style: AppTheme.getTextStyle(
-                    themeData.textTheme.titleSmall,
-                    fontWeight: 600,
-                  ),
+              child: TabBar(
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
+                indicator: BoxDecoration(
+                  color: kSurfaceColor,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x0A000000),
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
                 ),
+                labelColor: kDefaultColor,
+                unselectedLabelColor: kMutedTextColor,
+                labelStyle: AppTheme.getTextStyle(
+                  themeData.textTheme.titleSmall,
+                  fontWeight: 600,
+                ),
+                unselectedLabelStyle: AppTheme.getTextStyle(
+                  themeData.textTheme.titleSmall,
+                  fontWeight: 500,
+                ),
+                tabs: [
+                  Tab(
+                    text: AppLocalizations.of(
+                      context,
+                    ).translate('recent_sales'),
+                  ),
+                  Tab(
+                    text: AppLocalizations.of(context).translate('all_sales'),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
         body: TabBarView(children: [currentSales(), allSales()]),
@@ -801,82 +763,181 @@ class _SalesState extends State<Sales> {
           );
   }
 
+  Widget _buildSyncButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: synced
+            ? kDefaultColor.withValues(alpha: .1)
+            : Colors.orange.withValues(alpha: .1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: IconButton(
+        onPressed: _handleSync,
+        icon: Icon(
+          synced ? Icons.sync : Icons.sync_problem,
+          size: 22,
+          color: synced ? kDefaultColor : Colors.orange,
+        ),
+        tooltip: AppLocalizations.of(context).translate('sync'),
+      ),
+    );
+  }
+
+  Future<void> _handleSync() async {
+    if (await Helper().checkConnectivity()) {
+      showDialog(
+        barrierDismissible: true,
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+            ),
+            content: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: kDefaultColor,
+                    ),
+                  ),
+                  SizedBox(width: 20),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(
+                        context,
+                      ).translate('sync_in_progress'),
+                      style: AppTheme.getTextStyle(
+                        themeData.textTheme.bodyMedium,
+                        fontWeight: 500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+      await Sell().createApiSell(syncAll: true).then((value) {
+        Navigator.pop(context);
+        setState(() {
+          synced = true;
+          sells();
+        });
+      });
+    } else {
+      Fluttertoast.showToast(
+        msg: AppLocalizations.of(context).translate('check_connectivity'),
+      );
+    }
+  }
+
   Widget dateRangePicker() {
     return Scaffold(
+      backgroundColor: kBackgroundColor,
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).translate('select_range')),
         elevation: 0,
+        backgroundColor: kBackgroundColor,
+        iconTheme: IconThemeData(color: kPrimaryTextColor),
       ),
       body: Column(
         children: [
-          SfDateRangePicker(
-            view: DateRangePickerView.year,
-            selectionMode: DateRangePickerSelectionMode.range,
-            onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
-              if (args.value.startDate != null) {
-                setState(() {
-                  startDateRange = DateFormat(
-                    'yyyy-MM-dd',
-                  ).format(args.value.startDate!).toString();
-                });
-              }
-              if (args.value.endDate != null) {
-                setState(() {
-                  endDateRange = DateFormat(
-                    'yyyy-MM-dd',
-                  ).format(args.value.endDate!).toString();
-                });
-              }
-            },
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(20),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: kSurfaceColor,
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x0A000000),
+                      blurRadius: 20,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: SfDateRangePicker(
+                  view: DateRangePickerView.month,
+                  selectionMode: DateRangePickerSelectionMode.range,
+                  headerStyle: DateRangePickerHeaderStyle(
+                    textStyle: AppTheme.getTextStyle(
+                      themeData.textTheme.titleMedium,
+                      fontWeight: 600,
+                    ),
+                  ),
+                  monthViewSettings: DateRangePickerMonthViewSettings(
+                    firstDayOfWeek: 1,
+                  ),
+                  selectionColor: kDefaultColor,
+                  startRangeSelectionColor: kDefaultColor.withValues(alpha: .8),
+                  endRangeSelectionColor: kDefaultColor.withValues(alpha: .8),
+                  rangeSelectionColor: kDefaultColor.withValues(alpha: .15),
+                  todayHighlightColor: kDefaultColor,
+                  onSelectionChanged:
+                      (DateRangePickerSelectionChangedArgs args) {
+                        if (args.value.startDate != null) {
+                          setState(() {
+                            startDateRange = DateFormat(
+                              'yyyy-MM-dd',
+                            ).format(args.value.startDate!).toString();
+                          });
+                        }
+                        if (args.value.endDate != null) {
+                          setState(() {
+                            endDateRange = DateFormat(
+                              'yyyy-MM-dd',
+                            ).format(args.value.endDate!).toString();
+                          });
+                        }
+                      },
+                ),
+              ),
+            ),
           ),
-          Padding(padding: EdgeInsets.symmetric(vertical: MySize.size30!)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(MySize.size20!),
-                    side: BorderSide(color: themeData.colorScheme.primary),
-                  ),
-                  foregroundColor: themeData.colorScheme.primary,
-                  backgroundColor: themeData.colorScheme.onPrimary,
+          Container(
+            padding: EdgeInsets.fromLTRB(20, 16, 20, 32),
+            decoration: BoxDecoration(
+              color: kSurfaceColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x08000000),
+                  blurRadius: 10,
+                  offset: Offset(0, -4),
                 ),
-                onPressed: () {
-                  setState(() {
-                    startDateRange = null;
-                    endDateRange = null;
-                  });
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  AppLocalizations.of(context).translate('reset'),
-                  style: AppTheme.getTextStyle(
-                    themeData.textTheme.titleLarge,
-                    color: themeData.colorScheme.onPrimary,
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(MySize.size20!),
-                    side: BorderSide(color: themeData.colorScheme.primary),
-                  ),
-                  foregroundColor: themeData.colorScheme.primary,
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  AppLocalizations.of(context).translate('ok'),
-                  style: AppTheme.getTextStyle(
-                    themeData.textTheme.titleLarge,
-                    color: themeData.colorScheme.onPrimary,
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        startDateRange = null;
+                        endDateRange = null;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      AppLocalizations.of(context).translate('reset'),
+                    ),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(AppLocalizations.of(context).translate('ok')),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
