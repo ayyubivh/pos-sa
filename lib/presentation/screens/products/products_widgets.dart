@@ -85,11 +85,15 @@ class _ProductGridCard extends StatelessWidget {
   final dynamic product;
   final String symbol;
   final VoidCallback onTap;
+  final bool canEditPrice;
+  final Function(double) onEditPrice;
 
   const _ProductGridCard({
     required this.product,
     required this.symbol,
     required this.onTap,
+    required this.canEditPrice,
+    required this.onEditPrice,
   });
 
   @override
@@ -179,13 +183,84 @@ class _ProductGridCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(height: 4),
-                    Text(
-                      "${Helper().formatCurrency(double.parse(product['unit_price'].toString()))} $symbol",
-                      style: AppTheme.getTextStyle(
-                        Theme.of(context).textTheme.bodyMedium,
-                        fontWeight: 700,
-                        color: kDefaultColor,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "${Helper().formatCurrency(double.parse(product['unit_price'].toString()))} $symbol",
+                            style: AppTheme.getTextStyle(
+                              Theme.of(context).textTheme.bodyMedium,
+                              fontWeight: 700,
+                              color: kDefaultColor,
+                            ),
+                          ),
+                        ),
+                        if (canEditPrice)
+                          IconButton(
+                            icon: Icon(Icons.edit_outlined, size: 16),
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                            color: kMutedTextColor,
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  double newPrice = double.parse(
+                                    product['unit_price'].toString(),
+                                  );
+                                  return AlertDialog(
+                                    title: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      ).translate('edit_price'),
+                                    ),
+                                    content: TextFormField(
+                                      initialValue: newPrice.toStringAsFixed(2),
+                                      keyboardType:
+                                          TextInputType.numberWithOptions(
+                                            decimal: true,
+                                          ),
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.allow(
+                                          RegExp(r'^(\d+)?\.?\d{0,2}'),
+                                        ),
+                                      ],
+                                      onChanged: (value) {
+                                        newPrice =
+                                            Helper().validateInput(value);
+                                      },
+                                      decoration: InputDecoration(
+                                        prefix: Text(symbol),
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: Text(
+                                          AppLocalizations.of(
+                                            context,
+                                          ).translate('cancel'),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          onEditPrice(newPrice);
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text(
+                                          AppLocalizations.of(
+                                            context,
+                                          ).translate('save'),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                      ],
                     ),
                   ],
                 ),
@@ -202,11 +277,15 @@ class _ProductListCard extends StatelessWidget {
   final dynamic product;
   final String symbol;
   final VoidCallback onTap;
+  final bool canEditPrice;
+  final Function(double) onEditPrice;
 
   const _ProductListCard({
     required this.product,
     required this.symbol,
     required this.onTap,
+    required this.canEditPrice,
+    required this.onEditPrice,
   });
 
   @override
@@ -214,7 +293,6 @@ class _ProductListCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 100,
         padding: EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: kSurfaceColor,
@@ -275,13 +353,80 @@ class _ProductListCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  "${Helper().formatCurrency(double.parse(product['unit_price'].toString()))} $symbol",
-                  style: AppTheme.getTextStyle(
-                    Theme.of(context).textTheme.titleMedium,
-                    fontWeight: 700,
-                    color: kDefaultColor,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "${Helper().formatCurrency(double.parse(product['unit_price'].toString()))} $symbol",
+                      style: AppTheme.getTextStyle(
+                        Theme.of(context).textTheme.titleMedium,
+                        fontWeight: 700,
+                        color: kDefaultColor,
+                      ),
+                    ),
+                    if (canEditPrice)
+                      IconButton(
+                        icon: Icon(Icons.edit_outlined, size: 16),
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(),
+                        color: kMutedTextColor,
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              double newPrice = double.parse(
+                                product['unit_price'].toString(),
+                              );
+                              return AlertDialog(
+                                title: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate('edit_price'),
+                                ),
+                                content: TextFormField(
+                                  initialValue: newPrice.toStringAsFixed(2),
+                                  keyboardType: TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'^(\d+)?\.?\d{0,2}'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    newPrice = Helper().validateInput(value);
+                                  },
+                                  decoration: InputDecoration(
+                                    prefix: Text(symbol),
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      ).translate('cancel'),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      onEditPrice(newPrice);
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      ).translate('save'),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                  ],
                 ),
                 SizedBox(height: 8),
                 Icon(Icons.add_circle_outline, color: kDefaultColor, size: 24),

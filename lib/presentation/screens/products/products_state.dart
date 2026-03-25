@@ -22,6 +22,7 @@ class _ProductsState extends State<Products> {
       cartCount = 0,
       sellingPriceGroupId = 0,
       offset = 0;
+  bool canEditPrice = false;
   int? byAlphabets, byPrice;
 
   List<DropdownMenuItem<int>> _categoryMenuItems = [],
@@ -120,6 +121,9 @@ class _ProductsState extends State<Products> {
     if (await Helper().getPermission("product.view")) {
       canViewProducts = true;
     }
+    canEditPrice = await Helper().getPermission(
+      "edit_product_price_from_pos_screen",
+    );
   }
 
   //set selling Price Group Id
@@ -840,6 +844,12 @@ class _ProductsState extends State<Products> {
                 product: products[index],
                 symbol: symbol,
                 onTap: () => onTapProduct(index),
+                canEditPrice: canEditPrice,
+                onEditPrice: (newPrice) {
+                  setState(() {
+                    products[index]['unit_price'] = newPrice;
+                  });
+                },
               );
             },
           )
@@ -853,6 +863,12 @@ class _ProductsState extends State<Products> {
                 product: products[index],
                 symbol: symbol,
                 onTap: () => onTapProduct(index),
+                canEditPrice: canEditPrice,
+                onEditPrice: (newPrice) {
+                  setState(() {
+                    products[index]['unit_price'] = newPrice;
+                  });
+                },
               );
             },
           );
