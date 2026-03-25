@@ -272,6 +272,14 @@ class _HomeState extends State<Home> {
                     icon: Icons.language_rounded,
                     onTap: _showLanguageDialog,
                   ),
+                  _quickActionTile(
+                    width: tileWidth,
+                    label: AppLocalizations.of(context).translate('products'),
+                    icon: Icons.inventory_2_rounded,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/products');
+                    },
+                  ),
                   if (accessExpenses)
                     _quickActionTile(
                       width: tileWidth,

@@ -12,7 +12,6 @@ import 'package:pos_final/domain/models/sell_database.dart';
 import 'package:pos_final/domain/models/system.dart';
 import 'package:pos_final/presentation/screens/category_screen.dart';
 import 'package:pos_final/presentation/screens/home_screen.dart';
-import 'package:pos_final/presentation/screens/products_screen.dart';
 import 'package:pos_final/presentation/screens/sales_screen.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -73,7 +72,6 @@ class _LayoutState extends State<Layout> {
   List<Widget> pages_index = <Widget>[
     Home(),
     CategoryScreen(),
-    Products(),
     Sales(),
   ];
   @override
@@ -150,10 +148,6 @@ class _LayoutState extends State<Layout> {
           FlashyTabBarItem(
             icon: const Icon(Icons.category_rounded),
             title: Text(AppLocalizations.of(context).translate('Categories')),
-          ),
-          FlashyTabBarItem(
-            icon: const Icon(Icons.inventory_2_rounded),
-            title: Text(AppLocalizations.of(context).translate('products')),
           ),
           FlashyTabBarItem(
             icon: const Icon(Icons.bar_chart_rounded),
