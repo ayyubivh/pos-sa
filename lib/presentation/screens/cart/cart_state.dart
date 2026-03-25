@@ -595,7 +595,7 @@ class CartState extends State<Cart> {
         .then((value) {
           value.forEach((element) {
             if (element['selling_price_group'] != null) {
-              jsonDecode(element['selling_price_group']).forEach((element) {
+              jsonDecode(element['selling_price_group'].toString()).forEach((element) {
                 if (element['key'] == sellingPriceGroupId) {
                   price = element['value'];
                 }
@@ -637,7 +637,9 @@ class CartState extends State<Cart> {
             var price;
             var product;
             if (value[0]['selling_price_group'] != null) {
-              jsonDecode(value[0]['selling_price_group']).forEach((element) {
+              jsonDecode(value[0]['selling_price_group'].toString()).forEach((
+                element,
+              ) {
                 if (element['key'] == sellingPriceGroupId) {
                   price = element['value'];
                 }

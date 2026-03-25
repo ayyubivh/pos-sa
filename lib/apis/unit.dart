@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:http/http.dart' as http;
+import 'package:pos_final/helpers/http_logger.dart';
 import '../models/system.dart';
 import 'api.dart';
 

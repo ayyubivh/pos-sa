@@ -12,7 +12,8 @@ class _ProductsState extends State<Products> {
       gridView = false,
       canAddSell = false,
       canViewProducts = false,
-      usePriceGroup = true;
+      usePriceGroup = true,
+      isLoading = false;
 
   int selectedLocationId = 0,
       categoryId = 0,
@@ -57,7 +58,7 @@ class _ProductsState extends State<Products> {
         productList();
       }
     });
-    setLocationMap();
+
     categoryList();
     subCategoryList(categoryId);
     brandList();
@@ -66,26 +67,26 @@ class _ProductsState extends State<Products> {
 
   @override
   Future<void> didChangeDependencies() async {
-    argument = ModalRoute.of(context)!.settings.arguments as Map?;
+    var newArgument = ModalRoute.of(context)!.settings.arguments as Map?;
+    int initLocationId = selectedLocationId;
+
     //Arguments sellId & locationId is send from edit.
-    if (argument != null) {
-      Future.delayed(Duration(milliseconds: 200), () {
-        if (mounted) {
-          setState(() {
-            selectedLocationId = argument!['locationId'];
-            canChangeLocation = false;
-          });
-        }
-      });
+    if (newArgument != null) {
+      argument = newArgument;
+      initLocationId = newArgument['locationId'];
+      canChangeLocation = false;
+      // We set the location synchronously here so that the initial product
+      // load (setInitDetails) correctly fetches products for this location.
+      selectedLocationId = initLocationId;
     } else {
       canChangeLocation = true;
     }
-    await setInitDetails(selectedLocationId);
+    await setInitDetails(initLocationId);
     super.didChangeDependencies();
   }
 
   //Set location & product
-  Future<void> setInitDetails(selectedLocationId) async {
+  Future<void> setInitDetails(int initLocationId) async {
     //check subscription
     var activeSubscriptionDetails = await System().get('active-subscription');
     if (activeSubscriptionDetails.length > 0) {
@@ -100,10 +101,15 @@ class _ProductsState extends State<Products> {
     await Helper().getFormattedBusinessDetails().then((value) {
       symbol = value['symbol'] + ' ';
     });
-    setDefaultLocation(selectedLocationId);
+    await setLocationMap();
+    setDefaultLocation(initLocationId);
+    await priceGroupList();
     products = [];
     offset = 0;
-    productList();
+    // Ensure that if we have a selected location we fetch products right away
+    if (selectedLocationId != 0) {
+      productList();
+    }
   }
 
   //Fetch permission from database
@@ -137,21 +143,15 @@ class _ProductsState extends State<Products> {
 
   //set product list
   Future<void> productList() async {
-    offset++;
-    //check last sync, if difference is 10 minutes then sync again.
-    String? lastSync = await System().getProductLastSync();
-    final date2 = DateTime.now();
-    if (lastSync == null ||
-        (date2.difference(DateTime.parse(lastSync)).inMinutes > 10)) {
-      if (await Helper().checkConnectivity()) {
-        await Variations().refresh();
-        await System().insertProductLastSyncDateTimeNow();
-      }
+    if (offset == 0) {
+      if (mounted) setState(() => isLoading = true);
     }
+    offset++;
+    // We removed the 10 minute bulk sync because we are fetching live from the API on demand.
 
     findSellingPriceGroupId(selectedLocationId);
     await Variations()
-        .get(
+        .getFromApi(
           brandId: brandId,
           categoryId: categoryId,
           subCategoryId: subCategoryId,
@@ -163,19 +163,27 @@ class _ProductsState extends State<Products> {
           byPrice: byPrice,
         )
         .then((element) {
-          element.forEach((product) {
-            double price = 0;
-            if (product['selling_price_group'] != null) {
-              jsonDecode(product['selling_price_group']).forEach((element) {
-                if (element['key'] == sellingPriceGroupId) {
-                  price = double.parse(element['value'].toString());
-                }
+          if (mounted) {
+            setState(() {
+              if (offset == 1) {
+                products = []; // Just to be safe for initial clear
+              }
+              isLoading = false;
+            });
+            for (var product in element) {
+              double price = 0;
+              if (product['selling_price_group'] != null) {
+                jsonDecode(product['selling_price_group']).forEach((e) {
+                  if (e['key'] == sellingPriceGroupId) {
+                    price = double.parse(e['value'].toString());
+                  }
+                });
+              }
+              setState(() {
+                products.add(ProductModel().product(product, price));
               });
             }
-            setState(() {
-              products.add(ProductModel().product(product, price));
-            });
-          });
+          }
         });
   }
 
@@ -246,9 +254,12 @@ class _ProductsState extends State<Products> {
         ),
       );
 
+      bool hasPriceGroup = false;
+
       for (var element in locationListMap) {
         if (element['id'] == selectedLocationId &&
             element['selling_price_group_id'] != null) {
+          hasPriceGroup = true;
           _priceGroupMenuItems.add(
             DropdownMenuItem(
               value: true,
@@ -258,6 +269,10 @@ class _ProductsState extends State<Products> {
             ),
           );
         }
+      }
+
+      if (!hasPriceGroup && usePriceGroup) {
+        usePriceGroup = false;
       }
     });
   }
@@ -719,7 +734,7 @@ class _ProductsState extends State<Products> {
                 double price = 0;
                 var product;
                 if (value[0]['selling_price_group'] != null) {
-                  jsonDecode(value[0]['selling_price_group']).forEach((
+                  jsonDecode(value[0]['selling_price_group'].toString()).forEach((
                     element,
                   ) {
                     if (element['key'] == sellingPriceGroupId) {
@@ -771,6 +786,25 @@ class _ProductsState extends State<Products> {
   }
 
   Widget _productsList() {
+    if (isLoading && products.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: kDefaultColor),
+            SizedBox(height: 16),
+            Text(
+              AppLocalizations.of(context).translate('sync_in_progress'),
+              style: AppTheme.getTextStyle(
+                themeData.textTheme.bodyMedium,
+                color: kMutedTextColor,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (products.isEmpty) {
       return Center(
         child: Column(
@@ -857,6 +891,12 @@ class _ProductsState extends State<Products> {
   }
 
   Future<void> setLocationMap() async {
+    setState(() {
+      locationListMap = [
+        {'id': 0, 'name': 'set location', 'selling_price_group_id': null},
+      ];
+    });
+
     await System().get('location').then((value) async {
       value.forEach((element) {
         if (element['is_active'].toString() == '1') {
