@@ -2,7 +2,7 @@ part of 'package:pos_final/pages/home.dart';
 
 class _HomeState extends State<Home> {
   var user,
-      note = new TextEditingController(),
+      note = TextEditingController(),
       clockInTime = DateTime.now(),
       selectedLanguage;
   LatLng? currentLoc;
@@ -56,7 +56,7 @@ class _HomeState extends State<Home> {
   }
 
   //function to set homepage details
-  homepageData() async {
+  Future<void> homepageData() async {
     var prefs = await SharedPreferences.getInstance();
     user = await System().get('loggedInUser');
     userName =
@@ -77,7 +77,7 @@ class _HomeState extends State<Home> {
   }
 
   //permission for displaying Attendance Button
-  checkIOButtonDisplay() async {
+  Future<void> checkIOButtonDisplay() async {
     await Attendance().getCheckInTime(Config.userId).then((value) {
       if (value != null) {
         clockInTime = DateTime.parse(value);
@@ -107,7 +107,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -279,34 +279,34 @@ class _HomeState extends State<Home> {
                       icon: Icons.receipt_long_rounded,
                       onTap: () => _navigateIfOnline('/expense'),
                     ),
-                  _quickActionTile(
-                    width: tileWidth,
-                    label: AppLocalizations.of(
-                      context,
-                    ).translate('contact_payment'),
-                    icon: Icons.payments_rounded,
-                    onTap: () => _navigateIfOnline('/contactPayment'),
-                  ),
-                  _quickActionTile(
-                    width: tileWidth,
-                    label: AppLocalizations.of(context).translate('follow_ups'),
-                    icon: Icons.support_agent_rounded,
-                    onTap: () => _navigateIfOnline('/followUp'),
-                  ),
+                  // _quickActionTile(
+                  //   width: tileWidth,
+                  //   label: AppLocalizations.of(
+                  //     context,
+                  //   ).translate('contact_payment'),
+                  //   icon: Icons.payments_rounded,
+                  //   onTap: () => _navigateIfOnline('/contactPayment'),
+                  // ),
+                  // _quickActionTile(
+                  //   width: tileWidth,
+                  //   label: AppLocalizations.of(context).translate('follow_ups'),
+                  //   icon: Icons.support_agent_rounded,
+                  //   onTap: () => _navigateIfOnline('/followUp'),
+                  // ),
                   _quickActionTile(
                     width: tileWidth,
                     label: AppLocalizations.of(context).translate('suppliersC'),
                     icon: Icons.groups_rounded,
                     onTap: () => _navigateIfOnline('/leads'),
                   ),
-                  _quickActionTile(
-                    width: tileWidth,
-                    label: AppLocalizations.of(context).translate('shipment'),
-                    icon: Icons.local_shipping_rounded,
-                    onTap: () {
-                      Navigator.pushNamed(context, '/shipment');
-                    },
-                  ),
+                  // _quickActionTile(
+                  //   width: tileWidth,
+                  //   label: AppLocalizations.of(context).translate('shipment'),
+                  //   icon: Icons.local_shipping_rounded,
+                  //   onTap: () {
+                  //     Navigator.pushNamed(context, '/shipment');
+                  //   },
+                  // ),
                   _quickActionTile(
                     width: tileWidth,
                     label: AppLocalizations.of(context).translate('payments'),
@@ -666,7 +666,7 @@ class _HomeState extends State<Home> {
   }
 
   //on sync
-  sync() async {
+  Future<void> sync() async {
     if (!syncPressed) {
       syncPressed = true;
       showDialog(
@@ -787,7 +787,7 @@ class _HomeState extends State<Home> {
   }
 
   //get permission
-  getPermission() async {
+  Future<void> getPermission() async {
     List<PermissionStatus> status = [
       await Permission.location.status,
       await Permission.storage.status,
@@ -832,7 +832,7 @@ class _HomeState extends State<Home> {
         );
         var paidAmount = 0.0;
         var returnAmount = 0.0;
-        payment.forEach((element) {
+        for (var element in payment) {
           if (element['is_return'] == 0) {
             paidAmount += element['amount'];
             payments.add({
@@ -842,7 +842,7 @@ class _HomeState extends State<Home> {
           } else {
             returnAmount += element['amount'];
           }
-        });
+        }
         totalSalesAmount = (totalSalesAmount + sell['invoice_amount']);
         totalReceivedAmount =
             (totalReceivedAmount + (paidAmount - returnAmount));
@@ -853,7 +853,7 @@ class _HomeState extends State<Home> {
   }
 
   //load payment details
-  loadPaymentDetails() async {
+  Future<void> loadPaymentDetails() async {
     var paymentMethod = [];
     //fetch different payment methods
     await System().get('payment_methods').then((value) {
@@ -867,7 +867,7 @@ class _HomeState extends State<Home> {
 
     await loadStatistics().then((value) {
       Future.delayed(Duration(seconds: 1), () {
-        payments.forEach((row) {
+        for (var row in payments) {
           if (row['key'] == 'cash') {
             byCash += row['value'];
           }
@@ -898,8 +898,8 @@ class _HomeState extends State<Home> {
           if (row['key'] == 'custom_pay_3') {
             byCustomPayment_3 += row['value'];
           }
-        });
-        paymentMethod.forEach((row) {
+        }
+        for (var row in paymentMethod) {
           if (byCash > 0 && row['key'] == 'cash')
             method.add({'key': row['value'], 'value': byCash});
           if (byCard > 0 && row['key'] == 'card')
@@ -916,8 +916,8 @@ class _HomeState extends State<Home> {
             method.add({'key': row['value'], 'value': byCustomPayment_2});
           if (byCustomPayment_3 > 0 && row['key'] == 'custom_pay_3')
             method.add({'key': row['value'], 'value': byCustomPayment_3});
-        });
-        if (this.mounted) {
+        }
+        if (mounted) {
           setState(() {});
         }
       });
