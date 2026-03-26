@@ -65,6 +65,8 @@ class Config {
     // {'languageCode': 'my', 'countryCode': '', 'name': 'မြန်မာ'},
   ];
 
+  static String printerType = 'Thermal';
+
   //final initialPosition = LatLng(20.46752985010792, 82.92005813910752);
   final String googleAPIKey = 'AIzaSyDtorf5cQD5g7V4K2R0JVl8DcnnqiZS5Qw';
 }

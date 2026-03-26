@@ -340,5 +340,8 @@
   "add_customer_success": "تم اضافه العميل بنجاح",
   "purchases": "المشتريات",
   "edit_price": "تعديل السعر",
-  "direct_checkout": "الانتقال المباشر"
+  "direct_checkout": "الانتقال المباشر",
+  "select_printer": "اختر الطابعة",
+  "printer_theming": "الطابعة الحرارية",
+  "a4_printer": "طابعة A4"
 }

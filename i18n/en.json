@@ -346,5 +346,8 @@
   "scheduling": "Scheduling",
   "additional_details": "Additional Details",
   "edit_price": "Edit Price",
-  "direct_checkout": "Direct Proceed"
+  "direct_checkout": "Direct Proceed",
+  "select_printer": "Select Printer",
+  "printer_theming": "Printer Theming",
+  "a4_printer": "A4 Printer"
 }

@@ -73,6 +73,7 @@ class _HomeState extends State<Home> {
     });
     selectedLanguage =
         prefs.getString('language_code') ?? Config().defaultLanguage;
+    Config.printerType = prefs.getString('printer_type') ?? 'Thermal';
     setState(() {});
   }
 
@@ -496,6 +497,115 @@ class _HomeState extends State<Home> {
     );
   }
 
+  Future<void> _showPrinterSettingsDialog() async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentPrinter = Config.printerType;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: _surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (bottomSheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 6, 14, 10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context).translate('select_printer'),
+                  style: themeData.textTheme.titleSmall?.copyWith(
+                    color: _primaryText,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _printerOption(
+                  label: AppLocalizations.of(context).translate('printer_theming'),
+                  value: 'Thermal',
+                  isSelected: currentPrinter == 'Thermal',
+                  onTap: () async {
+                    await prefs.setString('printer_type', 'Thermal');
+                    Config.printerType = 'Thermal';
+                    Navigator.pop(bottomSheetContext);
+                    setState(() {});
+                  },
+                ),
+                const SizedBox(height: 8),
+                _printerOption(
+                  label: AppLocalizations.of(context).translate('a4_printer'),
+                  value: 'A4',
+                  isSelected: currentPrinter == 'A4',
+                  onTap: () async {
+                    await prefs.setString('printer_type', 'A4');
+                    Config.printerType = 'A4';
+                    Navigator.pop(bottomSheetContext);
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _printerOption({
+    required String label,
+    required String value,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 12,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: isSelected
+                ? _accent.withValues(alpha: 0.08)
+                : const Color(0xFFFAFBFD),
+            border: Border.all(
+              color: isSelected ? _accent : _outline,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                isSelected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_off_rounded,
+                size: 18,
+                color: isSelected ? _accent : _mutedText,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: themeData.textTheme.bodyMedium?.copyWith(
+                    color: _primaryText,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   //homepage drawer
   Widget homePageDrawer() {
     return Drawer(
@@ -593,6 +703,14 @@ class _HomeState extends State<Home> {
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.pushNamed(context, '/shipment');
+                      },
+                    ),
+                    _drawerItem(
+                      icon: Icons.settings_rounded,
+                      title: AppLocalizations.of(context).translate('settings'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showPrinterSettingsDialog();
                       },
                     ),
                   ],
