@@ -90,22 +90,60 @@ class _CustomerState extends State<Customer> {
         child: Column(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              child: Card(
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: customerList(),
+              padding: EdgeInsets.symmetric(
+                horizontal: MySize.size20!,
+                vertical: MySize.size24!,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: customAppTheme.bgLayer1,
+                  borderRadius: BorderRadius.circular(MySize.size16!),
+                  boxShadow: [
+                    BoxShadow(
+                      color: themeData.shadowColor.withAlpha(20),
+                      blurRadius: MySize.size16!,
+                      offset: Offset(0, MySize.size8!),
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.all(MySize.size20!),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context).translate('select_customer'),
+                      style: themeData.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: themeData.colorScheme.onSurface.withOpacity(0.7),
+                      ),
+                    ),
+                    SizedBox(height: MySize.size12),
+                    customerList(),
+                  ],
                 ),
               ),
             ),
             Center(
               child: Visibility(
                 visible: (selectedCustomer['id'] == 0),
-                child: Text(
-                  AppLocalizations.of(
-                    context,
-                  ).translate('please_select_a_customer_for_checkout_option'),
-                  style: TextStyle(color: Colors.red),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: MySize.size24!,
+                    vertical: MySize.size12!,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(MySize.size8!),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(
+                      context,
+                    ).translate('please_select_a_customer_for_checkout_option'),
+                    style: TextStyle(
+                      color: Colors.red[700],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -124,29 +162,60 @@ class _CustomerState extends State<Customer> {
               if (argument!['is_quotation'] == null)
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.only(right: 8),
+                    padding: EdgeInsets.only(right: MySize.size12!),
                     child: OutlinedButton.icon(
                       onPressed: addQuotation,
-                      icon: Icon(Icons.add),
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          vertical: MySize.size14!,
+                        ),
+                        side: BorderSide(color: themeData.colorScheme.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(MySize.size12!),
+                        ),
+                      ),
+                      icon: Icon(Icons.description_outlined, size: 20),
                       label: Text(
                         AppLocalizations.of(context).translate('add_quotation'),
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
                 ),
               Expanded(
-                child: cartBottomBar(
-                  '/checkout',
-                  AppLocalizations.of(context).translate('pay_&_checkout'),
-                  context,
-                  Helper().argument(
-                    locId: argument!['locationId'],
-                    taxId: argument!['taxId'],
-                    discountType: argument!['discountType'],
-                    discountAmount: argument!['discountAmount'],
-                    invoiceAmount: argument!['invoiceAmount'],
-                    customerId: selectedCustomer['id'],
-                    sellId: argument!['sellId'],
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/checkout',
+                      arguments: Helper().argument(
+                        locId: argument!['locationId'],
+                        taxId: argument!['taxId'],
+                        discountType: argument!['discountType'],
+                        discountAmount: argument!['discountAmount'],
+                        invoiceAmount: argument!['invoiceAmount'],
+                        customerId: selectedCustomer['id'],
+                        sellId: argument!['sellId'],
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: themeData.colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(
+                      vertical: MySize.size14!,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(MySize.size12!),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context).translate('pay_&_checkout'),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: MySize.size14,
+                    ),
                   ),
                 ),
               ),
@@ -279,18 +348,25 @@ class _CustomerState extends State<Customer> {
                 Row(
                   children: [
                     SizedBox(
-                      width: 80,
+                      width: MySize.size80,
                       child: TextFormField(
                         controller: prefix,
                         decoration: InputDecoration(
                           hintText: AppLocalizations.of(
                             context,
                           ).translate('prefix'),
+                          isDense: true,
+                          filled: true,
+                          fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(MySize.size8!),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                         textCapitalization: TextCapitalization.sentences,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    SizedBox(width: MySize.size12),
                     Expanded(
                       child: TextFormField(
                         controller: firstName,
@@ -306,6 +382,13 @@ class _CustomerState extends State<Customer> {
                           hintText: AppLocalizations.of(
                             context,
                           ).translate('first_name'),
+                          isDense: true,
+                          filled: true,
+                          fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(MySize.size8!),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                         textCapitalization: TextCapitalization.sentences,
                       ),
@@ -322,11 +405,18 @@ class _CustomerState extends State<Customer> {
                           hintText: AppLocalizations.of(
                             context,
                           ).translate('middle_name'),
+                          isDense: true,
+                          filled: true,
+                          fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(MySize.size8!),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                         textCapitalization: TextCapitalization.sentences,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    SizedBox(width: MySize.size12),
                     Expanded(
                       child: TextFormField(
                         controller: lastName,
@@ -334,13 +424,20 @@ class _CustomerState extends State<Customer> {
                           hintText: AppLocalizations.of(
                             context,
                           ).translate('last_name'),
+                          isDense: true,
+                          filled: true,
+                          fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(MySize.size8!),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                         textCapitalization: TextCapitalization.sentences,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: MySize.size16),
                 TextFormField(
                   controller: mobile,
                   validator: (value) {
@@ -355,7 +452,14 @@ class _CustomerState extends State<Customer> {
                     hintText: AppLocalizations.of(
                       context,
                     ).translate('mobile_no'),
-                    prefixIcon: Icon(MdiIcons.phoneOutline),
+                    prefixIcon: Icon(MdiIcons.phoneOutline, size: 20),
+                    isDense: true,
+                    filled: true,
+                    fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(MySize.size8!),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                   keyboardType: TextInputType.phone,
                 ),
@@ -373,20 +477,34 @@ class _CustomerState extends State<Customer> {
                     hintText: AppLocalizations.of(
                       context,
                     ).translate('address_line_1'),
+                    isDense: true,
+                    filled: true,
+                    fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(MySize.size8!),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                   textCapitalization: TextCapitalization.sentences,
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: MySize.size16),
                 TextFormField(
                   controller: addressLine2,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(
                       context,
                     ).translate('address_line_2'),
+                    isDense: true,
+                    filled: true,
+                    fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(MySize.size8!),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                   textCapitalization: TextCapitalization.sentences,
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: MySize.size16),
                 Row(
                   children: [
                     Expanded(
@@ -396,10 +514,17 @@ class _CustomerState extends State<Customer> {
                           hintText: AppLocalizations.of(
                             context,
                           ).translate('city'),
+                          isDense: true,
+                          filled: true,
+                          fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(MySize.size8!),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                     ),
-                    SizedBox(width: 12),
+                    SizedBox(width: MySize.size12),
                     Expanded(
                       child: TextFormField(
                         controller: state,
@@ -407,12 +532,19 @@ class _CustomerState extends State<Customer> {
                           hintText: AppLocalizations.of(
                             context,
                           ).translate('state'),
+                          isDense: true,
+                          filled: true,
+                          fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(MySize.size8!),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: MySize.size16),
                 Row(
                   children: [
                     Expanded(
@@ -422,10 +554,17 @@ class _CustomerState extends State<Customer> {
                           hintText: AppLocalizations.of(
                             context,
                           ).translate('country'),
+                          isDense: true,
+                          filled: true,
+                          fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(MySize.size8!),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                     ),
-                    SizedBox(width: 12),
+                    SizedBox(width: MySize.size12),
                     Expanded(
                       child: TextFormField(
                         controller: zip,
@@ -433,6 +572,13 @@ class _CustomerState extends State<Customer> {
                           hintText: AppLocalizations.of(
                             context,
                           ).translate('zip_code'),
+                          isDense: true,
+                          filled: true,
+                          fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(MySize.size8!),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                         keyboardType: TextInputType.number,
                       ),
@@ -480,8 +626,19 @@ class _CustomerState extends State<Customer> {
                       );
                     }
                   },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: MySize.size16!),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(MySize.size12!),
+                    ),
+                    elevation: 0,
+                  ),
                   child: Text(
                     AppLocalizations.of(context).translate('add_to_contact'),
+                    style: TextStyle(
+                      fontSize: MySize.size16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],

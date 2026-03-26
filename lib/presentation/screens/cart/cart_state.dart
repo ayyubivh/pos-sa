@@ -340,27 +340,55 @@ class CartState extends State<Cart> {
                           Visibility(
                             visible:
                                 (cartItems.isNotEmpty && proceedNext == true),
-                            child: cartBottomBar(
-                              '/customer',
-                              AppLocalizations.of(
-                                context,
-                              ).translate('continue'),
-                              context,
-                              Helper().argument(
-                                locId: argument!['locationId'],
-                                taxId: selectedTaxId,
-                                discountType: selectedDiscountType,
-                                discountAmount: discountAmount,
-                                invoiceAmount: calculateSubtotal(
-                                  selectedTaxId,
-                                  selectedDiscountType,
-                                  discountAmount,
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.only(top: MySize.size16!),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/customer',
+                                    arguments: Helper().argument(
+                                      locId: argument!['locationId'],
+                                      taxId: selectedTaxId,
+                                      discountType: selectedDiscountType,
+                                      discountAmount: discountAmount,
+                                      invoiceAmount: calculateSubtotal(
+                                        selectedTaxId,
+                                        selectedDiscountType,
+                                        discountAmount,
+                                      ),
+                                      sellId: argument!['sellId'],
+                                      isQuotation: argument!['is_quotation'],
+                                      customerId: (argument!['sellId'] != null)
+                                          ? selectedContactId
+                                          : null,
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Color(0xff3C6255),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: MySize.size14!,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      MySize.size12!,
+                                    ),
+                                  ),
+                                  elevation: 0,
                                 ),
-                                sellId: argument!['sellId'],
-                                isQuotation: argument!['is_quotation'],
-                                customerId: (argument!['sellId'] != null)
-                                    ? selectedContactId
-                                    : null,
+                                child: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate('continue').toUpperCase(),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: MySize.size14,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
