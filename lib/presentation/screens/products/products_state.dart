@@ -13,6 +13,7 @@ class _ProductsState extends State<Products> {
       canAddSell = false,
       canViewProducts = false,
       usePriceGroup = true,
+      directCheckout = false,
       isLoading = false;
 
   int selectedLocationId = 0,
@@ -510,6 +511,14 @@ class _ProductsState extends State<Products> {
                       },
                     ),
                     SizedBox(height: 16),
+                    _buildSwitchTile(
+                      AppLocalizations.of(context).translate('direct_checkout'),
+                      directCheckout,
+                      (val) {
+                        setState(() => directCheckout = val);
+                      },
+                    ),
+                    SizedBox(height: 16),
                     _buildDropdownSection(
                       AppLocalizations.of(context).translate('categories'),
                       categoryId,
@@ -888,6 +897,13 @@ class _ProductsState extends State<Products> {
           );
           if (argument != null) {
             selectedLocationId = argument!['locationId'];
+          }
+          if (directCheckout) {
+            Navigator.pushNamed(
+              context,
+              '/cart',
+              arguments: Helper().argument(locId: selectedLocationId),
+            );
           }
         } else {
           Fluttertoast.showToast(

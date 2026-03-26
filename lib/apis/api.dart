@@ -1,5 +1,6 @@
 import 'dart:convert' as convert;
 
+import 'package:flutter/foundation.dart';
 import 'package:pos_final/helpers/http_logger.dart';
 import 'package:pos_final/api_end_points.dart';
 
@@ -22,14 +23,18 @@ class Api {
       'username': username,
       'password': password,
     };
-    var response = await http.post(Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body);
+    var response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    );
     var jsonResponse = convert.jsonDecode(response.body);
-    print(jsonResponse);
+    if (kDebugMode) {
+      debugPrint(jsonResponse);
+    }
     if (response.statusCode == 200) {
       //logged in successfully
       return {'success': true, 'access_token': jsonResponse['access_token']};
@@ -41,11 +46,11 @@ class Api {
     }
   }
 
-  getHeader(String token) {
+  Map<String, String> getHeader(String token) {
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Authorization': 'Bearer $token'
+      'Authorization': 'Bearer $token',
     };
   }
 }

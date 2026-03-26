@@ -339,5 +339,6 @@
   "log_out": "تسجيل الخروج",
   "add_customer_success": "تم اضافه العميل بنجاح",
   "purchases": "المشتريات",
-  "edit_price": "تعديل السعر"
+  "edit_price": "تعديل السعر",
+  "direct_checkout": "الانتقال المباشر"
 }
