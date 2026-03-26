@@ -18,26 +18,29 @@ Widget posBottomBar(page, context, [call]) {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           bottomBarMenu(
-              context,
-              '/home',
-              AppLocalizations.of(context).translate('home'),
-              page == "home",
-              IconBroken.Home,
-              true),
+            context,
+            '/home',
+            AppLocalizations.of(context).translate('home'),
+            page == "home",
+            IconBroken.Home,
+            true,
+          ),
           bottomBarMenu(
-              context,
-              '/products',
-              AppLocalizations.of(context).translate('products'),
-              page == "products",
-              MdiIcons.cart,
-              true),
+            context,
+            '/products',
+            AppLocalizations.of(context).translate('products'),
+            page == "products",
+            MdiIcons.cart,
+            true,
+          ),
           bottomBarMenu(
-              context,
-              '/sale',
-              AppLocalizations.of(context).translate('sales'),
-              page == "sale",
-              Icons.list,
-              true),
+            context,
+            '/sale',
+            AppLocalizations.of(context).translate('sales'),
+            page == "sale",
+            Icons.list,
+            true,
+          ),
         ],
       ),
     ),
@@ -47,29 +50,31 @@ Widget posBottomBar(page, context, [call]) {
 Widget bottomBarMenu(context, route, name, isSelected, [replace, arguments]) {
   replace = (replace == null) ? false : replace;
   return TextButton(
-      style: TextButton.styleFrom(backgroundColor: Colors.white),
-      onPressed: () {
-        if (replace)
-          Navigator.pushReplacementNamed(context, route, arguments: arguments);
-        else
-          Navigator.pushNamed(context, route, arguments: arguments);
-      },
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          (isSelected)
-              ? Padding(
-                  padding: const EdgeInsets.only(left: 4.0),
-                  child: Text(
-                    name,
-                    style: AppTheme.getTextStyle(
-                        Theme.of(context).textTheme.bodyLarge,
-                        color: Color(0xff3C6255)),
+    style: TextButton.styleFrom(backgroundColor: Colors.white),
+    onPressed: () {
+      if (replace)
+        Navigator.pushReplacementNamed(context, route, arguments: arguments);
+      else
+        Navigator.pushNamed(context, route, arguments: arguments);
+    },
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        (isSelected)
+            ? Padding(
+                padding: const EdgeInsets.only(left: 4.0),
+                child: Text(
+                  name,
+                  style: AppTheme.getTextStyle(
+                    Theme.of(context).textTheme.bodyLarge,
+                    color: Color(0xff3C6255),
                   ),
-                )
-              : Container()
-        ],
-      ));
+                ),
+              )
+            : Container(),
+      ],
+    ),
+  );
 }
 
 Widget cartBottomBar(route, name, context, [nextArguments]) {
@@ -90,14 +95,15 @@ Widget cartBottomBar(route, name, context, [nextArguments]) {
 }
 
 //syncAlert
-syncing(time, context) {
+void syncing(time, context) {
   AlertDialog alert = AlertDialog(
     content: Row(
       children: [
         CircularProgressIndicator(),
         Container(
-            margin: EdgeInsets.only(left: 5),
-            child: Text("Sync in progress...")),
+          margin: EdgeInsets.only(left: 5),
+          child: Text("Sync in progress..."),
+        ),
       ],
     ),
   );

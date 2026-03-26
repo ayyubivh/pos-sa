@@ -205,32 +205,50 @@ class CartState extends State<Cart> {
                                   ),
                                 ),
                                 discount(),
+                                SizedBox(width: MySize.size12),
                                 Expanded(
                                   child: SizedBox(
-                                    height: MySize.size50,
+                                    height: MySize.size60,
                                     child: TextFormField(
                                       cursorColor: Colors.white,
                                       controller: discountController,
                                       decoration: InputDecoration(
-                                        labelStyle: TextStyle(
-                                          color: Colors.grey[400],
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.symmetric(
+                                          vertical: MySize.size12!,
+                                          horizontal: MySize.size12!,
                                         ),
+                                        labelStyle: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: MySize.size14,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.white.withAlpha(50),
                                         enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            MySize.size8!,
+                                          ),
                                           borderSide: BorderSide(
                                             width: 1,
-                                            color: Colors.grey,
-                                          ), //<-- SEE HERE
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color: Colors.white,
-                                            width: 2.0,
+                                            color: Colors.white24,
                                           ),
                                         ),
-                                        prefix: Text(
-                                          (selectedDiscountType == 'fixed')
-                                              ? symbol
-                                              : '',
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            MySize.size8!,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Colors.white,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        prefixText:
+                                            (selectedDiscountType == 'fixed')
+                                            ? symbol
+                                            : '',
+                                        prefixStyle: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                         labelText: AppLocalizations.of(
                                           context,
@@ -238,7 +256,7 @@ class CartState extends State<Cart> {
                                       ),
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontWeight: FontWeight.w400,
+                                        fontWeight: FontWeight.w500,
                                         letterSpacing: -0.2,
                                       ),
                                       textAlign: TextAlign.end,
@@ -273,6 +291,7 @@ class CartState extends State<Cart> {
                               ],
                             ),
                           ),
+                          SizedBox(height: MySize.size16),
                           Container(
                             padding: EdgeInsets.only(
                               left: MySize.size24!,
@@ -325,7 +344,7 @@ class CartState extends State<Cart> {
                               '/customer',
                               AppLocalizations.of(
                                 context,
-                              ).translate('customer'),
+                              ).translate('continue'),
                               context,
                               Helper().argument(
                                 locId: argument!['locationId'],
@@ -389,13 +408,45 @@ class CartState extends State<Cart> {
                               ],
                             ),
                           ),
-                          TextButton(
+                          SizedBox(height: MySize.size16),
+                          ElevatedButton(
                             onPressed: () {
                               cong1.flipcard();
                             },
-                            child: Text(
-                              "Continue",
-                              style: TextStyle(color: Colors.white),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white.withOpacity(0.1),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: MySize.size32!,
+                                vertical: MySize.size12!,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  MySize.size12!,
+                                ),
+                                side: BorderSide(color: Colors.white30),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate("continue").toUpperCase(),
+                                  style: TextStyle(
+                                    fontSize: MySize.size14,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                SizedBox(width: MySize.size8),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: MySize.size12,
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1203,7 +1254,10 @@ class CartState extends State<Cart> {
       child: DropdownButton(
         dropdownColor: Colors.white,
         icon: Icon(Icons.arrow_drop_down),
-        value: taxListMap.any((element) => element['id'] == (index['tax_rate_id'] ?? 0))
+        value:
+            taxListMap.any(
+              (element) => element['id'] == (index['tax_rate_id'] ?? 0),
+            )
             ? (index['tax_rate_id'] ?? 0)
             : 0,
         items: taxListMap.map<DropdownMenuItem<int>>((Map value) {
@@ -1250,15 +1304,22 @@ class CartState extends State<Cart> {
   Widget discount() {
     return DropdownButtonHideUnderline(
       child: DropdownButton(
-        dropdownColor: Colors.white,
-        icon: Icon(Icons.arrow_drop_down, color: Colors.white),
+        dropdownColor: Color(0xff3C6255),
+        icon: Icon(Icons.arrow_drop_down, color: Colors.white70),
         value: selectedDiscountType,
         items: <String>['fixed', 'percentage'].map<DropdownMenuItem<String>>((
           String value,
         ) {
           return DropdownMenuItem<String>(
             value: value,
-            child: Text(value, style: TextStyle(color: Colors.white)),
+            child: Text(
+              value.toUpperCase(),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: MySize.size12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           );
         }).toList(),
         onChanged: (newValue) {
@@ -1279,8 +1340,8 @@ class CartState extends State<Cart> {
   Widget taxes() {
     return DropdownButtonHideUnderline(
       child: DropdownButton(
-        dropdownColor: Colors.white,
-        icon: Icon(Icons.arrow_drop_down, color: Colors.white),
+        dropdownColor: Color(0xff3C6255),
+        icon: Icon(Icons.arrow_drop_down, color: Colors.white70),
         value: taxListMap.any((element) => element['id'] == selectedTaxId)
             ? selectedTaxId
             : 0,
@@ -1291,7 +1352,11 @@ class CartState extends State<Cart> {
               value['name'],
               softWrap: true,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: MySize.size14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           );
         }).toList(),
