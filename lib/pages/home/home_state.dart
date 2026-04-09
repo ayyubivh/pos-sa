@@ -525,7 +525,9 @@ class _HomeState extends State<Home> {
                 ),
                 const SizedBox(height: 12),
                 _printerOption(
-                  label: AppLocalizations.of(context).translate('printer_theming'),
+                  label: AppLocalizations.of(
+                    context,
+                  ).translate('printer_theming'),
                   value: 'Thermal',
                   isSelected: currentPrinter == 'Thermal',
                   onTap: () async {
@@ -567,18 +569,13 @@ class _HomeState extends State<Home> {
         borderRadius: BorderRadius.circular(10),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 12,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             color: isSelected
                 ? _accent.withValues(alpha: 0.08)
                 : const Color(0xFFFAFBFD),
-            border: Border.all(
-              color: isSelected ? _accent : _outline,
-            ),
+            border: Border.all(color: isSelected ? _accent : _outline),
           ),
           child: Row(
             children: [

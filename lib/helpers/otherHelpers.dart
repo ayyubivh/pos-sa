@@ -184,14 +184,34 @@ class Helper {
     return result.rawContent.trimRight();
   }
 
+  // Convert mm to PDF points (1mm = 72/25.4 points)
+  static double _mm(double mm) => mm * 72.0 / 25.4;
+
+  // Get page format based on configured paper size
+  static pd.PdfPageFormat getPageFormat() {
+    switch (Config.printPaperSize) {
+      case '56mm':
+        // 56mm width, long roll height
+        return pd.PdfPageFormat(_mm(56), _mm(200), marginAll: _mm(2));
+      case 'card':
+        // CR80 standard card: 85.6mm x 54mm
+        return pd.PdfPageFormat(_mm(85.6), _mm(54), marginAll: _mm(3));
+      case '80mm':
+      default:
+        // 80mm width, long roll height
+        return pd.PdfPageFormat(_mm(80), _mm(200), marginAll: _mm(3));
+    }
+  }
+
   //function for formatting invoice
   Future<void> printDocument(sellId, taxId, context, {invoice}) async {
     String invoice0 = (invoice != null)
         ? invoice
         : await InvoiceFormatter().generateInvoice(sellId, taxId, context);
+    final pd.PdfPageFormat pageFormat = getPageFormat();
     await Printing.layoutPdf(
       onLayout: (pd.PdfPageFormat format) async {
-        return await Printing.convertHtml(format: format, html: invoice0);
+        return await Printing.convertHtml(format: pageFormat, html: invoice0);
       },
     );
   }
@@ -268,8 +288,9 @@ class Helper {
     var targetPath = await getTemporaryDirectory();
     var targetFileName = "invoice_no: ${Random().nextInt(100)}.pdf";
     final String path = targetPath.path + targetFileName;
+    final pd.PdfPageFormat pageFormat = getPageFormat();
     final pdfDocument = await Printing.convertHtml(
-      format: pd.PdfPageFormat(5595.44, 841),
+      format: pageFormat,
       html: invoice0,
     );
     await File(path).writeAsBytes(pdfDocument);

@@ -22,6 +22,9 @@ class Config {
       currencyPrecision = 2,
       callLogSyncDuration = 30;
 
+  // Print paper size: '80mm', '56mm', or 'card'
+  static String printPaperSize = '80mm';
+
   //List of locale language code
   List locale = [
     'en',
