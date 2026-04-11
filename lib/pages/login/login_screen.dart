@@ -30,7 +30,7 @@ class LoginScreen extends StatelessWidget {
                   content: Text(
                     AppLocalizations.of(
                       context,
-                    ).translate('invalid_credentials'),
+                    ).translate(state.messageKey),
                   ),
                   behavior: SnackBarBehavior.floating,
                   backgroundColor: Colors.red.shade700,

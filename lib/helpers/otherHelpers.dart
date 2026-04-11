@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -9,6 +10,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cron/cron.dart';
 import 'package:flutter/material.dart';
 import 'package:htmltopdfwidgets/htmltopdfwidgets.dart' as pd;
+import 'package:htmltopdfwidgets/htmltopdfwidgets.dart' show HTMLToPdf;
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -203,16 +205,28 @@ class Helper {
     }
   }
 
+  //convert HTML to PDF bytes using pure-Dart htmltopdfwidgets (avoids native printing crash)
+  Future<Uint8List> _htmlToPdfBytes(String html) async {
+    final pd.PdfPageFormat pageFormat = getPageFormat();
+    final widgets = await HTMLToPdf().convert(html);
+    final doc = pd.Document();
+    doc.addPage(
+      pd.MultiPage(
+        pageFormat: pageFormat,
+        build: (pd.Context context) => widgets,
+      ),
+    );
+    return doc.save();
+  }
+
   //function for formatting invoice
   Future<void> printDocument(sellId, taxId, context, {invoice}) async {
     String invoice0 = (invoice != null)
         ? invoice
         : await InvoiceFormatter().generateInvoice(sellId, taxId, context);
-    final pd.PdfPageFormat pageFormat = getPageFormat();
+    final pdfBytes = await _htmlToPdfBytes(invoice0);
     await Printing.layoutPdf(
-      onLayout: (pd.PdfPageFormat format) async {
-        return await Printing.convertHtml(format: pageFormat, html: invoice0);
-      },
+      onLayout: (pd.PdfPageFormat format) async => pdfBytes,
     );
   }
 
@@ -288,11 +302,7 @@ class Helper {
     var targetPath = await getTemporaryDirectory();
     var targetFileName = "invoice_no: ${Random().nextInt(100)}.pdf";
     final String path = targetPath.path + targetFileName;
-    final pd.PdfPageFormat pageFormat = getPageFormat();
-    final pdfDocument = await Printing.convertHtml(
-      format: pageFormat,
-      html: invoice0,
-    );
+    final pdfDocument = await _htmlToPdfBytes(invoice0);
     await File(path).writeAsBytes(pdfDocument);
     await Printing.sharePdf(bytes: pdfDocument, filename: targetFileName);
     //to get file path use generatedPdfFile.path

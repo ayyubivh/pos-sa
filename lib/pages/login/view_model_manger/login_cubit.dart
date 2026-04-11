@@ -163,15 +163,33 @@ class LoginCubit extends Cubit<LoginState> {
           if (loginResponse?['success'] != null && loginResponse?['success']) {
             Helper().jobScheduler();
             //Get current logged in user details and save it.
-            _showLoadingDialogue(context);
-            await _loadAllData(loginResponse, context);
-            isLoading = false;
-            emit(LoginSuccessfully());
+            try {
+              unawaited(_showLoadingDialogue(context));
+            } catch (e) {
+              debugPrint('Failed to show loading dialog: $e');
+            }
+            try {
+              await _loadAllData(loginResponse, context);
+              isLoading = false;
+              emit(LoginSuccessfully());
+            } catch (e, st) {
+              debugPrint('Login post-auth sync failed: $e');
+              debugPrint('$st');
+              isLoading = false;
+              emit(LoginFailed());
+            }
           } else {
             isLoading = false;
-            emit(LoginFailed());
+            emit(
+              LoginFailed(
+                messageKey:
+                    loginResponse?['message_key'] ?? 'invalid_credentials',
+              ),
+            );
           }
-        } catch (_) {
+        } catch (e, st) {
+          debugPrint('Login request failed: $e');
+          debugPrint('$st');
           isLoading = false;
           emit(LoginFailed());
         }

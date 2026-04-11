@@ -76,27 +76,29 @@ class CheckOutState extends State<CheckOut> {
   void didChangeDependencies() {
     argument = ModalRoute.of(context)!.settings.arguments as Map?;
     invoiceAmount = argument!['invoiceAmount'];
-    setPaymentAccounts().then((value) {
-      if (argument!['sellId'] == null) {
-        setPaymentDetails().then((value) {
-          payments.add({
-            'amount': invoiceAmount,
-            'method': paymentMethods[0]['name'],
-            'note': '',
-            'account_id': paymentMethods[0]['account_id'],
-          });
-          calculateMultiPayment();
-        });
-      } else {
-        setPaymentDetails().then((value) {
-          onEdit(argument!['sellId']);
-        });
-      }
-    });
-    setState(() {
-      isLoading = false;
-    });
+    _initCheckout();
     super.didChangeDependencies();
+  }
+
+  Future<void> _initCheckout() async {
+    await setPaymentAccounts();
+    await setPaymentDetails();
+    if (argument!['sellId'] == null) {
+      payments.add({
+        'amount': invoiceAmount,
+        'method': paymentMethods[0]['name'],
+        'note': '',
+        'account_id': paymentMethods[0]['account_id'],
+      });
+      calculateMultiPayment();
+    } else {
+      await onEdit(argument!['sellId']);
+    }
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -765,151 +767,102 @@ class CheckOutState extends State<CheckOut> {
     if (sellId != null) {
       //update sell
       response = sellId;
-      await SellDatabase().updateSells(sellId, sell).then((value) async {
-        //get payment map
-        //TODO: change payment name to payment type.
-        //create payment line
-        for (var element in payments) {
-          if (element['id'] != null) {
-            paymentLine = {
-              'amount': element['amount'],
-              'method': element['method'],
-              'note': element['note'],
-              'account_id': element['account_id'],
-            };
-            PaymentDatabase().updateEditedPaymentLine(
-              element['id'],
-              paymentLine,
-            );
-          } else {
-            paymentLine = {
-              'sell_id': sellId,
-              'method': element['method'],
-              'amount': element['amount'],
-              'note': element['note'],
-              'account_id': element['account_id'],
-            };
-            PaymentDatabase().store(paymentLine);
-          }
-        }
-        if (deletedPaymentId.isNotEmpty) {
-          PaymentDatabase().deletePaymentLineByIds(deletedPaymentId);
-        }
-        //check internet connection and create api sell
-        if (await Helper().checkConnectivity()) {
-          await Sell()
-              .createApiSell(sellId: sellId)
-              .then((value) => printOption(response));
+      await SellDatabase().updateSells(sellId, sell);
+      //create payment line
+      for (var element in payments) {
+        if (element['id'] != null) {
+          paymentLine = {
+            'amount': element['amount'],
+            'method': element['method'],
+            'note': element['note'],
+            'account_id': element['account_id'],
+          };
+          await PaymentDatabase().updateEditedPaymentLine(
+            element['id'],
+            paymentLine,
+          );
         } else {
-          //print option
-
-          printOption(response);
+          paymentLine = {
+            'sell_id': sellId,
+            'method': element['method'],
+            'amount': element['amount'],
+            'note': element['note'],
+            'account_id': element['account_id'],
+          };
+          await PaymentDatabase().store(paymentLine);
         }
-      });
+      }
+      if (deletedPaymentId.isNotEmpty) {
+        await PaymentDatabase().deletePaymentLineByIds(deletedPaymentId);
+      }
+      //check internet connection and create api sell
+      if (await Helper().checkConnectivity()) {
+        await Sell().createApiSell(sellId: sellId);
+      }
     } else {
       //save sell in database
       response = await SellDatabase().storeSell(sell);
       //save payments in sell_payments
-      Sell().makePayment(payments, response);
-      SellDatabase().updateSellLine({'sell_id': response, 'is_completed': 1});
+      await Sell().makePayment(payments, response);
+      await SellDatabase().updateSellLine({'sell_id': response, 'is_completed': 1});
       if (await Helper().checkConnectivity()) {
         await Sell().createApiSell(sellId: response);
       }
-      //print option
-      printOption(response);
     }
+    //print option
+    await printOption(response);
   }
 
   //print option
   Future<void> printOption(sellId) async {
-    Timer(Duration(seconds: 2), () async {
+    try {
       List sellDetail = await SellDatabase().getSellBySellId(sellId);
       String? invoice = sellDetail[0]['invoice_url'];
       String invoiceNo = sellDetail[0]['invoice_no'];
-      //print invoice
-      if (_printInvoice) {
-        if (printWebInvoice && invoice != null) {
+
+      String? webInvoiceHtml;
+      if (printWebInvoice && invoice != null) {
+        try {
           final response = await http.Client().get(Uri.parse(invoice));
           if (response.statusCode == 200) {
-            await Helper()
-                .printDocument(
-                  sellId,
-                  argument!['taxId'],
-                  context,
-                  invoice: response.body,
-                )
-                .then((value) {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    (argument!['sellId'] == null) ? '/layout' : '/sale',
-                    ModalRoute.withName('/home'),
-                  );
-                });
-          } else {
-            await Helper()
-                .printDocument(sellId, argument!['taxId'], context)
-                .then((value) {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    (argument!['sellId'] == null) ? '/layout' : '/sale',
-                    ModalRoute.withName('/home'),
-                  );
-                });
+            webInvoiceHtml = response.body;
           }
-        } else {
-          Helper().printDocument(sellId, argument!['taxId'], context).then((
-            value,
-          ) {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              (argument!['sellId'] == null) ? '/layout' : '/sale',
-              ModalRoute.withName('/home'),
-            );
-          });
-        }
-      } else {
-        if (printWebInvoice && invoice != null) {
-          final response = await http.Client().get(Uri.parse(invoice));
-          if (response.statusCode == 200) {
-            await Helper()
-                .savePdf(
-                  sellId,
-                  argument!['taxId'],
-                  context,
-                  invoiceNo,
-                  invoice: response.body,
-                )
-                .then((value) {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    (argument!['sellId'] == null) ? '/layout' : '/sale',
-                    ModalRoute.withName('/home'),
-                  );
-                });
-          } else {
-            await Helper()
-                .savePdf(sellId, argument!['taxId'], context, invoiceNo)
-                .then((value) {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    (argument!['sellId'] == null) ? '/layout' : '/sale',
-                    ModalRoute.withName('/home'),
-                  );
-                });
-          }
-        } else {
-          Helper().savePdf(sellId, argument!['taxId'], context, invoiceNo).then(
-            (value) {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                (argument!['sellId'] == null) ? '/layout' : '/sale',
-                ModalRoute.withName('/home'),
-              );
-            },
-          );
-        }
+        } catch (_) {}
       }
+
+      if (!mounted) return;
+
+      if (_printInvoice) {
+        await Helper().printDocument(
+          sellId,
+          argument!['taxId'],
+          context,
+          invoice: webInvoiceHtml,
+        );
+      } else {
+        await Helper().savePdf(
+          sellId,
+          argument!['taxId'],
+          context,
+          invoiceNo,
+          invoice: webInvoiceHtml,
+        );
+      }
+    } catch (e) {
+      debugPrint('Print error: $e');
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = false;
     });
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      (argument!['sellId'] == null) ? '/layout' : '/sale',
+      ModalRoute.withName('/home'),
+    );
   }
 
   //alert dialog for amount pending

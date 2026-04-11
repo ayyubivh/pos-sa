@@ -10,8 +10,17 @@ class User extends Api {
     String url = ApiEndPoints.getUser;
     var response =
         await http.get(Uri.parse(url), headers: this.getHeader(token));
-    var userDetails = jsonDecode(response.body);
-    Map userDetailsMap = userDetails['data'];
-    return userDetailsMap;
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load user (${response.statusCode}): ${response.body}');
+    }
+
+    final userDetails = jsonDecode(response.body);
+    if (userDetails is Map && userDetails['data'] is Map) {
+      return Map<String, dynamic>.from(userDetails['data']);
+    }
+    if (userDetails is Map) {
+      return Map<String, dynamic>.from(userDetails.cast<String, dynamic>());
+    }
+    throw Exception('Unexpected user response format');
   }
 }

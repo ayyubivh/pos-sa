@@ -43,6 +43,17 @@ class _ProductsState extends State<Products> {
   final _formKey = GlobalKey<FormState>();
   final ScrollController _scrollController = ScrollController();
 
+  bool _canAddProductToCart(Map<String, dynamic>? product) {
+    if (product == null) return false;
+
+    final enableStock = int.tryParse(product['enable_stock'].toString()) ?? 0;
+    if (enableStock == 0) return true;
+
+    final stockAvailable =
+        double.tryParse(product['stock_available'].toString()) ?? 0;
+    return stockAvailable > 0;
+  }
+
   @override
   void dispose() {
     searchController.dispose();
@@ -758,7 +769,7 @@ class _ProductsState extends State<Products> {
                 setState(() {
                   product = ProductModel().product(value[0], price);
                 });
-                if (product != null && product['stock_available'] > 0) {
+                if (_canAddProductToCart(product)) {
                   Fluttertoast.showToast(
                     msg: AppLocalizations.of(
                       context,
@@ -887,7 +898,9 @@ class _ProductsState extends State<Products> {
   Future<void> onTapProduct(int index) async {
     if (canAddSell) {
       if (canMakeSell) {
-        if (products[index]['stock_available'] > 0) {
+        if (_canAddProductToCart(
+          Map<String, dynamic>.from(products[index]),
+        )) {
           Fluttertoast.showToast(
             msg: AppLocalizations.of(context).translate('added_to_cart'),
           );
