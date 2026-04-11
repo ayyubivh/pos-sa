@@ -12,9 +12,9 @@ class LoginScreen extends StatelessWidget {
   static const Color _bg = Color(0xFFF8FAFC);
   static const Color _bgSoft = Color(0xFFF1F5F9);
   static const Color _primaryText = Color(0xFF0F172A);
-  static const Color _mutedText = Color(0xFF6B7280);
+  static const Color _mutedText = Color(0xFF64748B);
   static const Color _accent = Color(0xFF0F4C81);
-  static const Color _outline = Color(0xFFE5E7EB);
+  static const Color _outline = Color(0xFFE2E8F0);
 
   @override
   Widget build(BuildContext context) {

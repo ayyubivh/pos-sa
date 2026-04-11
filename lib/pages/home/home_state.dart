@@ -43,9 +43,9 @@ class _HomeState extends State<Home> {
   static const Color _bgSoft = Color(0xFFF1F5F9);
   static const Color _surface = Color(0xFFFFFFFF);
   static const Color _primaryText = Color(0xFF0F172A);
-  static const Color _mutedText = Color(0xFF6B7280);
+  static const Color _mutedText = Color(0xFF64748B);
   static const Color _accent = Color(0xFF0F4C81);
-  static const Color _outline = Color(0xFFE5E7EB);
+  static const Color _outline = Color(0xFFE2E8F0);
 
   @override
   void initState() {
@@ -228,16 +228,21 @@ class _HomeState extends State<Home> {
 
   Widget _buildQuickActionsCard() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: _surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: _outline),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _outline, width: 0.5),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 28,
-            offset: Offset(0, 10),
+            color: Color(0x08000000),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 24,
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -247,16 +252,18 @@ class _HomeState extends State<Home> {
           Text(
             'Quick Actions',
             style: themeData.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: _primaryText,
+              letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             'Shortcuts for your most-used workflows.',
-            style: themeData.textTheme.bodyMedium?.copyWith(
+            style: themeData.textTheme.bodySmall?.copyWith(
               color: _mutedText,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w400,
+              fontSize: 13,
             ),
           ),
           const SizedBox(height: 16),
@@ -350,22 +357,30 @@ class _HomeState extends State<Home> {
     return SizedBox(
       width: width,
       child: Material(
-        color: const Color(0xFFFAFBFD),
-        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFFF8FAFD),
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           onTap: onTap,
           child: Container(
-            constraints: const BoxConstraints(minHeight: 52),
+            constraints: const BoxConstraints(minHeight: 48),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _outline),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _outline, width: 0.5),
             ),
             child: Row(
               children: [
-                Icon(icon, color: _accent, size: 18),
-                const SizedBox(width: 8),
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: _accent.withAlpha(14),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: _accent, size: 16),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     label,
@@ -373,7 +388,8 @@ class _HomeState extends State<Home> {
                     overflow: TextOverflow.ellipsis,
                     style: themeData.textTheme.bodySmall?.copyWith(
                       color: _primaryText,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 13,
                     ),
                   ),
                 ),
@@ -386,14 +402,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _navigateIfOnline(String routeName) async {
-    if (await Helper().checkConnectivity()) {
-      Navigator.pushNamed(context, routeName);
-      return;
-    }
-
-    Fluttertoast.showToast(
-      msg: AppLocalizations.of(context).translate('check_connectivity'),
-    );
+    Navigator.pushNamed(context, routeName);
   }
 
   Future<void> _showLanguageDialog() async {
@@ -675,32 +684,9 @@ class _HomeState extends State<Home> {
                       onTap: () => _navigateFromDrawer('/contactPayment'),
                     ),
                     _drawerItem(
-                      icon: Icons.support_agent_rounded,
-                      title: AppLocalizations.of(
-                        context,
-                      ).translate('follow_ups'),
-                      onTap: () => _navigateFromDrawer('/followUp'),
-                    ),
-                    if (Config().showFieldForce)
-                      _drawerItem(
-                        icon: MdiIcons.humanMale,
-                        title: AppLocalizations.of(
-                          context,
-                        ).translate('field_force_visits'),
-                        onTap: () => _navigateFromDrawer('/fieldForce'),
-                      ),
-                    _drawerItem(
                       icon: Icons.contacts_rounded,
                       title: AppLocalizations.of(context).translate('contacts'),
                       onTap: () => _navigateFromDrawer('/leads'),
-                    ),
-                    _drawerItem(
-                      icon: Icons.local_shipping_rounded,
-                      title: AppLocalizations.of(context).translate('shipment'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/shipment');
-                      },
                     ),
                     _drawerItem(
                       icon: Icons.settings_rounded,
@@ -736,18 +722,18 @@ class _HomeState extends State<Home> {
     required VoidCallback onTap,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Material(
         color: _surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _outline),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _outline, width: 0.5),
             ),
             child: Row(
               children: [
@@ -755,25 +741,25 @@ class _HomeState extends State<Home> {
                   width: 34,
                   height: 34,
                   decoration: BoxDecoration(
-                    color: _accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    color: _accent.withAlpha(14),
+                    borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Icon(icon, size: 20, color: _accent),
+                  child: Icon(icon, size: 18, color: _accent),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     title,
-                    style: themeData.textTheme.titleSmall?.copyWith(
+                    style: themeData.textTheme.bodyMedium?.copyWith(
                       color: _primaryText,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
-                  size: 20,
-                  color: _mutedText,
+                  size: 18,
+                  color: _mutedText.withAlpha(150),
                 ),
               ],
             ),
@@ -823,16 +809,21 @@ class _HomeState extends State<Home> {
   Widget paymentDetails() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: _surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: _outline),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _outline, width: 0.5),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 28,
-            offset: Offset(0, 10),
+            color: Color(0x08000000),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 24,
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -842,17 +833,21 @@ class _HomeState extends State<Home> {
           Text(
             AppLocalizations.of(context).translate('payment_details'),
             style: themeData.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: _primaryText,
+              letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           if (method.isEmpty)
-            Text(
-              'No payment data available yet.',
-              style: themeData.textTheme.bodyMedium?.copyWith(
-                color: _mutedText,
-                fontWeight: FontWeight.w500,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'No payment data available yet.',
+                style: themeData.textTheme.bodyMedium?.copyWith(
+                  color: _mutedText,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
           ListView.builder(
@@ -862,27 +857,27 @@ class _HomeState extends State<Home> {
             shrinkWrap: true,
             itemBuilder: (context, index) {
               return Container(
-                margin: const EdgeInsets.only(bottom: 10),
+                margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
+                  horizontal: 14,
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFAFBFD),
+                  color: const Color(0xFFF8FAFD),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _outline),
+                  border: Border.all(color: _outline, width: 0.5),
                 ),
                 child: Row(
                   children: [
                     Container(
-                      width: 6,
-                      height: 30,
+                      width: 4,
+                      height: 28,
                       decoration: BoxDecoration(
-                        color: _accent.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(8),
+                        color: _accent,
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         method[index]['key'],
@@ -896,7 +891,8 @@ class _HomeState extends State<Home> {
                       '$businessSymbol ${Helper().formatCurrency(method[index]['value'])}',
                       style: themeData.textTheme.bodyMedium?.copyWith(
                         color: _primaryText,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.2,
                       ),
                     ),
                   ],

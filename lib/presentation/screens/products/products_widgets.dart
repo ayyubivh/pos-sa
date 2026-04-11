@@ -9,14 +9,14 @@ class _IconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: kBackgroundSoftColor,
-      borderRadius: BorderRadius.circular(14),
+      color: kDefaultColor.withAlpha(12),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: EdgeInsets.all(12),
-          child: Icon(icon, color: kDefaultColor, size: 22),
+          padding: EdgeInsets.all(11),
+          child: Icon(icon, color: kDefaultColor, size: 20),
         ),
       ),
     );
@@ -41,21 +41,31 @@ class _SortChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        duration: Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
           color: isSelected ? kDefaultColor : kSurfaceColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? kDefaultColor : kOutlineColor),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? kDefaultColor : kOutlineColor,
+            width: isSelected ? 1.0 : 0.5,
+          ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: kDefaultColor.withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
+                    color: kDefaultColor.withAlpha(40),
+                    blurRadius: 10,
+                    offset: Offset(0, 3),
                   ),
                 ]
-              : [],
+              : [
+                  BoxShadow(
+                    color: Color(0x06000000),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -103,17 +113,23 @@ class _ProductGridCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: kSurfaceColor,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: kOutlineColor, width: 0.5),
           boxShadow: [
             BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 28,
-              offset: Offset(0, 10),
+              color: Color(0x08000000),
+              blurRadius: 12,
+              offset: Offset(0, 4),
+            ),
+            BoxShadow(
+              color: Color(0x05000000),
+              blurRadius: 24,
+              offset: Offset(0, 8),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -127,31 +143,44 @@ class _ProductGridCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                         color: kBackgroundSoftColor,
-                        child: Icon(
-                          Icons.image_outlined,
-                          color: kMutedTextColor,
+                        child: Center(
+                          child: Icon(
+                            Icons.image_outlined,
+                            color: kMutedTextColor.withAlpha(120),
+                            size: 28,
+                          ),
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: kBackgroundSoftColor,
-                        child: Icon(
-                          Icons.error_outline,
-                          color: kMutedTextColor,
+                        child: Center(
+                          child: Icon(
+                            Icons.image_not_supported_outlined,
+                            color: kMutedTextColor.withAlpha(120),
+                            size: 28,
+                          ),
                         ),
                       ),
                     ),
                     if (product['enable_stock'] != 0)
                       Positioned(
-                        top: 10,
-                        right: 10,
+                        top: 8,
+                        right: 8,
                         child: Container(
                           padding: EdgeInsets.symmetric(
                             horizontal: 8,
-                            vertical: 4,
+                            vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white.withAlpha(230),
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0x10000000),
+                                blurRadius: 4,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
                           ),
                           child: Text(
                             "Stock: ${Helper().formatQuantity(product['stock_available'])}",
@@ -168,7 +197,7 @@ class _ProductGridCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all(12),
+                padding: EdgeInsets.fromLTRB(12, 10, 12, 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -182,7 +211,7 @@ class _ProductGridCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 4),
+                    SizedBox(height: 3),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -296,33 +325,34 @@ class _ProductListCard extends StatelessWidget {
         padding: EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: kSurfaceColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: kOutlineColor, width: 0.5),
           boxShadow: [
             BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 28,
-              offset: Offset(0, 10),
+              color: Color(0x08000000),
+              blurRadius: 10,
+              offset: Offset(0, 3),
             ),
           ],
         ),
         child: Row(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               child: CachedNetworkImage(
                 imageUrl: product['product_image_url'] ?? '',
-                width: 76,
-                height: 76,
+                width: 72,
+                height: 72,
                 fit: BoxFit.cover,
                 placeholder: (context, url) =>
                     Container(color: kBackgroundSoftColor),
                 errorWidget: (context, url, error) => Container(
                   color: kBackgroundSoftColor,
-                  child: Icon(Icons.image_outlined, color: kMutedTextColor),
+                  child: Center(child: Icon(Icons.image_outlined, color: kMutedTextColor.withAlpha(120), size: 24)),
                 ),
               ),
             ),
-            SizedBox(width: 16),
+            SizedBox(width: 14),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -337,13 +367,14 @@ class _ProductListCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 4),
+                  SizedBox(height: 3),
                   if (product['enable_stock'] != 0)
                     Text(
                       "Stock: ${Helper().formatQuantity(product['stock_available'])}",
                       style: AppTheme.getTextStyle(
                         Theme.of(context).textTheme.bodySmall,
                         color: kMutedTextColor,
+                        fontSize: 12,
                       ),
                     ),
                 ],
@@ -428,8 +459,15 @@ class _ProductListCard extends StatelessWidget {
                       ),
                   ],
                 ),
-                SizedBox(height: 8),
-                Icon(Icons.add_circle_outline, color: kDefaultColor, size: 24),
+                SizedBox(height: 6),
+                Container(
+                  padding: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: kDefaultColor.withAlpha(14),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.add_rounded, color: kDefaultColor, size: 20),
+                ),
               ],
             ),
           ],

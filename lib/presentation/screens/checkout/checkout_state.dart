@@ -210,11 +210,12 @@ class CheckOutState extends State<CheckOut> {
                 decoration: BoxDecoration(
                   color: customAppTheme.bgLayer1,
                   borderRadius: BorderRadius.circular(MySize.size16!),
+                  border: Border.all(color: kOutlineColor, width: 0.5),
                   boxShadow: [
                     BoxShadow(
-                      color: themeData.shadowColor.withAlpha(20),
-                      blurRadius: MySize.size12!,
-                      offset: Offset(0, MySize.size6!),
+                      color: Color(0x08000000),
+                      blurRadius: 10,
+                      offset: Offset(0, 3),
                     ),
                   ],
                 ),
@@ -478,25 +479,25 @@ class CheckOutState extends State<CheckOut> {
                     block(
                       amount: Helper().formatCurrency(invoiceAmount),
                       subject: AppLocalizations.of(context).translate('total_payble'),
-                      backgroundColor: Colors.blue[600]!,
+                      backgroundColor: Color(0xFF2563EB),
                       textColor: Colors.white,
                     ),
                     block(
                       amount: Helper().formatCurrency(totalPaying),
                       subject: AppLocalizations.of(context).translate('total_paying'),
-                      backgroundColor: Colors.indigo[400]!,
+                      backgroundColor: Color(0xFF4F46E5),
                       textColor: Colors.white,
                     ),
                     block(
                       amount: Helper().formatCurrency(changeReturn),
                       subject: AppLocalizations.of(context).translate('change_return'),
-                      backgroundColor: Colors.green[600]!,
+                      backgroundColor: Color(0xFF059669),
                       textColor: Colors.white,
                     ),
                     block(
                       amount: Helper().formatCurrency(pendingAmount),
                       subject: AppLocalizations.of(context).translate('balance'),
-                      backgroundColor: (pendingAmount >= 0.01) ? Colors.red[600]! : Colors.orange[600]!,
+                      backgroundColor: (pendingAmount >= 0.01) ? Color(0xFFDC2626) : Color(0xFFD97706),
                       textColor: Colors.white,
                     ),
                   ],
@@ -646,18 +647,18 @@ class CheckOutState extends State<CheckOut> {
     return Container(
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(MySize.size12!),
+        borderRadius: BorderRadius.circular(MySize.size14!),
         boxShadow: [
           BoxShadow(
-            color: backgroundColor.withOpacity(0.3),
-            blurRadius: 8,
+            color: backgroundColor.withAlpha(50),
+            blurRadius: 12,
             offset: Offset(0, 4),
           ),
         ],
       ),
       padding: EdgeInsets.symmetric(
-        horizontal: MySize.size12!,
-        vertical: MySize.size8!,
+        horizontal: MySize.size14!,
+        vertical: MySize.size10!,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -668,12 +669,13 @@ class CheckOutState extends State<CheckOut> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.85),
+              color: Colors.white.withAlpha(200),
               fontSize: 11,
               fontWeight: FontWeight.w500,
+              letterSpacing: 0.1,
             ),
           ),
-          SizedBox(height: 2),
+          SizedBox(height: 3),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
@@ -682,6 +684,7 @@ class CheckOutState extends State<CheckOut> {
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
+                letterSpacing: -0.3,
               ),
             ),
           ),

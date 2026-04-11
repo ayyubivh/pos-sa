@@ -623,7 +623,7 @@ class _ProductsState extends State<Products> {
       decoration: BoxDecoration(
         color: kSurfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: kOutlineColor),
+        border: Border.all(color: kOutlineColor, width: 0.5),
       ),
       child: SwitchListTile(
         title: Text(
@@ -635,7 +635,9 @@ class _ProductsState extends State<Products> {
         ),
         value: value,
         onChanged: onChanged,
-        activeThumbColor: kDefaultColor,
+        activeColor: kDefaultColor,
+        contentPadding: EdgeInsets.symmetric(horizontal: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -663,7 +665,7 @@ class _ProductsState extends State<Products> {
           decoration: BoxDecoration(
             color: kSurfaceColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kOutlineColor),
+            border: Border.all(color: kOutlineColor, width: 0.5),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<T>(
@@ -671,7 +673,8 @@ class _ProductsState extends State<Products> {
               value: value,
               items: items,
               onChanged: onChanged,
-              icon: Icon(Icons.keyboard_arrow_down, color: kMutedTextColor),
+              icon: Icon(Icons.keyboard_arrow_down, color: kMutedTextColor, size: 20),
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
         ),
@@ -704,12 +707,12 @@ class _ProductsState extends State<Products> {
                     vertical: 12,
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: kOutlineColor, width: 0.5),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: kDefaultColor, width: 1),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: kDefaultColor, width: 1.5),
                   ),
                 ),
                 onEditingComplete: () {
@@ -975,8 +978,9 @@ class _ProductsState extends State<Products> {
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       padding: EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: kBackgroundSoftColor,
-        borderRadius: BorderRadius.circular(12),
+        color: kDefaultColor.withAlpha(10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: kDefaultColor.withAlpha(25), width: 0.5),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
