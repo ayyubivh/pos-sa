@@ -19,6 +19,8 @@ import '../domain/models/system.dart';
 part 'shipment/shipment_state.dart';
 
 class Shipment extends StatefulWidget {
+  const Shipment({super.key});
+
   @override
   _ShipmentState createState() => _ShipmentState();
 }

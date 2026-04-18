@@ -8,7 +8,7 @@ class ApiErrorHandler {
     dynamic errorDescription = "";
     if (error is Exception) {
       try {
-        if (error is DioError) {
+        if (error is DioException) {
           switch (error.type) {
             case DioExceptionType.cancel:
               errorDescription = "Request to API server was cancelled";
@@ -28,7 +28,8 @@ class ApiErrorHandler {
               switch (error.response!.statusCode) {
                 case 403:
                   debugPrint(
-                      '<==Here is error body==${error.response!.data.toString()}===>');
+                    '<==Here is error body==${error.response!.data.toString()}===>',
+                  );
                   if (error.response!.data['errors'] != null) {
                     errorDescription = error.response!.data['errors'][0];
                   } else {
@@ -40,10 +41,12 @@ class ApiErrorHandler {
                 case 503:
                 case 429:
                   errorDescription = error.response!.statusMessage;
-                  break;;
+                  break;
+                  {}
                 default:
-                  ErrorResponse errorResponse =
-                      ErrorResponse.fromJson(error.response!.data);
+                  ErrorResponse errorResponse = ErrorResponse.fromJson(
+                    error.response!.data,
+                  );
                   if (errorResponse.errors != null &&
                       errorResponse.errors!.isNotEmpty) {
                     errorDescription = errorResponse;
@@ -63,8 +66,7 @@ class ApiErrorHandler {
               errorDescription =
                   "Connection to API server failed due to Unknown Error";
           }
-        }
-        else {
+        } else {
           errorDescription = "Unexpected error occurred";
         }
       } on FormatException catch (e) {

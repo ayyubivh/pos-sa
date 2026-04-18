@@ -51,7 +51,7 @@ class DbProvider {
       " shipping_charges REAL DEFAULT 0.00,invoice_amount REAL, change_return REAL DEFAULT 0.00, pending_amount REAL DEFAULT 0.00,"
       " is_synced INTEGER, transaction_id INTEGER DEFAULT null, invoice_url TEXT DEFAULT null)";
 
-//query to create sale line table in database
+  //query to create sale line table in database
   String createSellLineTable =
       "CREATE TABLE sell_lines (id INTEGER PRIMARY KEY AUTOINCREMENT, sell_id INTEGER,"
       " product_id INTEGER,variation_id INTEGER, quantity REAL, unit_price REAL,"
@@ -67,9 +67,7 @@ class DbProvider {
   //get database of type Future<database>
   Future<Database> get database async {
     // if database doesn't exists, create one
-    if (_database == null) {
-      _database = await initializeDatabase(Config.userId);
-    }
+    _database ??= await initializeDatabase(Config.userId);
     // if database exists, return database
     return _database!;
   }
@@ -79,54 +77,63 @@ class DbProvider {
   //create tables during the creation of the database itself.
   Future<Database> initializeDatabase(loginUserId) async {
     Directory posDirectory = await getApplicationDocumentsDirectory();
-    String path = join(posDirectory.path + 'PosDemo$loginUserId.db');
+    String path = join('${posDirectory.path}PosDemo$loginUserId.db');
     if (Platform.isWindows || Platform.isLinux) {
-      return await databaseFactoryFfi.openDatabase(path,
-          options: OpenDatabaseOptions(
-            version: currVersion,
-        onCreate: (db, version) async {
-          await db.execute(createSystemTable);
-          await db.execute(createContactTable);
-          await db.execute(createVariationTable);
-          await db.execute(createVariationByLocationTable);
-          await db.execute(createProductAvailableInLocationTable);
-          await db.execute(createSellTable);
-          await db.execute(createSellLineTable);
-          await db.execute(createSellPaymentsTable);
-        },
-            onUpgrade: (db, oldVersion, newVersion) async {
-              if (oldVersion < 2) {
-                await db.execute("ALTER TABLE sell_lines RENAME TO prev_sell_line;");
-                await db.execute(createSellLineTable);
-                await db
-                    .execute("INSERT INTO sell_lines SELECT * FROM prev_sell_line;");
-              }
+      return await databaseFactoryFfi.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: currVersion,
+          onCreate: (db, version) async {
+            await db.execute(createSystemTable);
+            await db.execute(createContactTable);
+            await db.execute(createVariationTable);
+            await db.execute(createVariationByLocationTable);
+            await db.execute(createProductAvailableInLocationTable);
+            await db.execute(createSellTable);
+            await db.execute(createSellLineTable);
+            await db.execute(createSellPaymentsTable);
+          },
+          onUpgrade: (db, oldVersion, newVersion) async {
+            if (oldVersion < 2) {
+              await db.execute(
+                "ALTER TABLE sell_lines RENAME TO prev_sell_line;",
+              );
+              await db.execute(createSellLineTable);
+              await db.execute(
+                "INSERT INTO sell_lines SELECT * FROM prev_sell_line;",
+              );
+            }
 
-              if (oldVersion < 3) {
-                await db
-                    .execute("ALTER TABLE variations RENAME  TO prev_variations;");
-                await db.execute(createVariationTable);
-                await db
-                    .execute("INSERT INTO variations SELECT * FROM prev_variations;");
-              }
+            if (oldVersion < 3) {
+              await db.execute(
+                "ALTER TABLE variations RENAME  TO prev_variations;",
+              );
+              await db.execute(createVariationTable);
+              await db.execute(
+                "INSERT INTO variations SELECT * FROM prev_variations;",
+              );
+            }
 
-              if (oldVersion < 4) {
-                await db.execute(createContactTable);
-              }
+            if (oldVersion < 4) {
+              await db.execute(createContactTable);
+            }
 
-              if (oldVersion < 5) {
-                await db.execute(
-                    "ALTER TABLE sell ADD COLUMN invoice_url TEXT DEFAULT null;");
-              }
+            if (oldVersion < 5) {
+              await db.execute(
+                "ALTER TABLE sell ADD COLUMN invoice_url TEXT DEFAULT null;",
+              );
+            }
 
-              if (oldVersion < 6) {
-                await db.execute(
-                    "ALTER TABLE sell_payments ADD COLUMN account_id INTEGER DEFAULT null;");
-              }
+            if (oldVersion < 6) {
+              await db.execute(
+                "ALTER TABLE sell_payments ADD COLUMN account_id INTEGER DEFAULT null;",
+              );
+            }
 
-              db.setVersion(currVersion);
-            },
-      ));
+            db.setVersion(currVersion);
+          },
+        ),
+      );
     }
     return await openDatabase(
       path,
@@ -145,16 +152,19 @@ class DbProvider {
         if (oldVersion < 2) {
           await db.execute("ALTER TABLE sell_lines RENAME TO prev_sell_line;");
           await db.execute(createSellLineTable);
-          await db
-              .execute("INSERT INTO sell_lines SELECT * FROM prev_sell_line;");
+          await db.execute(
+            "INSERT INTO sell_lines SELECT * FROM prev_sell_line;",
+          );
         }
 
         if (oldVersion < 3) {
-          await db
-              .execute("ALTER TABLE variations RENAME  TO prev_variations;");
+          await db.execute(
+            "ALTER TABLE variations RENAME  TO prev_variations;",
+          );
           await db.execute(createVariationTable);
-          await db
-              .execute("INSERT INTO variations SELECT * FROM prev_variations;");
+          await db.execute(
+            "INSERT INTO variations SELECT * FROM prev_variations;",
+          );
         }
 
         if (oldVersion < 4) {
@@ -163,12 +173,14 @@ class DbProvider {
 
         if (oldVersion < 5) {
           await db.execute(
-              "ALTER TABLE sell ADD COLUMN invoice_url TEXT DEFAULT null;");
+            "ALTER TABLE sell ADD COLUMN invoice_url TEXT DEFAULT null;",
+          );
         }
 
         if (oldVersion < 6) {
           await db.execute(
-              "ALTER TABLE sell_payments ADD COLUMN account_id INTEGER DEFAULT null;");
+            "ALTER TABLE sell_payments ADD COLUMN account_id INTEGER DEFAULT null;",
+          );
         }
 
         db.setVersion(currVersion);

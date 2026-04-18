@@ -477,9 +477,9 @@ class _ProductsState extends State<Products> {
                           isSelected: byAlphabets != null,
                           onTap: () {
                             setState(() {
-                              if (byAlphabets == null)
+                              if (byAlphabets == null) {
                                 byAlphabets = 0;
-                              else if (byAlphabets == 0)
+                              } else if (byAlphabets == 0)
                                 byAlphabets = 1;
                               else
                                 byAlphabets = null;
@@ -497,9 +497,9 @@ class _ProductsState extends State<Products> {
                           isSelected: byPrice != null,
                           onTap: () {
                             setState(() {
-                              if (byPrice == null)
+                              if (byPrice == null) {
                                 byPrice = 0;
-                              else if (byPrice == 0)
+                              } else if (byPrice == 0)
                                 byPrice = 1;
                               else
                                 byPrice = null;
@@ -635,7 +635,7 @@ class _ProductsState extends State<Products> {
         ),
         value: value,
         onChanged: onChanged,
-        activeColor: kDefaultColor,
+        activeThumbColor: kDefaultColor,
         contentPadding: EdgeInsets.symmetric(horizontal: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -673,7 +673,11 @@ class _ProductsState extends State<Products> {
               value: value,
               items: items,
               onChanged: onChanged,
-              icon: Icon(Icons.keyboard_arrow_down, color: kMutedTextColor, size: 20),
+              icon: Icon(
+                Icons.keyboard_arrow_down,
+                color: kMutedTextColor,
+                size: 20,
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
           ),
@@ -757,13 +761,13 @@ class _ProductsState extends State<Products> {
           )
           .then((value) async {
             if (canAddSell) {
-              if (value.length > 0) {
+              if (value.isNotEmpty) {
                 double price = 0;
                 var product;
                 if (value[0]['selling_price_group'] != null) {
-                  jsonDecode(value[0]['selling_price_group'].toString()).forEach((
-                    element,
-                  ) {
+                  jsonDecode(
+                    value[0]['selling_price_group'].toString(),
+                  ).forEach((element) {
                     if (element['key'] == sellingPriceGroupId) {
                       price = double.parse(element['value'].toString());
                     }
@@ -901,9 +905,7 @@ class _ProductsState extends State<Products> {
   Future<void> onTapProduct(int index) async {
     if (canAddSell) {
       if (canMakeSell) {
-        if (_canAddProductToCart(
-          Map<String, dynamic>.from(products[index]),
-        )) {
+        if (_canAddProductToCart(Map<String, dynamic>.from(products[index]))) {
           Fluttertoast.showToast(
             msg: AppLocalizations.of(context).translate('added_to_cart'),
           );

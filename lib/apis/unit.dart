@@ -7,12 +7,11 @@ import 'api.dart';
 class UnitService extends Api {
   Future<dynamic> getUnits() async {
     try {
-      String url = this.baseUrl + this.apiUrl + '/unit';
+      String url = baseUrl + apiUrl + '/unit';
       var token = await System().getToken();
 
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader('$token'));
-      log(" getUnits getUnits \n  === \n    " + response.body);
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
+      log(" getUnits getUnits \n  === \n    ${response.body}");
       var units = jsonDecode(response.body);
 
       log(units.runtimeType.toString());

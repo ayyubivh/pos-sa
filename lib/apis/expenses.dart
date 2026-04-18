@@ -9,10 +9,13 @@ class ExpenseApi extends Api {
   //create an expense in api
   Future<Map<String, dynamic>?> create(data) async {
     try {
-      String url =this.baseUrl + this.apiUrl + "/expense";
+      String url = baseUrl + apiUrl + "/expense";
       var token = await System().getToken();
-      var response = await http.post(Uri.parse(url),
-          headers: this.getHeader('$token'), body: jsonEncode(data));
+      var response = await http.post(
+        Uri.parse(url),
+        headers: getHeader(token),
+        body: jsonEncode(data),
+      );
       var info = jsonDecode(response.body);
       return info;
     } catch (e) {
@@ -23,10 +26,9 @@ class ExpenseApi extends Api {
   //create an expense in api
   Future<List> get() async {
     try {
-      String url = this.baseUrl + this.apiUrl + "/expense-categories";
+      String url = baseUrl + apiUrl + "/expense-categories";
       var token = await System().getToken();
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader('$token'));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
       Map<String, dynamic>? result = jsonDecode(response.body);
       List expenseCategories = (result != null) ? result['data'] : [];
       return expenseCategories;

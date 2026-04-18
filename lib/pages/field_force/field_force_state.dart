@@ -16,9 +16,7 @@ class _FieldForceState extends State<FieldForce> {
   ];
 
   String? fieldForceUrl =
-      Api().baseUrl +
-      Api().apiUrl +
-      "/field-force?per_page=10&assigned_to=${Config.userId}";
+      "${Api().baseUrl}${Api().apiUrl}/field-force?per_page=10&assigned_to=${Config.userId}";
   String selectedVisitStatus = "all";
 
   ScrollController fieldForceListController = ScrollController();
@@ -41,11 +39,11 @@ class _FieldForceState extends State<FieldForce> {
     Helper().syncCallLogs();
   }
 
-  getFieldForceList() async {
+  Future<void> getFieldForceList() async {
     setState(() {
       isLoading = false;
     });
-    final dio = new Dio();
+    final dio = Dio();
     var token = await System().getToken();
     dio.options.headers['content-Type'] = 'application/json';
     dio.options.headers["Authorization"] = "Bearer $token";
@@ -53,9 +51,9 @@ class _FieldForceState extends State<FieldForce> {
     List fieldVisits = response.data['data'];
     Map links = response.data['links'];
     setState(() {
-      fieldVisits.forEach((element) {
+      for (var element in fieldVisits) {
         fieldForceList.add(FiledForceModel().getVisits(element));
-      });
+      }
     });
     isLoading = (links['next'] != null) ? true : false;
     fieldForceUrl = links['next'];
@@ -116,6 +114,17 @@ class _FieldForceState extends State<FieldForce> {
                   fontWeight: 600,
                   color: themeData.colorScheme.onSurface,
                 ),
+                onPressed: (int index) {
+                  setState(() {
+                    showCustomerDetails = null;
+                    selectedToggleValue = index;
+                    for (int i = 0; i < toggleValue.length; i++) {
+                      toggleValue[i] = i == index;
+                    }
+                    onToggleFilter(index);
+                  });
+                },
+                isSelected: toggleValue,
                 children: <Widget>[
                   Padding(
                     padding: EdgeInsets.all(MySize.size10!),
@@ -134,17 +143,6 @@ class _FieldForceState extends State<FieldForce> {
                     child: Text(AppLocalizations.of(context).translate('all')),
                   ),
                 ],
-                onPressed: (int index) {
-                  setState(() {
-                    showCustomerDetails = null;
-                    selectedToggleValue = index;
-                    for (int i = 0; i < toggleValue.length; i++) {
-                      toggleValue[i] = i == index;
-                    }
-                    onToggleFilter(index);
-                  });
-                },
-                isSelected: toggleValue,
               ),
             ],
           ),
@@ -154,7 +152,7 @@ class _FieldForceState extends State<FieldForce> {
     );
   }
 
-  onToggleFilter(int index) {
+  void onToggleFilter(int index) {
     String? formattedDate;
     setState(() {
       fieldForceList = [];
@@ -181,7 +179,7 @@ class _FieldForceState extends State<FieldForce> {
     return Column(
       children: [
         Expanded(
-          child: (fieldForceList.length > 0)
+          child: (fieldForceList.isNotEmpty)
               ? ListView.builder(
                   controller: fieldForceListController,
                   padding: EdgeInsets.all(MySize.size16!),
@@ -278,7 +276,7 @@ class _FieldForceState extends State<FieldForce> {
                                             ),
                                             Row(
                                               children: [
-                                                Container(
+                                                SizedBox(
                                                   width:
                                                       MySize.screenWidth! *
                                                       0.75,
@@ -376,9 +374,7 @@ class _FieldForceState extends State<FieldForce> {
                                                             );
                                                         String googleUrl =
                                                             'https://maps.google.com/?q=$address';
-                                                        await launch(
-                                                          "$googleUrl",
-                                                        );
+                                                        await launch(googleUrl);
                                                       },
                                                     ),
                                                   ),
@@ -437,7 +433,7 @@ class _FieldForceState extends State<FieldForce> {
                                                           );
                                                     String googleUrl =
                                                         'https://maps.google.com/?q=$address';
-                                                    await launch("$googleUrl");
+                                                    await launch(googleUrl);
                                                   },
                                                 ),
                                               ),
@@ -503,7 +499,7 @@ class _FieldForceState extends State<FieldForce> {
   ) {
     String meetDetails = '$index. ';
     if (name != null) {
-      meetDetails += '$name';
+      meetDetails += name;
     }
     if (designation != null) {
       meetDetails += ', $designation';
@@ -518,7 +514,7 @@ class _FieldForceState extends State<FieldForce> {
         child: SizedBox(
           width: MySize.screenWidth! * 0.8,
           child: Text(
-            '$meetDetails',
+            meetDetails,
             style: AppTheme.getTextStyle(
               themeData.textTheme.bodyMedium,
               fontWeight: 600,
@@ -828,13 +824,13 @@ class _FieldForceState extends State<FieldForce> {
     );
   }
 
-  getFieldForceURL({
+  String getFieldForceURL({
     String? perPage = '10',
     String? startDate,
     String? endDate,
     String? visitStatus,
   }) {
-    String url = Api().baseUrl + Api().apiUrl + "/field-force?";
+    String url = "${Api().baseUrl}${Api().apiUrl}/field-force?";
 
     Map<String, dynamic> params = {
       'per_page': perPage,
@@ -860,9 +856,9 @@ class _FieldForceState extends State<FieldForce> {
 
   //progress indicator
   Widget _buildProgressIndicator() {
-    return new Padding(
+    return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: new Center(
+      child: Center(
         child: FutureBuilder<bool>(
           future: Helper().checkConnectivity(),
           builder: (context, AsyncSnapshot<bool> snapshot) {
@@ -896,7 +892,7 @@ class _FieldForceState extends State<FieldForce> {
   }
 
   //Fetch permission from database
-  getPermission() async {
+  Future<void> getPermission() async {
     // if (await Helper().getPermission("crm.access_all_schedule") ||
     //     await Helper().getPermission("crm.access_own_schedule")) {
     // accessFieldVisit = true;

@@ -16,6 +16,8 @@ import 'forms.dart';
 part 'follow_up/follow_up_state.dart';
 
 class FollowUp extends StatefulWidget {
+  const FollowUp({super.key});
+
   @override
   _FollowUpState createState() => _FollowUpState();
 }

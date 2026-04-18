@@ -190,13 +190,16 @@ class Variations {
     String url =
         "${ApiEndPoints.baseUrl}${Api().apiUrl}/variation?per_page=10&page=$offset";
 
-    if (locationId != null && locationId != 0)
+    if (locationId != null && locationId != 0) {
       url += "&location_id=$locationId";
+    }
     if (brandId != null && brandId != 0) url += "&brand_id=$brandId";
-    if (categoryId != null && categoryId != 0)
+    if (categoryId != null && categoryId != 0) {
       url += "&category_id=$categoryId";
-    if (subCategoryId != null && subCategoryId != 0)
+    }
+    if (subCategoryId != null && subCategoryId != 0) {
       url += "&sub_category_id=$subCategoryId";
+    }
     if (searchTerm != null && searchTerm.length > 0) url += "&name=$searchTerm";
 
     // We fetch from network
@@ -217,16 +220,20 @@ class Variations {
       }
 
       // If filtering by stock
-      if (inStock && stockAvailable <= 0 && variation['enable_stock'] == 1)
+      if (inStock && stockAvailable <= 0 && variation['enable_stock'] == 1) {
         continue;
+      }
 
       String displayName = "";
-      if (variation['product_name'] != null)
+      if (variation['product_name'] != null) {
         displayName += variation['product_name'] + " ";
-      if (variation['product_variation_name'] != null)
+      }
+      if (variation['product_variation_name'] != null) {
         displayName += variation['product_variation_name'] + " ";
-      if (variation['variation_name'] != null)
+      }
+      if (variation['variation_name'] != null) {
         displayName += variation['variation_name'];
+      }
 
       result.add({
         'product_id': variation['product_id'],

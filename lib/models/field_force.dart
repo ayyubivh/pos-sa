@@ -7,9 +7,9 @@ class FiledForceModel {
       'contact': (data['contact_id'] != null)
           ? getContactDetails(data['contact'])
           : {
-              'name': data['visit_to'] ?? null,
+              'name': data['visit_to'],
               'contact_numbers': [], //[data['visit_mobile']],
-              'address': data['visit_address'] ?? null
+              'address': data['visit_address'],
             },
       'assigned_to': data['assigned_to'],
       'user': getUserDetails(data['user']),
@@ -27,7 +27,7 @@ class FiledForceModel {
       'meet_with_mobile_no3': data['meet_with_mobileno3'],
       'meet_with_designation': data['meet_with_designation'],
       'meet_with_designation2': data['meet_with_designation2'],
-      'meet_with_designation3': data['meet_with_designation3']
+      'meet_with_designation3': data['meet_with_designation3'],
     };
     return visit;
   }
@@ -36,34 +36,35 @@ class FiledForceModel {
     List number = [
       contactData['mobile'],
       contactData['alternate_number'],
-      contactData['landline']
+      contactData['landline'],
     ];
     number.removeWhere((e) => e == null);
     List address = [
       contactData['address_line_1'],
-      contactData['address_line_2']
+      contactData['address_line_2'],
     ];
     address.removeWhere((e) => e == null);
     List location = [
       contactData['city'],
       contactData['state'],
       contactData['country'],
-      contactData['zip_code']
+      contactData['zip_code'],
     ];
     location.removeWhere((e) => e == null);
     Map<String, dynamic> contact = {
       'supplier_business_name':
           (contactData['supplier_business_name'] != null &&
-                  contactData['supplier_business_name'].toString().trim() != '')
-              ? contactData['supplier_business_name']
-              : null,
-      'name': (contactData['name'] != null &&
+              contactData['supplier_business_name'].toString().trim() != '')
+          ? contactData['supplier_business_name']
+          : null,
+      'name':
+          (contactData['name'] != null &&
               contactData['name'].toString().trim() != '')
           ? contactData['name']
           : null,
       'contact_numbers': number,
-      'address': address.join('\n') + '\n' + location.join(', '),
-      'email': "${contactData['email'] ?? ''}"
+      'address': '${address.join('\n')}\n${location.join(', ')}',
+      'email': "${contactData['email'] ?? ''}",
     };
     return contact;
   }
@@ -71,7 +72,7 @@ class FiledForceModel {
   Map<String, dynamic> getUserDetails(Map<String, dynamic> userData) {
     Map<String, dynamic> user = {
       'name':
-          "${userData['surname'] ?? ''} ${userData['first_name'] ?? ''} ${userData['last_name'] ?? ''}"
+          "${userData['surname'] ?? ''} ${userData['first_name'] ?? ''} ${userData['last_name'] ?? ''}",
     };
     return user;
   }

@@ -2,27 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppThemeNotifier extends ChangeNotifier {
-
   int _themeMode = 1;
 
   AppThemeNotifier() {
     init();
   }
 
-  init() async {
+  Future<void> init() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     int? data = sharedPreferences.getInt("themeMode");
-    if (data == null)
+    if (data == null) {
       _themeMode = 1;
-    else
+    } else {
       _themeMode = data;
+    }
     notifyListeners();
   }
 
-  themeMode() => _themeMode;
+  int themeMode() => _themeMode;
 
   Future<void> updateTheme(int themeMode) async {
-    this._themeMode = themeMode;
+    _themeMode = themeMode;
     notifyListeners();
 
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();

@@ -14,59 +14,60 @@ class Generator {
   static const String _emojiText =
       "😀 😃 😄 😁 😆 😅 😂 🤣 😍 🥰 😘 😠 😡 💩 👻 🧐 🤓 😎 😋 😛 😝 😜 😢 😭 😤 🥱 😴 😾";
 
-  static Widget buildRatingStar(
-      {double rating = 5,
-      Color activeColor = starColor,
-      Color inactiveColor = Colors.black,
-      double size = 16,
-      double spacing = 0,
-      bool inactiveStarFilled = false,
-      bool showInactive = true}) {
+  static Widget buildRatingStar({
+    double rating = 5,
+    Color activeColor = starColor,
+    Color inactiveColor = Colors.black,
+    double size = 16,
+    double spacing = 0,
+    bool inactiveStarFilled = false,
+    bool showInactive = true,
+  }) {
     int ratingCount = rating.floor();
     bool isHalf = (ratingCount != rating);
-    List<Widget> _stars = [];
+    List<Widget> stars = [];
     for (int i = 0; i < 5; i++) {
       if (i < ratingCount) {
-        _stars.add(Icon(
-          MdiIcons.star,
-          color: activeColor,
-          size: size,
-        ));
+        stars.add(Icon(MdiIcons.star, color: activeColor, size: size));
 
-        _stars.add(SizedBox(width: spacing));
+        stars.add(SizedBox(width: spacing));
       } else {
         if (isHalf) {
           isHalf = false;
-          _stars.add(Icon(
-            MdiIcons.starHalfFull,
-            color: activeColor,
-            size: size,
-          ));
+          stars.add(
+            Icon(MdiIcons.starHalfFull, color: activeColor, size: size),
+          );
         } else if (showInactive) {
-          _stars.add(Icon(
-            inactiveStarFilled ? MdiIcons.star : MdiIcons.starOutline,
-            color: inactiveColor,
-            size: size,
-          ));
+          stars.add(
+            Icon(
+              inactiveStarFilled ? MdiIcons.star : MdiIcons.starOutline,
+              color: inactiveColor,
+              size: size,
+            ),
+          );
         }
-        _stars.add(SizedBox(width: spacing));
+        stars.add(SizedBox(width: spacing));
       }
     }
-    return Row(mainAxisSize: MainAxisSize.min, children: _stars);
+    return Row(mainAxisSize: MainAxisSize.min, children: stars);
   }
 
   static String randomString(int length) {
-    var rand = new Random();
-    var codeUnits = new List.generate(length, (index) {
+    var rand = Random();
+    var codeUnits = List.generate(length, (index) {
       return rand.nextInt(33) + 89;
     });
 
-    return new String.fromCharCodes(codeUnits);
+    return String.fromCharCodes(codeUnits);
   }
 
-  static String getDummyText(int words,
-      {bool withTab = false, bool withEmoji = false, withStop = true}) {
-    var rand = new Random();
+  static String getDummyText(
+    int words, {
+    bool withTab = false,
+    bool withEmoji = false,
+    withStop = true,
+  }) {
+    var rand = Random();
     List<String> dummyTexts = _dummyText.split(" ");
 
     if (withEmoji) {
@@ -78,7 +79,7 @@ class Generator {
     if (withTab) text += "\t\t\t\t";
     String firstWord = dummyTexts[rand.nextInt(size)];
     firstWord = firstWord[0].toUpperCase() + firstWord.substring(1);
-    text += firstWord + " ";
+    text += "$firstWord ";
 
     for (int i = 1; i < words; i++) {
       text += dummyTexts[rand.nextInt(size)] + (i == words - 1 ? "" : " ");
@@ -87,18 +88,20 @@ class Generator {
     return text + (withStop ? "." : "");
   }
 
-  static String getParagraphsText(
-      {int paragraph = 1,
-      int words = 20,
-      int noOfNewLine = 1,
-      bool withHyphen = false,
-      bool withEmoji = false}) {
+  static String getParagraphsText({
+    int paragraph = 1,
+    int words = 20,
+    int noOfNewLine = 1,
+    bool withHyphen = false,
+    bool withEmoji = false,
+  }) {
     String text = "";
     for (int i = 0; i < paragraph; i++) {
-      if (withHyphen)
+      if (withHyphen) {
         text += "\t\t-\t\t";
-      else
+      } else {
         text += "\t\t\t\t";
+      }
       text += getDummyText(words, withEmoji: withEmoji);
       if (i != paragraph - 1) {
         for (int j = 0; j < noOfNewLine; j++) {
@@ -109,18 +112,15 @@ class Generator {
     return text;
   }
 
-  static Widget buildProgress(
-      {Color? activeColor,
-      Color? inactiveColor,
-      double progress = 1,
-      double? height,
-      double width = 100}) {
-    if (inactiveColor == null) {
-      inactiveColor = Colors.grey;
-    }
-    if (height == null) {
-      height = MySize.size4;
-    }
+  static Widget buildProgress({
+    Color? activeColor,
+    Color? inactiveColor,
+    double progress = 1,
+    double? height,
+    double width = 100,
+  }) {
+    inactiveColor ??= Colors.grey;
+    height ??= MySize.size4;
     if (progress > 1) {
       progress /= 100;
     }
@@ -128,28 +128,31 @@ class Generator {
       width: width,
       height: height,
       decoration: BoxDecoration(
-          color: inactiveColor,
-          borderRadius: BorderRadius.all(Radius.circular(MySize.size4!))),
+        color: inactiveColor,
+        borderRadius: BorderRadius.all(Radius.circular(MySize.size4!)),
+      ),
       child: Stack(
         children: <Widget>[
           Container(
             width: width * progress,
             height: height,
             decoration: BoxDecoration(
-                color: activeColor,
-                borderRadius: BorderRadius.all(Radius.circular(MySize.size4!))),
-          )
+              color: activeColor,
+              borderRadius: BorderRadius.all(Radius.circular(MySize.size4!)),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  static String getTextFromSeconds(
-      {int time = 0,
-      bool withZeros = true,
-      bool withHours = true,
-      bool withMinutes = true,
-      bool withSpace = true}) {
+  static String getTextFromSeconds({
+    int time = 0,
+    bool withZeros = true,
+    bool withHours = true,
+    bool withMinutes = true,
+    bool withSpace = true,
+  }) {
     int hour = (time / 3600).floor();
     int minute = ((time - 3600 * hour) / 60).floor();
     int second = (time - 3600 * hour - 60 * minute);
@@ -158,7 +161,7 @@ class Generator {
 
     if (withHours && hour != 0) {
       if (hour < 10 && withZeros) {
-        timeText += "0" + hour.toString() + (withSpace ? " : " : ":");
+        timeText += "0$hour${withSpace ? " : " : ":"}";
       } else {
         timeText += hour.toString() + (withSpace ? " : " : "");
       }
@@ -166,14 +169,14 @@ class Generator {
 
     if (withMinutes) {
       if (minute < 10 && withZeros) {
-        timeText += "0" + minute.toString() + (withSpace ? " : " : ":");
+        timeText += "0$minute${withSpace ? " : " : ":"}";
       } else {
         timeText += minute.toString() + (withSpace ? " : " : "");
       }
     }
 
     if (second < 10 && withZeros) {
-      timeText += "0" + second.toString();
+      timeText += "0$second";
     } else {
       timeText += second.toString();
     }

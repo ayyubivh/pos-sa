@@ -18,7 +18,7 @@ class _FollowUpState extends State<FollowUp> {
       followUpTypeList = ["All", "Call", "Sms", "Meeting", "Email"];
 
   String? followUpUrl =
-      Api().baseUrl + Api().apiUrl + "/crm/follow-ups?per_page=10";
+      "${Api().baseUrl}${Api().apiUrl}/crm/follow-ups?per_page=10";
   String selectedFollowUpType = "All", selectedFollowUpStatus = "All";
 
   ScrollController followUpListController = ScrollController();
@@ -41,11 +41,11 @@ class _FollowUpState extends State<FollowUp> {
     Helper().syncCallLogs();
   }
 
-  getFollowUpList() async {
+  Future<void> getFollowUpList() async {
     setState(() {
       isLoading = false;
     });
-    final dio = new Dio();
+    final dio = Dio();
     var token = await System().getToken();
     dio.options.headers['content-Type'] = 'application/json';
     dio.options.headers["Authorization"] = "Bearer $token";
@@ -53,9 +53,9 @@ class _FollowUpState extends State<FollowUp> {
     List followUps = response.data['data'];
     Map links = response.data['links'];
     setState(() {
-      followUps.forEach((element) {
+      for (var element in followUps) {
         followUpList.add(element);
-      });
+      }
     });
     isLoading = (links['next'] != null) ? true : false;
     followUpUrl = links['next'];
@@ -118,6 +118,16 @@ class _FollowUpState extends State<FollowUp> {
                 fontWeight: 600,
                 color: themeData.colorScheme.onSurface,
               ),
+              onPressed: (int index) {
+                setState(() {
+                  selectedToggleValue = index;
+                  for (int i = 0; i < toggleValue.length; i++) {
+                    toggleValue[i] = i == index;
+                  }
+                  onToggleFilter(index);
+                });
+              },
+              isSelected: toggleValue,
               children: <Widget>[
                 Padding(
                   padding: EdgeInsets.all(MySize.size10!),
@@ -134,21 +144,11 @@ class _FollowUpState extends State<FollowUp> {
                   child: Text(AppLocalizations.of(context).translate('all')),
                 ),
               ],
-              onPressed: (int index) {
-                setState(() {
-                  selectedToggleValue = index;
-                  for (int i = 0; i < toggleValue.length; i++) {
-                    toggleValue[i] = i == index;
-                  }
-                  onToggleFilter(index);
-                });
-              },
-              isSelected: toggleValue,
             ),
           ],
         ),
         Expanded(
-          child: (followUpList.length > 0)
+          child: (followUpList.isNotEmpty)
               ? ListView.builder(
                   controller: followUpListController,
                   padding: EdgeInsets.all(MySize.size16!),
@@ -243,7 +243,7 @@ class _FollowUpState extends State<FollowUp> {
                                           ),
                                         ),
                                       ),
-                                      Container(
+                                      SizedBox(
                                         width: MySize.screenWidth! * 0.8,
                                         child: Column(
                                           crossAxisAlignment:
@@ -668,7 +668,7 @@ class _FollowUpState extends State<FollowUp> {
     );
   }
 
-  onToggleFilter(int index) {
+  void onToggleFilter(int index) {
     String? formattedDate;
     setState(() {
       followUpList = [];
@@ -692,14 +692,14 @@ class _FollowUpState extends State<FollowUp> {
     getFollowUpList();
   }
 
-  getFollowUpURL({
+  String getFollowUpURL({
     String? perPage = '10',
     String? startDate,
     String? endDate,
     String? followUpType,
     String? followUpStatus,
   }) {
-    String url = Api().baseUrl + Api().apiUrl + "/crm/follow-ups?";
+    String url = "${Api().baseUrl}${Api().apiUrl}/crm/follow-ups?";
 
     Map<String, dynamic> params = {
       'order_by': 'start_datetime',
@@ -732,9 +732,9 @@ class _FollowUpState extends State<FollowUp> {
 
   //progress indicator
   Widget _buildProgressIndicator() {
-    return new Padding(
+    return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: new Center(
+      child: Center(
         child: FutureBuilder<bool>(
           future: Helper().checkConnectivity(),
           builder: (context, AsyncSnapshot<bool> snapshot) {
@@ -768,7 +768,7 @@ class _FollowUpState extends State<FollowUp> {
   }
 
   //Fetch permission from database
-  getPermission() async {
+  Future<void> getPermission() async {
     if (await Helper().getPermission("crm.access_all_schedule") ||
         await Helper().getPermission("crm.access_own_schedule")) {
       accessFollowUp = true;
@@ -786,7 +786,7 @@ class _FollowUpState extends State<FollowUp> {
           return DropdownMenuItem<String>(
             value: value,
             child: Text(
-              '$value',
+              value,
               softWrap: true,
               overflow: TextOverflow.ellipsis,
               style: AppTheme.getTextStyle(
@@ -817,7 +817,7 @@ class _FollowUpState extends State<FollowUp> {
           return DropdownMenuItem<String>(
             value: value,
             child: Text(
-              '$value',
+              value,
               softWrap: true,
               overflow: TextOverflow.ellipsis,
               style: AppTheme.getTextStyle(

@@ -52,10 +52,11 @@ Widget bottomBarMenu(context, route, name, isSelected, [replace, arguments]) {
   return TextButton(
     style: TextButton.styleFrom(backgroundColor: Colors.white),
     onPressed: () {
-      if (replace)
+      if (replace) {
         Navigator.pushReplacementNamed(context, route, arguments: arguments);
-      else
+      } else {
         Navigator.pushNamed(context, route, arguments: arguments);
+      }
     },
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

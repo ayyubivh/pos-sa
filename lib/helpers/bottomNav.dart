@@ -22,7 +22,7 @@ import 'SizeConfig.dart';
 import 'otherHelpers.dart';
 
 class Layout extends StatefulWidget {
-  const Layout({Key? key}) : super(key: key);
+  const Layout({super.key});
 
   @override
   State<Layout> createState() => _LayoutState();
@@ -69,11 +69,7 @@ class _LayoutState extends State<Layout> {
   CustomAppTheme customAppTheme = AppTheme.getCustomAppTheme(themeType);
 
   int _selectedIndex = 0;
-  List<Widget> pages_index = <Widget>[
-    Home(),
-    CategoryScreen(),
-    Sales(),
-  ];
+  List<Widget> pages_index = <Widget>[Home(), CategoryScreen(), Sales()];
   @override
   void initState() {
     super.initState();
@@ -223,8 +219,7 @@ class _LayoutState extends State<Layout> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: <Widget>[
                         Text(
-                          '$businessSymbol ' +
-                              Helper().formatCurrency(method[index]['value']),
+                          '$businessSymbol ${Helper().formatCurrency(method[index]['value'])}',
                         ),
                       ],
                     ),
@@ -401,12 +396,13 @@ class _LayoutState extends State<Layout> {
                                     }
                                   });
                               setState(() {});
-                            } else
+                            } else {
                               Fluttertoast.showToast(
                                 msg: AppLocalizations.of(
                                   context,
                                 ).translate('check_connectivity'),
                               );
+                            }
                           },
                           child: Text(
                             AppLocalizations.of(context).translate('ok'),
@@ -455,8 +451,9 @@ class _LayoutState extends State<Layout> {
           ],
         ),
       );
-    } else
+    } else {
       return Container();
+    }
   }
 
   //load statistics
@@ -471,7 +468,7 @@ class _LayoutState extends State<Layout> {
         );
         var paidAmount = 0.0;
         var returnAmount = 0.0;
-        payment.forEach((element) {
+        for (var element in payment) {
           if (element['is_return'] == 0) {
             paidAmount += element['amount'];
             payments.add({
@@ -481,7 +478,7 @@ class _LayoutState extends State<Layout> {
           } else {
             returnAmount += element['amount'];
           }
-        });
+        }
         totalSalesAmount = (totalSalesAmount + sell['invoice_amount']);
         totalReceivedAmount =
             (totalReceivedAmount + (paidAmount - returnAmount));
@@ -506,7 +503,7 @@ class _LayoutState extends State<Layout> {
 
     await loadStatistics().then((value) {
       Future.delayed(Duration(seconds: 1), () {
-        payments.forEach((row) {
+        for (var row in payments) {
           if (row['key'] == 'cash') {
             byCash += row['value'];
           }
@@ -537,26 +534,34 @@ class _LayoutState extends State<Layout> {
           if (row['key'] == 'custom_pay_3') {
             byCustomPayment_3 += row['value'];
           }
-        });
-        paymentMethod.forEach((row) {
-          if (byCash > 0 && row['key'] == 'cash')
+        }
+        for (var row in paymentMethod) {
+          if (byCash > 0 && row['key'] == 'cash') {
             method.add({'key': row['value'], 'value': byCash});
-          if (byCard > 0 && row['key'] == 'card')
+          }
+          if (byCard > 0 && row['key'] == 'card') {
             method.add({'key': row['value'], 'value': byCard});
-          if (byCheque > 0 && row['key'] == 'cheque')
+          }
+          if (byCheque > 0 && row['key'] == 'cheque') {
             method.add({'key': row['value'], 'value': byCheque});
-          if (byBankTransfer > 0 && row['key'] == 'bank_transfer')
+          }
+          if (byBankTransfer > 0 && row['key'] == 'bank_transfer') {
             method.add({'key': row['value'], 'value': byBankTransfer});
-          if (byOther > 0 && row['key'] == 'other')
+          }
+          if (byOther > 0 && row['key'] == 'other') {
             method.add({'key': row['value'], 'value': byOther});
-          if (byCustomPayment_1 > 0 && row['key'] == 'custom_pay_1')
+          }
+          if (byCustomPayment_1 > 0 && row['key'] == 'custom_pay_1') {
             method.add({'key': row['value'], 'value': byCustomPayment_1});
-          if (byCustomPayment_2 > 0 && row['key'] == 'custom_pay_2')
+          }
+          if (byCustomPayment_2 > 0 && row['key'] == 'custom_pay_2') {
             method.add({'key': row['value'], 'value': byCustomPayment_2});
-          if (byCustomPayment_3 > 0 && row['key'] == 'custom_pay_3')
+          }
+          if (byCustomPayment_3 > 0 && row['key'] == 'custom_pay_3') {
             method.add({'key': row['value'], 'value': byCustomPayment_3});
-        });
-        if (this.mounted) {
+          }
+        }
+        if (mounted) {
           setState(() {});
         }
       });

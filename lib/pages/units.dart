@@ -10,9 +10,7 @@ import '../domain/models/profit_loss_report_model.dart';
 
 class UnitsScreen extends StatefulWidget {
   static const String routeName = '/UnitsScreen';
-  UnitsScreen({
-    Key? key,
-  }) : super(key: key);
+  const UnitsScreen({super.key});
 
   static int themeType = 1;
 
@@ -21,9 +19,7 @@ class UnitsScreen extends StatefulWidget {
 }
 
 class _UnitsScreenState extends State<UnitsScreen> {
-  TextStyle textStyle(
-    BuildContext context,
-  ) {
+  TextStyle textStyle(BuildContext context) {
     return TextStyle(
       fontSize: MediaQuery.of(context).size.width / 25,
       fontWeight: FontWeight.bold,
@@ -32,8 +28,9 @@ class _UnitsScreenState extends State<UnitsScreen> {
 
   ThemeData themeData = AppTheme.getThemeFromThemeMode(UnitsScreen.themeType);
 
-  CustomAppTheme customAppTheme =
-      AppTheme.getCustomAppTheme(UnitsScreen.themeType);
+  CustomAppTheme customAppTheme = AppTheme.getCustomAppTheme(
+    UnitsScreen.themeType,
+  );
 
   List<Color> myColors = [
     Colors.white,
@@ -83,30 +80,37 @@ class _UnitsScreenState extends State<UnitsScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text(AppLocalizations.of(context).translate('reports'),
-            style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-                fontWeight: 600)),
+        title: Text(
+          AppLocalizations.of(context).translate('reports'),
+          style: AppTheme.getTextStyle(
+            themeData.textTheme.titleLarge,
+            fontWeight: 600,
+          ),
+        ),
       ),
       body: SizedBox(
         child: loading
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
+            ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Table(
-                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                    //  defaultColumnWidth: const FixedColumnWidth(120.0),
-                    border: TableBorder.all(
-                        color: Colors.black,
-                        style: BorderStyle.solid,
-                        width: 1),
-                    children: List.generate(
-                        myReports.length,
-                        (index) => myCellWidget(
-                            title: AppLocalizations.of(context)
-                                .translate(myReports[index]['title']),
-                            data: myReports[index]['data'].toString(),
-                            context: context))),
+                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                  //  defaultColumnWidth: const FixedColumnWidth(120.0),
+                  border: TableBorder.all(
+                    color: Colors.black,
+                    style: BorderStyle.solid,
+                    width: 1,
+                  ),
+                  children: List.generate(
+                    myReports.length,
+                    (index) => myCellWidget(
+                      title: AppLocalizations.of(
+                        context,
+                      ).translate(myReports[index]['title']),
+                      data: myReports[index]['data'].toString(),
+                      context: context,
+                    ),
+                  ),
+                ),
               ),
       ),
     );
@@ -114,29 +118,28 @@ class _UnitsScreenState extends State<UnitsScreen> {
 
   TableRow myCellWidget({String? title, String? data, BuildContext? context}) {
     return TableRow(
-        decoration: BoxDecoration(
-          color: myColors[Random().nextInt(6)],
-          border: Border.all(
-            width: 1,
+      decoration: BoxDecoration(
+        color: myColors[Random().nextInt(6)],
+        border: Border.all(width: 1),
+      ),
+      children: [
+        Padding(
+          padding: EdgeInsets.all(5),
+          child: Text(
+            title!,
+            textAlign: TextAlign.center,
+            style: textStyle(context!),
           ),
         ),
-        children: [
-          Padding(
-            padding: EdgeInsets.all(5),
-            child: Text(
-              title!,
-              textAlign: TextAlign.center,
-              style: textStyle(context!),
-            ),
+        Padding(
+          padding: EdgeInsets.all(5),
+          child: Text(
+            data!,
+            textAlign: TextAlign.center,
+            style: textStyle(context),
           ),
-          Padding(
-            padding: EdgeInsets.all(5),
-            child: Text(
-              data!,
-              textAlign: TextAlign.center,
-              style: textStyle(context),
-            ),
-          ),
-        ]);
+        ),
+      ],
+    );
   }
 }

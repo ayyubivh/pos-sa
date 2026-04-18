@@ -33,8 +33,8 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   ///private variables
-  static int _themeType = 1;
-  ThemeData _themeData = AppTheme.getThemeFromThemeMode(_themeType);
+  static final int _themeType = 1;
+  final ThemeData _themeData = AppTheme.getThemeFromThemeMode(_themeType);
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -65,10 +65,11 @@ class LoginCubit extends Cubit<LoginState> {
 
   set passwordVisible(bool passwordVisible) {
     _passwordVisible = passwordVisible;
-    if (passwordVisible)
+    if (passwordVisible) {
       _passwordIcon = MdiIcons.eyeOutline;
-    else
+    } else {
       _passwordIcon = MdiIcons.eyeOffOutline;
+    }
     emit(LoginChangePasswordVisibility());
   }
 

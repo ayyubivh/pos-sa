@@ -10,10 +10,9 @@ class FollowUpApi extends Api {
   Future<Map> getSpecifiedFollowUp(id) async {
     try {
       var followUps;
-      String url = this.baseUrl + this.apiUrl + "/crm/follow-ups/$id";
+      String url = baseUrl + apiUrl + "/crm/follow-ups/$id";
       var token = await System().getToken();
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader('$token'));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
 
       followUps = jsonDecode(response.body);
       var followUpList = followUps['data'][0];
@@ -24,25 +23,31 @@ class FollowUpApi extends Api {
   }
 
   //add follow up
-  addFollowUp(Map followUp) async {
+  Future<int> addFollowUp(Map followUp) async {
     try {
-      String url = this.baseUrl + this.apiUrl + "/crm/follow-ups";
+      String url = baseUrl + apiUrl + "/crm/follow-ups";
       var body = json.encode(followUp);
       var token = await System().getToken();
-      var response = await http.post(Uri.parse(url),
-          headers: this.getHeader('$token'), body: body);
+      var response = await http.post(
+        Uri.parse(url),
+        headers: getHeader(token),
+        body: body,
+      );
       return response.statusCode;
     } catch (e) {}
   }
 
   //update follow up
-  update(Map followUp, id) async {
+  Future<int> update(Map followUp, id) async {
     try {
-      String url = this.baseUrl + this.apiUrl + "/crm/follow-ups/$id";
+      String url = baseUrl + apiUrl + "/crm/follow-ups/$id";
       var body = json.encode(followUp);
       var token = await System().getToken();
-      var response = await http.put(Uri.parse(url),
-          headers: this.getHeader('$token'), body: body);
+      var response = await http.put(
+        Uri.parse(url),
+        headers: getHeader(token),
+        body: body,
+      );
       return response.statusCode;
     } catch (e) {}
   }
@@ -50,11 +55,14 @@ class FollowUpApi extends Api {
   //post call_logs to api
   Future<bool> syncCallLog(Map callLogs) async {
     try {
-      String url = this.baseUrl + this.apiUrl + "/crm/call-logs";
+      String url = baseUrl + apiUrl + "/crm/call-logs";
       var body = json.encode(callLogs);
       var token = await System().getToken();
-      var response = await http.post(Uri.parse(url),
-          headers: this.getHeader('$token'), body: body);
+      var response = await http.post(
+        Uri.parse(url),
+        headers: getHeader(token),
+        body: body,
+      );
 
       if (response.statusCode == 200) {
         return true;
@@ -67,14 +75,13 @@ class FollowUpApi extends Api {
   }
 
   //get follow up categories
-//get specific follow up detail
+  //get specific follow up detail
   Future<List<dynamic>> getFollowUpCategories() async {
     try {
       var followUpCategories;
-      String url = this.baseUrl + this.apiUrl + "/taxonomy?type=followup_category";
+      String url = baseUrl + apiUrl + "/taxonomy?type=followup_category";
       var token = await System().getToken();
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader('$token'));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
 
       followUpCategories = jsonDecode(response.body);
       List<dynamic> followUpCategoryList = followUpCategories['data'];

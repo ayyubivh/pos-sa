@@ -59,12 +59,12 @@ class MySize {
     _mediaQueryData = MediaQuery.of(context);
     screenWidth = _mediaQueryData!.size.width;
     screenHeight = _mediaQueryData!.size.height;
-    double _safeAreaWidth =
+    double safeAreaWidth =
         _mediaQueryData!.padding.left + _mediaQueryData!.padding.right;
-    double _safeAreaHeight =
+    double safeAreaHeight =
         _mediaQueryData!.padding.top + _mediaQueryData!.padding.bottom;
-    safeWidth = (screenWidth! - _safeAreaWidth);
-    safeHeight = (screenHeight! - _safeAreaHeight);
+    safeWidth = (screenWidth! - safeAreaWidth);
+    safeHeight = (screenHeight! - safeAreaHeight);
 
     //Scale factor for responsive UI
     scaleFactorHeight = (safeHeight! / 820);
@@ -137,42 +137,54 @@ class MySize {
 class Spacing {
   static EdgeInsetsGeometry zero = EdgeInsets.zero;
 
-  static EdgeInsetsGeometry only(
-      {double top = 0,
-      double right = 0,
-      double bottom = 0,
-      double left = 0,
-      bool withResponsive = true}) {
+  static EdgeInsetsGeometry only({
+    double top = 0,
+    double right = 0,
+    double bottom = 0,
+    double left = 0,
+    bool withResponsive = true,
+  }) {
     if (withResponsive) {
       return EdgeInsets.only(
-          left: MySize.getScaledSizeHeight(left),
-          right: MySize.getScaledSizeHeight(right),
-          top: MySize.getScaledSizeHeight(top),
-          bottom: MySize.getScaledSizeHeight(bottom));
+        left: MySize.getScaledSizeHeight(left),
+        right: MySize.getScaledSizeHeight(right),
+        top: MySize.getScaledSizeHeight(top),
+        bottom: MySize.getScaledSizeHeight(bottom),
+      );
     } else {
       return EdgeInsets.only(
-          left: left, right: right, top: top, bottom: bottom);
+        left: left,
+        right: right,
+        top: top,
+        bottom: bottom,
+      );
     }
   }
 
   static EdgeInsetsGeometry fromLTRB(
-      double left, double top, double right, double bottom,
-      {bool withResponsive = true}) {
+    double left,
+    double top,
+    double right,
+    double bottom, {
+    bool withResponsive = true,
+  }) {
     return Spacing.only(
-        bottom: bottom,
-        top: top,
-        right: right,
-        left: left,
-        withResponsive: withResponsive);
+      bottom: bottom,
+      top: top,
+      right: right,
+      left: left,
+      withResponsive: withResponsive,
+    );
   }
 
   static EdgeInsetsGeometry all(double spacing, {bool withResponsive = true}) {
     return Spacing.only(
-        bottom: spacing,
-        top: spacing,
-        right: spacing,
-        left: spacing,
-        withResponsive: withResponsive);
+      bottom: spacing,
+      top: spacing,
+      right: spacing,
+      left: spacing,
+      withResponsive: withResponsive,
+    );
   }
 
   static EdgeInsetsGeometry left(double spacing, {bool withResponsive = true}) {
@@ -183,37 +195,53 @@ class Spacing {
     return Spacing.only(top: spacing, withResponsive: withResponsive);
   }
 
-  static EdgeInsetsGeometry right(double spacing,
-      {bool withResponsive = true}) {
+  static EdgeInsetsGeometry right(
+    double spacing, {
+    bool withResponsive = true,
+  }) {
     return Spacing.only(right: spacing, withResponsive: withResponsive);
   }
 
-  static EdgeInsetsGeometry bottom(double spacing,
-      {bool withResponsive = true}) {
+  static EdgeInsetsGeometry bottom(
+    double spacing, {
+    bool withResponsive = true,
+  }) {
     return Spacing.only(bottom: spacing, withResponsive: withResponsive);
   }
 
-  static EdgeInsetsGeometry horizontal(double spacing,
-      {bool withResponsive = true}) {
+  static EdgeInsetsGeometry horizontal(
+    double spacing, {
+    bool withResponsive = true,
+  }) {
     return Spacing.only(
-        left: spacing, right: spacing, withResponsive: withResponsive);
+      left: spacing,
+      right: spacing,
+      withResponsive: withResponsive,
+    );
   }
 
-  static EdgeInsetsGeometry vertical(double spacing,
-      {bool withResponsive = true}) {
+  static EdgeInsetsGeometry vertical(
+    double spacing, {
+    bool withResponsive = true,
+  }) {
     return Spacing.only(
-        top: spacing, bottom: spacing, withResponsive: withResponsive);
+      top: spacing,
+      bottom: spacing,
+      withResponsive: withResponsive,
+    );
   }
 
-  static EdgeInsetsGeometry symmetric(
-      {double vertical = 0,
-      double horizontal = 0,
-      bool withResponsive = true}) {
+  static EdgeInsetsGeometry symmetric({
+    double vertical = 0,
+    double horizontal = 0,
+    bool withResponsive = true,
+  }) {
     return Spacing.only(
-        top: vertical,
-        right: horizontal,
-        left: horizontal,
-        bottom: vertical,
-        withResponsive: withResponsive);
+      top: vertical,
+      right: horizontal,
+      left: horizontal,
+      bottom: vertical,
+      withResponsive: withResponsive,
+    );
   }
 }

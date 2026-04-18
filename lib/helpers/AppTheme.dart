@@ -516,7 +516,11 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         elevation: 0,
         shadowColor: Colors.transparent,
-        textStyle: GoogleFonts.cairo(fontWeight: FontWeight.w600, fontSize: 15, letterSpacing: -0.1),
+        textStyle: GoogleFonts.cairo(
+          fontWeight: FontWeight.w600,
+          fontSize: 15,
+          letterSpacing: -0.1,
+        ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -525,7 +529,11 @@ class AppTheme {
         side: BorderSide(color: kOutlineColor),
         minimumSize: Size(88, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle: GoogleFonts.cairo(fontWeight: FontWeight.w600, fontSize: 15, letterSpacing: -0.1),
+        textStyle: GoogleFonts.cairo(
+          fontWeight: FontWeight.w600,
+          fontSize: 15,
+          letterSpacing: -0.1,
+        ),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -568,7 +576,8 @@ class AppTheme {
         return kMutedTextColor;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) return kDefaultColor.withAlpha(50);
+        if (states.contains(WidgetState.selected))
+          return kDefaultColor.withAlpha(50);
         return kOutlineColor;
       }),
     ),
@@ -596,8 +605,6 @@ class AppTheme {
       onSecondary: Colors.white,
       surface: kSurfaceColor,
       onSurface: kPrimaryTextColor,
-      background: kBackgroundColor,
-      onBackground: kPrimaryTextColor,
       error: kErrorColor,
       outline: kOutlineColor,
       outlineVariant: kOutlineColor,

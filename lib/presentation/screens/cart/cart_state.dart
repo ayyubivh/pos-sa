@@ -982,8 +982,9 @@ class CartState extends State<Cart> {
                                               if (newQuantity != "" &&
                                                   double.parse(newQuantity) >
                                                       0) {
-                                                if (!proceedNext)
+                                                if (!proceedNext) {
                                                   proceedNext = true;
+                                                }
                                                 if (cartItems[index]['stock_available'] >=
                                                     double.parse(newQuantity)) {
                                                   SellDatabase().update(
@@ -1466,10 +1467,11 @@ class CartState extends State<Cart> {
     });
     var userDetails = await System().get('loggedInUser');
     setState(() {
-      if (userDetails['max_sales_discount_percent'] != null)
+      if (userDetails['max_sales_discount_percent'] != null) {
         maxDiscountValue = double.parse(
           userDetails['max_sales_discount_percent'],
         );
+      }
     });
     if (sellDetail == null && businessDetails[0]['default_sales_tax'] != null) {
       setState(() {

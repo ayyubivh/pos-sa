@@ -4,7 +4,8 @@ import 'package:pos_final/helpers/otherHelpers.dart';
 import 'package:pos_final/locale/MyLocalizations.dart';
 
 class Statistics extends StatelessWidget {
-  Statistics({
+  const Statistics({
+    super.key,
     this.businessSymbol = '',
     this.totalSales,
     this.totalSalesAmount = 0,

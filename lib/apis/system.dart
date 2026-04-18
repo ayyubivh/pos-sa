@@ -27,10 +27,9 @@ class Brand extends Api {
 
   Future<List> get() async {
     try {
-      String url =this.baseUrl + this.apiUrl + "/brand";
+      String url = baseUrl + apiUrl + "/brand";
       var token = await System().getToken();
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader('$token'));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
       brands = jsonDecode(response.body);
       var brandList = brands['data'];
       System().insert('brand', jsonEncode(brandList));
@@ -46,10 +45,9 @@ class Category extends Api {
 
   Future<List> get() async {
     try {
-      String url = this.baseUrl + this.apiUrl + "/taxonomy?type=product";
+      String url = baseUrl + apiUrl + "/taxonomy?type=product";
       var token = await System().getToken();
-      var response =
-      await http.get(Uri.parse(url), headers: this.getHeader('$token'));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
       taxonomy = jsonDecode(response.body);
       var categoryList = taxonomy['data'];
       System().insert('taxonomy', jsonEncode(categoryList));
@@ -57,9 +55,10 @@ class Category extends Api {
         if (element['sub_categories'].isNotEmpty) {
           element['sub_categories'].forEach((value) {
             System().insert(
-                'sub_categories',
-                jsonEncode({'id': value['id'], 'name': value['name']}),
-                value['parent_id']);
+              'sub_categories',
+              jsonEncode({'id': value['id'], 'name': value['name']}),
+              value['parent_id'],
+            );
           });
         }
       });
@@ -75,10 +74,9 @@ class Payment extends Api {
 
   Future<List> get() async {
     try {
-      String url = this.baseUrl + this.apiUrl + "/payment-methods";
+      String url = baseUrl + apiUrl + "/payment-methods";
       var token = await System().getToken();
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader('$token'));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
       payment = jsonDecode(response.body);
       List paymentList = [];
       payment.forEach((key, value) {
@@ -93,12 +91,11 @@ class Payment extends Api {
 }
 
 class Permissions extends Api {
-  get() async {
+  Future<void> get() async {
     try {
-      String url = this.baseUrl + this.apiUrl + "/user/loggedin";
+      String url = baseUrl + apiUrl + "/user/loggedin";
       var token = await System().getToken();
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader(token));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
       var userDetails = jsonDecode(response.body);
       Map userDetailsMap = userDetails['data'];
       if (userDetailsMap.containsKey('all_permissions')) {
@@ -114,19 +111,21 @@ class Location extends Api {
 
   Future<List?> get() async {
     try {
-      String url =this.baseUrl + this.apiUrl + "/business-location";
+      String url = baseUrl + apiUrl + "/business-location";
       var token = await System().getToken();
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader('$token'));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
       locations = jsonDecode(response.body);
 
       List? locationList = locations['data'];
       System().insert('location', jsonEncode(locationList));
       if (locationList != null) {
-        locationList.forEach((element) {
-          System().insert('payment_method',
-              jsonEncode(element['payment_methods']), element['id']);
-        });
+        for (var element in locationList) {
+          System().insert(
+            'payment_method',
+            jsonEncode(element['payment_methods']),
+            element['id'],
+          );
+        }
       }
       return locationList;
     } catch (e) {
@@ -140,10 +139,9 @@ class Business extends Api {
 
   Future<List> get() async {
     try {
-      String url =this.baseUrl + this.apiUrl + "/business-details";
+      String url = baseUrl + apiUrl + "/business-details";
       var token = await System().getToken();
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader('$token'));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
       business = jsonDecode(response.body);
       List businessDetails = [business['data']];
       System().insert('business', jsonEncode(businessDetails));
@@ -159,16 +157,17 @@ class ActiveSubscription extends Api {
 
   Future<List> get() async {
     try {
-      String url = this.baseUrl + this.apiUrl + "/active-subscription";
+      String url = baseUrl + apiUrl + "/active-subscription";
       var token = await System().getToken();
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader('$token'));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
       activeSubscription = jsonDecode(response.body);
       List activeSubscriptionDetails = (activeSubscription['data'].isNotEmpty)
           ? [activeSubscription['data']]
           : [];
-      System()
-          .insert('active-subscription', jsonEncode(activeSubscriptionDetails));
+      System().insert(
+        'active-subscription',
+        jsonEncode(activeSubscriptionDetails),
+      );
       return activeSubscriptionDetails;
     } catch (e) {
       return [];
@@ -180,10 +179,9 @@ class PaymentAccounts extends Api {
   Future<List> get() async {
     try {
       var accounts;
-      String url =this.baseUrl + this.apiUrl + "/payment-accounts";
+      String url = baseUrl + apiUrl + "/payment-accounts";
       var token = await System().getToken();
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader('$token'));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
       accounts = jsonDecode(response.body);
       List paymentAccounts = accounts['data'];
       System().insert('payment_accounts', jsonEncode(paymentAccounts));

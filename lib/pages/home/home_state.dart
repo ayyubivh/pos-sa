@@ -439,7 +439,7 @@ class _HomeState extends State<Home> {
                   Expanded(
                     child: ListView.separated(
                       itemCount: Config().lang.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 6),
+                      separatorBuilder: (_, _) => const SizedBox(height: 6),
                       itemBuilder: (context, index) {
                         final locale = Config().lang[index];
                         final code = locale['languageCode'] as String;
@@ -1019,22 +1019,30 @@ class _HomeState extends State<Home> {
           }
         }
         for (var row in paymentMethod) {
-          if (byCash > 0 && row['key'] == 'cash')
+          if (byCash > 0 && row['key'] == 'cash') {
             method.add({'key': row['value'], 'value': byCash});
-          if (byCard > 0 && row['key'] == 'card')
+          }
+          if (byCard > 0 && row['key'] == 'card') {
             method.add({'key': row['value'], 'value': byCard});
-          if (byCheque > 0 && row['key'] == 'cheque')
+          }
+          if (byCheque > 0 && row['key'] == 'cheque') {
             method.add({'key': row['value'], 'value': byCheque});
-          if (byBankTransfer > 0 && row['key'] == 'bank_transfer')
+          }
+          if (byBankTransfer > 0 && row['key'] == 'bank_transfer') {
             method.add({'key': row['value'], 'value': byBankTransfer});
-          if (byOther > 0 && row['key'] == 'other')
+          }
+          if (byOther > 0 && row['key'] == 'other') {
             method.add({'key': row['value'], 'value': byOther});
-          if (byCustomPayment_1 > 0 && row['key'] == 'custom_pay_1')
+          }
+          if (byCustomPayment_1 > 0 && row['key'] == 'custom_pay_1') {
             method.add({'key': row['value'], 'value': byCustomPayment_1});
-          if (byCustomPayment_2 > 0 && row['key'] == 'custom_pay_2')
+          }
+          if (byCustomPayment_2 > 0 && row['key'] == 'custom_pay_2') {
             method.add({'key': row['value'], 'value': byCustomPayment_2});
-          if (byCustomPayment_3 > 0 && row['key'] == 'custom_pay_3')
+          }
+          if (byCustomPayment_3 > 0 && row['key'] == 'custom_pay_3') {
             method.add({'key': row['value'], 'value': byCustomPayment_3});
+          }
         }
         if (mounted) {
           setState(() {});

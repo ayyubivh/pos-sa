@@ -883,12 +883,13 @@ class _FollowUpFormState extends State<FollowUpForm> {
                           }
                         },
                         validator: (value) {
-                          if (value == null || value.isEmpty)
+                          if (value == null || value.isEmpty) {
                             return AppLocalizations.of(
                               context,
                             ).translate('required');
-                          else
+                          } else {
                             return null;
+                          }
                         },
                       ),
                       SizedBox(height: 12),
@@ -935,12 +936,13 @@ class _FollowUpFormState extends State<FollowUpForm> {
                           }
                         },
                         validator: (value) {
-                          if (value == null || value.isEmpty)
+                          if (value == null || value.isEmpty) {
                             return AppLocalizations.of(
                               context,
                             ).translate('required');
-                          else
+                          } else {
                             return null;
+                          }
                         },
                       ),
                     ],

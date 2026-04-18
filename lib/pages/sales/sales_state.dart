@@ -1489,12 +1489,15 @@ class _SalesState extends State<Sales> {
     if (status != null) {
       String s = status.toLowerCase();
       if (s == AppLocalizations.of(context).translate('paid').toLowerCase() ||
-          s == 'paid')
+          s == 'paid') {
         return Colors.green;
+      }
       if (s == 'due') return Colors.red;
       if (s == 'partial' ||
-          s == AppLocalizations.of(context).translate('partial').toLowerCase())
+          s ==
+              AppLocalizations.of(context).translate('partial').toLowerCase()) {
         return Colors.orange;
+      }
       return Colors.blueGrey;
     }
     return Colors.black12;
@@ -1503,8 +1506,9 @@ class _SalesState extends State<Sales> {
   //status status of recent sales
   String checkStatus(double invoiceAmount, double pendingAmount) {
     if (pendingAmount == invoiceAmount) return 'due';
-    if (pendingAmount >= 0.01)
+    if (pendingAmount >= 0.01) {
       return AppLocalizations.of(context).translate('partial');
+    }
     return AppLocalizations.of(context).translate('paid');
   }
 }

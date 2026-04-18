@@ -229,16 +229,18 @@ class CheckOutState extends State<CheckOut> {
                           Expanded(
                             child: TextFormField(
                               decoration: InputDecoration(
-                                labelText: AppLocalizations.of(context)
-                                    .translate('amount'),
+                                labelText: AppLocalizations.of(
+                                  context,
+                                ).translate('amount'),
                                 suffixText: symbol,
                                 isDense: true,
                                 filled: true,
                                 fillColor: themeData.colorScheme.onSurface
                                     .withOpacity(0.03),
                                 border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(MySize.size10!),
+                                  borderRadius: BorderRadius.circular(
+                                    MySize.size10!,
+                                  ),
                                   borderSide: BorderSide.none,
                                 ),
                               ),
@@ -253,8 +255,8 @@ class CheckOutState extends State<CheckOut> {
                               ],
                               keyboardType: TextInputType.number,
                               onChanged: (value) {
-                                payments[index]['amount'] =
-                                    Helper().validateInput(value);
+                                payments[index]['amount'] = Helper()
+                                    .validateInput(value);
                                 calculateMultiPayment();
                               },
                             ),
@@ -277,8 +279,9 @@ class CheckOutState extends State<CheckOut> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  AppLocalizations.of(context)
-                                      .translate('payment_method'),
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate('payment_method'),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: themeData.colorScheme.onSurface
@@ -291,21 +294,26 @@ class CheckOutState extends State<CheckOut> {
                                     dropdownColor: customAppTheme.bgLayer1,
                                     value: payments[index]['method'],
                                     items: paymentMethods
-                                        .map<DropdownMenuItem<String>>((Map value) {
-                                      return DropdownMenuItem<String>(
-                                        value: value['name'],
-                                        child: Text(
-                                          value['value'],
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                      );
-                                    }).toList(),
+                                        .map<DropdownMenuItem<String>>((
+                                          Map value,
+                                        ) {
+                                          return DropdownMenuItem<String>(
+                                            value: value['name'],
+                                            child: Text(
+                                              value['value'],
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          );
+                                        })
+                                        .toList(),
                                     onChanged: (newValue) {
                                       for (var element in paymentMethods) {
                                         if (element['name'] == newValue) {
                                           setState(() {
-                                            payments[index]['method'] = newValue;
+                                            payments[index]['method'] =
+                                                newValue;
                                             payments[index]['account_id'] =
                                                 element['account_id'];
                                           });
@@ -323,8 +331,9 @@ class CheckOutState extends State<CheckOut> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  AppLocalizations.of(context)
-                                      .translate('payment_account'),
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate('payment_account'),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: themeData.colorScheme.onSurface
@@ -337,19 +346,24 @@ class CheckOutState extends State<CheckOut> {
                                     dropdownColor: customAppTheme.bgLayer1,
                                     value: payments[index]['account_id'],
                                     items: paymentAccounts
-                                        .map<DropdownMenuItem<int>>((Map value) {
-                                      return DropdownMenuItem<int>(
-                                        value: value['id'],
-                                        child: Text(
-                                          value['name'],
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                      );
-                                    }).toList(),
+                                        .map<DropdownMenuItem<int>>((
+                                          Map value,
+                                        ) {
+                                          return DropdownMenuItem<int>(
+                                            value: value['id'],
+                                            child: Text(
+                                              value['name'],
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          );
+                                        })
+                                        .toList(),
                                     onChanged: (newValue) {
                                       setState(() {
-                                        payments[index]['account_id'] = newValue;
+                                        payments[index]['account_id'] =
+                                            newValue;
                                       });
                                     },
                                   ),
@@ -362,11 +376,13 @@ class CheckOutState extends State<CheckOut> {
                       SizedBox(height: MySize.size12),
                       TextFormField(
                         decoration: InputDecoration(
-                          hintText: AppLocalizations.of(context)
-                              .translate('payment_note'),
+                          hintText: AppLocalizations.of(
+                            context,
+                          ).translate('payment_note'),
                           isDense: true,
                           filled: true,
-                          fillColor: themeData.colorScheme.onSurface.withOpacity(0.03),
+                          fillColor: themeData.colorScheme.onSurface
+                              .withOpacity(0.03),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(MySize.size8!),
                             borderSide: BorderSide.none,
@@ -425,14 +441,18 @@ class CheckOutState extends State<CheckOut> {
                         child: TextFormField(
                           controller: shippingCharges,
                           decoration: InputDecoration(
-                            labelText: AppLocalizations.of(context)
-                                .translate('shipping_charges'),
+                            labelText: AppLocalizations.of(
+                              context,
+                            ).translate('shipping_charges'),
                             suffixText: symbol,
                             isDense: true,
                             filled: true,
-                            fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                            fillColor: themeData.colorScheme.onSurface
+                                .withOpacity(0.04),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(MySize.size10!),
+                              borderRadius: BorderRadius.circular(
+                                MySize.size10!,
+                              ),
                               borderSide: BorderSide.none,
                             ),
                           ),
@@ -444,7 +464,8 @@ class CheckOutState extends State<CheckOut> {
                           ],
                           keyboardType: TextInputType.number,
                           onChanged: (value) {
-                            invoiceAmount = argument!['invoiceAmount'] +
+                            invoiceAmount =
+                                argument!['invoiceAmount'] +
                                 Helper().validateInput(value);
                             calculateMultiPayment();
                           },
@@ -456,11 +477,14 @@ class CheckOutState extends State<CheckOut> {
                 TextFormField(
                   controller: shippingDetails,
                   decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)
-                        .translate('shipping_details'),
+                    hintText: AppLocalizations.of(
+                      context,
+                    ).translate('shipping_details'),
                     isDense: true,
                     filled: true,
-                    fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                    fillColor: themeData.colorScheme.onSurface.withOpacity(
+                      0.04,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(MySize.size10!),
                       borderSide: BorderSide.none,
@@ -478,26 +502,36 @@ class CheckOutState extends State<CheckOut> {
                   children: <Widget>[
                     block(
                       amount: Helper().formatCurrency(invoiceAmount),
-                      subject: AppLocalizations.of(context).translate('total_payble'),
+                      subject: AppLocalizations.of(
+                        context,
+                      ).translate('total_payble'),
                       backgroundColor: Color(0xFF2563EB),
                       textColor: Colors.white,
                     ),
                     block(
                       amount: Helper().formatCurrency(totalPaying),
-                      subject: AppLocalizations.of(context).translate('total_paying'),
+                      subject: AppLocalizations.of(
+                        context,
+                      ).translate('total_paying'),
                       backgroundColor: Color(0xFF4F46E5),
                       textColor: Colors.white,
                     ),
                     block(
                       amount: Helper().formatCurrency(changeReturn),
-                      subject: AppLocalizations.of(context).translate('change_return'),
+                      subject: AppLocalizations.of(
+                        context,
+                      ).translate('change_return'),
                       backgroundColor: Color(0xFF059669),
                       textColor: Colors.white,
                     ),
                     block(
                       amount: Helper().formatCurrency(pendingAmount),
-                      subject: AppLocalizations.of(context).translate('balance'),
-                      backgroundColor: (pendingAmount >= 0.01) ? Color(0xFFDC2626) : Color(0xFFD97706),
+                      subject: AppLocalizations.of(
+                        context,
+                      ).translate('balance'),
+                      backgroundColor: (pendingAmount >= 0.01)
+                          ? Color(0xFFDC2626)
+                          : Color(0xFFD97706),
                       textColor: Colors.white,
                     ),
                   ],
@@ -509,10 +543,13 @@ class CheckOutState extends State<CheckOut> {
                       child: TextFormField(
                         controller: saleNote,
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).translate('sell_note'),
+                          labelText: AppLocalizations.of(
+                            context,
+                          ).translate('sell_note'),
                           isDense: true,
                           filled: true,
-                          fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                          fillColor: themeData.colorScheme.onSurface
+                              .withOpacity(0.04),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(MySize.size10!),
                             borderSide: BorderSide.none,
@@ -526,10 +563,13 @@ class CheckOutState extends State<CheckOut> {
                       child: TextFormField(
                         controller: staffNote,
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).translate('staff_note'),
+                          labelText: AppLocalizations.of(
+                            context,
+                          ).translate('staff_note'),
                           isDense: true,
                           filled: true,
-                          fillColor: themeData.colorScheme.onSurface.withOpacity(0.04),
+                          fillColor: themeData.colorScheme.onSurface
+                              .withOpacity(0.04),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(MySize.size10!),
                             borderSide: BorderSide.none,
@@ -551,7 +591,11 @@ class CheckOutState extends State<CheckOut> {
                     children: [
                       Expanded(
                         child: RadioListTile(
-                          title: Text(AppLocalizations.of(context).translate('mobile_layout')),
+                          title: Text(
+                            AppLocalizations.of(
+                              context,
+                            ).translate('mobile_layout'),
+                          ),
                           value: "Mobile",
                           groupValue: invoiceType,
                           onChanged: (value) => setState(() {
@@ -562,7 +606,11 @@ class CheckOutState extends State<CheckOut> {
                       ),
                       Expanded(
                         child: RadioListTile(
-                          title: Text(AppLocalizations.of(context).translate('web_layout')),
+                          title: Text(
+                            AppLocalizations.of(
+                              context,
+                            ).translate('web_layout'),
+                          ),
                           value: "Web",
                           groupValue: invoiceType,
                           onChanged: (value) async {
@@ -586,20 +634,28 @@ class CheckOutState extends State<CheckOut> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: customAppTheme.bgLayer1,
                           foregroundColor: themeData.colorScheme.primary,
-                          padding: EdgeInsets.symmetric(vertical: MySize.size16!),
+                          padding: EdgeInsets.symmetric(
+                            vertical: MySize.size16!,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(MySize.size12!),
-                            side: BorderSide(color: themeData.colorScheme.primary),
+                            side: BorderSide(
+                              color: themeData.colorScheme.primary,
+                            ),
                           ),
                           elevation: 0,
                         ),
                         onPressed: () {
                           _printInvoice = false;
-                          if (pendingAmount >= 0.01) alertPending(context);
-                          else if (!saleCreated) onSubmit();
+                          if (pendingAmount >= 0.01) {
+                            alertPending(context);
+                          } else if (!saleCreated)
+                            onSubmit();
                         },
                         child: Text(
-                          AppLocalizations.of(context).translate('finalize_n_share'),
+                          AppLocalizations.of(
+                            context,
+                          ).translate('finalize_n_share'),
                           style: TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
@@ -610,7 +666,9 @@ class CheckOutState extends State<CheckOut> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: themeData.colorScheme.primary,
                           foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: MySize.size16!),
+                          padding: EdgeInsets.symmetric(
+                            vertical: MySize.size16!,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(MySize.size12!),
                           ),
@@ -618,11 +676,15 @@ class CheckOutState extends State<CheckOut> {
                         ),
                         onPressed: () {
                           _printInvoice = true;
-                          if (pendingAmount >= 0.01) alertPending(context);
-                          else if (!saleCreated) onSubmit();
+                          if (pendingAmount >= 0.01) {
+                            alertPending(context);
+                          } else if (!saleCreated)
+                            onSubmit();
                         },
                         child: Text(
-                          AppLocalizations.of(context).translate('finalize_n_print'),
+                          AppLocalizations.of(
+                            context,
+                          ).translate('finalize_n_print'),
                           style: TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
@@ -807,7 +869,10 @@ class CheckOutState extends State<CheckOut> {
       response = await SellDatabase().storeSell(sell);
       //save payments in sell_payments
       await Sell().makePayment(payments, response);
-      await SellDatabase().updateSellLine({'sell_id': response, 'is_completed': 1});
+      await SellDatabase().updateSellLine({
+        'sell_id': response,
+        'is_completed': 1,
+      });
       if (await Helper().checkConnectivity()) {
         await Sell().createApiSell(sellId: response);
       }

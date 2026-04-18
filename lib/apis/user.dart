@@ -8,10 +8,11 @@ import 'api.dart';
 class User extends Api {
   Future<Map> get(var token) async {
     String url = ApiEndPoints.getUser;
-    var response =
-        await http.get(Uri.parse(url), headers: this.getHeader(token));
+    var response = await http.get(Uri.parse(url), headers: getHeader(token));
     if (response.statusCode != 200) {
-      throw Exception('Failed to load user (${response.statusCode}): ${response.body}');
+      throw Exception(
+        'Failed to load user (${response.statusCode}): ${response.body}',
+      );
     }
 
     final userDetails = jsonDecode(response.body);

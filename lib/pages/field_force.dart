@@ -18,6 +18,8 @@ import 'forms.dart';
 part 'field_force/field_force_state.dart';
 
 class FieldForce extends StatefulWidget {
+  const FieldForce({super.key});
+
   @override
   _FieldForceState createState() => _FieldForceState();
 }
