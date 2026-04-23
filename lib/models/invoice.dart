@@ -249,8 +249,8 @@ class InvoiceFormatter {
             .toStringAsFixed(2);
     String sTotal = subTotal.toString();
     String totalReceived;
-    Object returnAmount;
-    Object dueAmount;
+    dynamic returnAmount;
+    dynamic dueAmount;
     if (totalPaidAmount > double.parse(totalAmount)) {
       returnAmount = totalPaidAmount - double.parse(totalAmount);
       totalReceived = totalAmount;

@@ -50,7 +50,8 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    getPermission();
+    // Attendance/GPS features are mobile-only
+    if (isMobile) getPermission();
     homepageData();
     Helper().syncCallLogs();
   }

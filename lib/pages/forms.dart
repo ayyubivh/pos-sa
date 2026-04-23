@@ -11,6 +11,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:pos_final/helpers/platform_helper.dart';
 import '../constants.dart';
 
 import '../data/services/field_force_service.dart';

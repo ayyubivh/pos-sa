@@ -1,25 +1,27 @@
 import 'package:flashy_tab_bar2/flashy_tab_bar2.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:get_ip_address/get_ip_address.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:pos_final/core/theme/app_theme.dart';
-import 'package:pos_final/domain/models/attendance.dart';
 import 'package:pos_final/domain/models/payment_database.dart';
 import 'package:pos_final/domain/models/sell_database.dart';
 import 'package:pos_final/domain/models/system.dart';
+import 'package:pos_final/helpers/desktop/keyboard_shortcuts.dart';
+import 'package:pos_final/helpers/platform_helper.dart';
+import 'package:pos_final/presentation/desktop/layout/desktop_shell.dart';
 import 'package:pos_final/presentation/screens/category_screen.dart';
 import 'package:pos_final/presentation/screens/home_screen.dart';
 import 'package:pos_final/presentation/screens/sales_screen.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:window_manager/window_manager.dart';
 
 import '../config.dart';
 import '../locale/MyLocalizations.dart';
 import 'SizeConfig.dart';
 import 'otherHelpers.dart';
+
+// Mobile-only imports — guarded at usage sites for desktop compatibility
+// geolocator, google_maps_flutter, permission_handler are NOT imported here;
+// their usage is kept inside pages/home.dart which already has guards.
 
 class Layout extends StatefulWidget {
   const Layout({super.key});
@@ -28,16 +30,42 @@ class Layout extends StatefulWidget {
   State<Layout> createState() => _LayoutState();
 }
 
-class _LayoutState extends State<Layout> {
+class _LayoutState extends State<Layout> with WindowListener {
+  // ---- Desktop: returns the DesktopShell immediately ----
+  @override
+  Widget build(BuildContext context) {
+    if (isDesktop) {
+      return DesktopShortcuts(
+        onNewSale: () => Navigator.pushNamed(context, '/cart'),
+        onCustomerSearch: () => Navigator.pushNamed(context, '/customer'),
+        onProductSearch: () => Navigator.pushNamed(context, '/products'),
+        onCheckout: () => Navigator.pushNamed(context, '/checkout'),
+        onReport: () => Navigator.pushNamed(context, '/Reports'),
+        onFullscreen: () async {
+          final isMax = await windowManager.isMaximized();
+          isMax
+              ? await windowManager.unmaximize()
+              : await windowManager.maximize();
+        },
+        child: const DesktopShell(),
+      );
+    }
+    return _MobileLayout();
+  }
+}
+
+// ---- Mobile layout (unchanged behaviour) ----
+class _MobileLayout extends StatefulWidget {
+  @override
+  State<_MobileLayout> createState() => _MobileLayoutState();
+}
+
+class _MobileLayoutState extends State<_MobileLayout> {
   var user,
-      note = TextEditingController(),
-      clockInTime = DateTime.now(),
       selectedLanguage;
-  LatLng? currentLoc;
 
   String businessSymbol = '',
       businessLogo = '',
-      defaultImage = 'assets/images/default_product.png',
       businessName = '',
       userName = '';
 
@@ -54,12 +82,8 @@ class _LayoutState extends State<Layout> {
       byCustomPayment_3 = 0.00;
 
   bool accessExpenses = false,
-      attendancePermission = false,
-      notPermitted = false,
       syncPressed = false;
-  bool? checkedIn;
 
-  // List sells;
   Map<String, dynamic>? paymentMethods;
   int? totalSales;
   List<Map> method = [], payments = [];
@@ -70,49 +94,19 @@ class _LayoutState extends State<Layout> {
 
   int _selectedIndex = 0;
   List<Widget> pages_index = <Widget>[Home(), CategoryScreen(), Sales()];
+
   @override
   void initState() {
     super.initState();
-    getPermission();
     homepageData();
     Helper().syncCallLogs();
-  }
-
-  Future<void> checkIOButtonDisplay() async {
-    await Attendance().getCheckInTime(Config.userId).then((value) {
-      if (value != null) {
-        clockInTime = DateTime.parse(value);
-      }
-    });
-    //if someone has forget to check-in
-    //check attendance status
-    var activeSubscriptionDetails = await System().get('active-subscription');
-    if (activeSubscriptionDetails.length > 0 &&
-        activeSubscriptionDetails[0].containsKey('package_details')) {
-      Map<String, dynamic> packageDetails =
-          activeSubscriptionDetails[0]['package_details'];
-      if (packageDetails.containsKey('essentials_module') &&
-          packageDetails['essentials_module'].toString() == '1') {
-        //get attendance status(check-In/check-Out)
-        checkedIn = await Attendance().getAttendanceStatus(Config.userId);
-        setState(() {});
-      } else {
-        setState(() {
-          checkedIn = null;
-        });
-      }
-    } else {
-      setState(() {
-        checkedIn = null;
-      });
-    }
   }
 
   Future<void> homepageData() async {
     var prefs = await SharedPreferences.getInstance();
     user = await System().get('loggedInUser');
     userName =
-        ((user['surname'] != null) ? user['surname'] : "") +
+        ((user['surname'] != null) ? user['surname'] : '') +
         ' ' +
         user['first_name'];
     await loadPaymentDetails();
@@ -135,7 +129,7 @@ class _LayoutState extends State<Layout> {
       bottomNavigationBar: FlashyTabBar(
         selectedIndex: _selectedIndex,
         showElevation: true,
-        onItemSelected: _changePage,
+        onItemSelected: (value) => setState(() => _selectedIndex = value),
         items: [
           FlashyTabBarItem(
             icon: const Icon(Icons.home_rounded),
@@ -154,346 +148,40 @@ class _LayoutState extends State<Layout> {
     );
   }
 
-  void _changePage(int value) {
-    print(value);
-    setState(() {
-      _selectedIndex = value;
-    });
-  }
+  // ---- Statistics & payment helpers (mobile only) ----
 
-  Widget paymentDetails() {
-    return Container(
-      padding: EdgeInsets.all(MySize.size8!),
-      margin: EdgeInsets.all(MySize.size16!),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(MySize.size8!)),
-        color: customAppTheme.bgLayer1,
-        border: Border.all(color: customAppTheme.bgLayer4, width: 1.2),
-      ),
-      child: Column(
-        children: <Widget>[
-          Text(
-            AppLocalizations.of(context).translate('payment_details'),
-            style: AppTheme.getTextStyle(
-              themeData.textTheme.titleMedium,
-              fontWeight: 700,
-              letterSpacing: -0.2,
-            ),
-          ),
-          ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.all(10),
-            itemCount: method.length,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              return Container(
-                padding: EdgeInsets.only(bottom: 5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              height: 30,
-                              width: 2,
-                              decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.5),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(4.0),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 2),
-                            ),
-                            Text(method[index]['key']),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: <Widget>[
-                        Text(
-                          '$businessSymbol ${Helper().formatCurrency(method[index]['value'])}',
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  //get permission
-  Future<void> getPermission() async {
-    List<PermissionStatus> status = [
-      await Permission.location.status,
-      await Permission.storage.status,
-      await Permission.camera.status,
-      // await Permission.phone.status,
-    ];
-    notPermitted = status.contains(PermissionStatus.denied);
-    await Helper()
-        .getPermission('essentials.allow_users_for_attendance_from_api')
-        .then((value) {
-          if (value == true) {
-            checkIOButtonDisplay();
-            setState(() {
-              attendancePermission = true;
-            });
-          } else {
-            setState(() {
-              checkedIn = null;
-            });
-          }
-        });
-
-    if (await Helper().getPermission('all_expense.access') ||
-        await Helper().getPermission('view_own_expense')) {
-      setState(() {
-        accessExpenses = true;
-      });
-    }
-  }
-
-  //checkIn and checkOut button
-  Widget checkIO() {
-    if (checkedIn != null) {
-      return Padding(
-        padding: EdgeInsets.only(top: MySize.size10!),
-        child: Column(
-          children: <Widget>[
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: (!checkedIn!)
-                    ? themeData.colorScheme.primary
-                    : themeData.colorScheme.surface,
-              ),
-              onPressed: () async {
-                Helper().syncCallLogs();
-                showDialog(
-                  barrierDismissible: true,
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text(
-                        (!checkedIn!)
-                            ? AppLocalizations.of(
-                                context,
-                              ).translate('check_in_note')
-                            : AppLocalizations.of(
-                                context,
-                              ).translate('check_out_note'),
-                        textAlign: TextAlign.center,
-                        style: AppTheme.getTextStyle(
-                          themeData.textTheme.titleLarge,
-                          color: themeData.colorScheme.onSurface,
-                          fontWeight: 600,
-                          muted: true,
-                        ),
-                      ),
-                      content: TextFormField(
-                        controller: note,
-                        autofocus: true,
-                        style: AppTheme.getTextStyle(
-                          themeData.textTheme.bodyLarge,
-                          color: themeData.colorScheme.onSurface,
-                          fontWeight: 600,
-                          muted: true,
-                        ),
-                      ),
-                      actions: <Widget>[
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: themeData.colorScheme.primary,
-                          ),
-                          onPressed: () async {
-                            Navigator.pop(context);
-                            if (await Helper().checkConnectivity()) {
-                              try {
-                                await Geolocator.getCurrentPosition(
-                                  desiredAccuracy: LocationAccuracy.high,
-                                ).then((Position position) {
-                                  // currentLoc = LatLng(position.latitude,
-                                  //     position.longitude);
-                                });
-                              } catch (e) {}
-                              if (checkedIn == false) {
-                                //get ip address
-                                var ipAddress = IpAddress(
-                                  type: RequestType.json,
-                                );
-
-                                /// Get the IpAddress based on requestType.
-                                dynamic data = await ipAddress.getIpAddress();
-                                String iP = data.toString();
-
-                                //get current location
-                                try {
-                                  await Geolocator.getCurrentPosition(
-                                    desiredAccuracy: LocationAccuracy.high,
-                                  ).then((Position position) {
-                                    currentLoc = LatLng(
-                                      position.latitude,
-                                      position.longitude,
-                                    );
-                                  });
-                                } catch (e) {}
-
-                                var checkInMap = await Attendance().doCheckIn(
-                                  checkInNote: note.text,
-                                  iPAddress: iP,
-                                  latitude: (currentLoc != null)
-                                      ? currentLoc!.latitude
-                                      : '',
-                                  longitude: (currentLoc != null)
-                                      ? currentLoc!.longitude
-                                      : '',
-                                );
-                                Fluttertoast.showToast(msg: checkInMap);
-                                note.clear();
-                              } else {
-                                //get current location
-                                try {
-                                  await Geolocator.getCurrentPosition(
-                                    desiredAccuracy: LocationAccuracy.high,
-                                  ).then((Position position) {
-                                    currentLoc = LatLng(
-                                      position.latitude,
-                                      position.longitude,
-                                    );
-                                  });
-                                } catch (e) {}
-
-                                var checkOutMap = await Attendance().doCheckOut(
-                                  latitude: (currentLoc != null)
-                                      ? currentLoc!.latitude
-                                      : '',
-                                  longitude: (currentLoc != null)
-                                      ? currentLoc!.longitude
-                                      : '',
-                                  checkOutNote: note.text,
-                                );
-                                Fluttertoast.showToast(msg: checkOutMap);
-                                note.clear();
-                              }
-                              checkedIn = await Attendance()
-                                  .getAttendanceStatus(Config.userId);
-                              await Attendance()
-                                  .getCheckInTime(Config.userId)
-                                  .then((value) {
-                                    if (value != null) {
-                                      clockInTime = DateTime.parse(value);
-                                    }
-                                  });
-                              setState(() {});
-                            } else {
-                              Fluttertoast.showToast(
-                                msg: AppLocalizations.of(
-                                  context,
-                                ).translate('check_connectivity'),
-                              );
-                            }
-                          },
-                          child: Text(
-                            AppLocalizations.of(context).translate('ok'),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text(
-                            AppLocalizations.of(context).translate('cancel'),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              child: (!checkedIn!)
-                  ? Text(
-                      AppLocalizations.of(context).translate('check_in'),
-                      style: AppTheme.getTextStyle(
-                        themeData.textTheme.titleLarge,
-                        color: themeData.colorScheme.surface,
-                        fontWeight: 600,
-                      ),
-                    )
-                  : Text(
-                      AppLocalizations.of(context).translate('check_out'),
-                      style: AppTheme.getTextStyle(
-                        themeData.textTheme.titleLarge,
-                        color: themeData.colorScheme.primary,
-                        fontWeight: 600,
-                      ),
-                    ),
-            ),
-            Text(
-              (!checkedIn!)
-                  ? ''
-                  : DateTime.now().difference(clockInTime).toString(),
-              style: AppTheme.getTextStyle(
-                themeData.textTheme.titleSmall,
-                color: themeData.colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      return Container();
-    }
-  }
-
-  //load statistics
   Future<List> loadStatistics() async {
     List result = await SellDatabase().getSells();
     totalSales = result.length;
     setState(() {
-      result.forEach((sell) async {
-        List payment = await PaymentDatabase().get(
-          sell['id'],
-          allColumns: true,
-        );
-        var paidAmount = 0.0;
-        var returnAmount = 0.0;
-        for (var element in payment) {
-          if (element['is_return'] == 0) {
-            paidAmount += element['amount'];
-            payments.add({
-              'key': element['method'],
-              'value': element['amount'],
-            });
-          } else {
-            returnAmount += element['amount'];
-          }
-        }
-        totalSalesAmount = (totalSalesAmount + sell['invoice_amount']);
-        totalReceivedAmount =
-            (totalReceivedAmount + (paidAmount - returnAmount));
-        totalDueAmount = (totalDueAmount + sell['pending_amount']);
-      });
+      for (var sell in result) {
+        _accumulatePayments(sell);
+      }
     });
     return result;
   }
 
-  //load payment details
+  Future<void> _accumulatePayments(sell) async {
+    List payment =
+        await PaymentDatabase().get(sell['id'], allColumns: true);
+    var paidAmount = 0.0;
+    var returnAmount = 0.0;
+    for (var element in payment) {
+      if (element['is_return'] == 0) {
+        paidAmount += element['amount'];
+        payments.add({'key': element['method'], 'value': element['amount']});
+      } else {
+        returnAmount += element['amount'];
+      }
+    }
+    totalSalesAmount += sell['invoice_amount'];
+    totalReceivedAmount += (paidAmount - returnAmount);
+    totalDueAmount += sell['pending_amount'];
+  }
+
   Future<void> loadPaymentDetails() async {
     var paymentMethod = [];
-    //fetch different payment methods
     await System().get('payment_methods').then((value) {
-      //Add all PaymentMethods into a List according to key value pair
       value.forEach((element) {
         element.forEach((k, v) {
           paymentMethod.add({'key': '$k', 'value': '$v'});
@@ -501,69 +189,47 @@ class _LayoutState extends State<Layout> {
       });
     });
 
-    await loadStatistics().then((value) {
-      Future.delayed(Duration(seconds: 1), () {
+    await loadStatistics().then((_) {
+      Future.delayed(const Duration(seconds: 1), () {
         for (var row in payments) {
-          if (row['key'] == 'cash') {
-            byCash += row['value'];
-          }
-
-          if (row['key'] == 'card') {
-            byCard += row['value'];
-          }
-
-          if (row['key'] == 'cheque') {
-            byCheque += row['value'];
-          }
-
-          if (row['key'] == 'bank_transfer') {
-            byBankTransfer += row['value'];
-          }
-
-          if (row['key'] == 'other') {
-            byOther += row['value'];
-          }
-
-          if (row['key'] == 'custom_pay_1') {
-            byCustomPayment_1 += row['value'];
-          }
-
-          if (row['key'] == 'custom_pay_2') {
-            byCustomPayment_2 += row['value'];
-          }
-          if (row['key'] == 'custom_pay_3') {
-            byCustomPayment_3 += row['value'];
+          switch (row['key']) {
+            case 'cash':
+              byCash += row['value'];
+            case 'card':
+              byCard += row['value'];
+            case 'cheque':
+              byCheque += row['value'];
+            case 'bank_transfer':
+              byBankTransfer += row['value'];
+            case 'other':
+              byOther += row['value'];
+            case 'custom_pay_1':
+              byCustomPayment_1 += row['value'];
+            case 'custom_pay_2':
+              byCustomPayment_2 += row['value'];
+            case 'custom_pay_3':
+              byCustomPayment_3 += row['value'];
           }
         }
         for (var row in paymentMethod) {
-          if (byCash > 0 && row['key'] == 'cash') {
+          if (byCash > 0 && row['key'] == 'cash')
             method.add({'key': row['value'], 'value': byCash});
-          }
-          if (byCard > 0 && row['key'] == 'card') {
+          if (byCard > 0 && row['key'] == 'card')
             method.add({'key': row['value'], 'value': byCard});
-          }
-          if (byCheque > 0 && row['key'] == 'cheque') {
+          if (byCheque > 0 && row['key'] == 'cheque')
             method.add({'key': row['value'], 'value': byCheque});
-          }
-          if (byBankTransfer > 0 && row['key'] == 'bank_transfer') {
+          if (byBankTransfer > 0 && row['key'] == 'bank_transfer')
             method.add({'key': row['value'], 'value': byBankTransfer});
-          }
-          if (byOther > 0 && row['key'] == 'other') {
+          if (byOther > 0 && row['key'] == 'other')
             method.add({'key': row['value'], 'value': byOther});
-          }
-          if (byCustomPayment_1 > 0 && row['key'] == 'custom_pay_1') {
+          if (byCustomPayment_1 > 0 && row['key'] == 'custom_pay_1')
             method.add({'key': row['value'], 'value': byCustomPayment_1});
-          }
-          if (byCustomPayment_2 > 0 && row['key'] == 'custom_pay_2') {
+          if (byCustomPayment_2 > 0 && row['key'] == 'custom_pay_2')
             method.add({'key': row['value'], 'value': byCustomPayment_2});
-          }
-          if (byCustomPayment_3 > 0 && row['key'] == 'custom_pay_3') {
+          if (byCustomPayment_3 > 0 && row['key'] == 'custom_pay_3')
             method.add({'key': row['value'], 'value': byCustomPayment_3});
-          }
         }
-        if (mounted) {
-          setState(() {});
-        }
+        if (mounted) setState(() {});
       });
     });
   }

@@ -84,6 +84,7 @@ class AppLanguage extends ChangeNotifier {
       return Null;
     } else {
       _appLocale = Locale(prefs.getString('language_code')!);
+      return Null;
     }
   }
 

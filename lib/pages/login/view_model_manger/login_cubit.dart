@@ -104,9 +104,6 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   void navigateToHome(BuildContext context) {
-    Navigator.of(context).pop();
-
-    //Take to home page
     Navigator.of(context).pushReplacementNamed('/layout');
   }
 
@@ -118,7 +115,7 @@ class LoginCubit extends Cubit<LoginState> {
 
     //saving userId in disk
     prefs.setInt('userId', Config.userId!);
-    DbProvider().initializeDatabase(loggedInUser['id']);
+    await DbProvider().initializeDatabase(loggedInUser['id']);
 
     String? lastSync = await System().getProductLastSync();
     final date2 = DateTime.now();
@@ -139,6 +136,7 @@ class LoginCubit extends Cubit<LoginState> {
         prefs.getInt('prevUserId') != prefs.getInt('userId')) {
       SellDatabase().deleteSellTables();
       await Variations().refresh();
+      prefs.setInt('prevUserId', Config.userId!);
     } else {
       //save variations if last sync is greater than 10hrs
       if (lastSync == null ||
@@ -156,45 +154,42 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   Future<void> checkOnLogin(BuildContext context) async {
-    if (await _checkInternetConnectivity()) {
-      if (_validateOnData()) {
-        isLoading = true;
-        try {
-          var loginResponse = await _makeALogin();
-          if (loginResponse?['success'] != null && loginResponse?['success']) {
-            Helper().jobScheduler();
-            //Get current logged in user details and save it.
-            try {
-              unawaited(_showLoadingDialogue(context));
-            } catch (e) {
-              debugPrint('Failed to show loading dialog: $e');
-            }
-            try {
-              await _loadAllData(loginResponse, context);
-              isLoading = false;
-              emit(LoginSuccessfully());
-            } catch (e, st) {
-              debugPrint('Login post-auth sync failed: $e');
-              debugPrint('$st');
-              isLoading = false;
-              emit(LoginFailed());
-            }
-          } else {
-            isLoading = false;
-            emit(
-              LoginFailed(
-                messageKey:
-                    loginResponse?['message_key'] ?? 'invalid_credentials',
-              ),
-            );
-          }
-        } catch (e, st) {
-          debugPrint('Login request failed: $e');
-          debugPrint('$st');
-          isLoading = false;
-          emit(LoginFailed());
-        }
+    if (!_validateOnData()) return;
+
+    isLoading = true;
+    try {
+      // ── 1. Authenticate ──────────────────────────────────────────────
+      final loginResponse = await _makeALogin();
+      debugPrint('LOGIN RESPONSE: $loginResponse');
+
+      if (loginResponse == null ||
+          loginResponse['success'] != true) {
+        isLoading = false;
+        emit(LoginFailed(
+          messageKey: loginResponse?['message_key'] ?? 'invalid_credentials',
+          debugDetail: 'Server said: ${loginResponse.toString()}',
+        ));
+        return;
       }
+
+      // ── 2. Load all app data (show loading indicator via isLoading) ───
+      try {
+        await _loadAllData(loginResponse, context);
+      } catch (e, st) {
+        debugPrint('_loadAllData error: $e\n$st');
+        isLoading = false;
+        emit(LoginFailed(debugDetail: 'Setup failed: $e'));
+        return;
+      }
+
+      // ── 3. Success ───────────────────────────────────────────────────
+      Helper().jobScheduler();
+      isLoading = false;
+      emit(LoginSuccessfully());
+    } catch (e, st) {
+      debugPrint('Login error: $e\n$st');
+      isLoading = false;
+      emit(LoginFailed(debugDetail: 'Error: $e'));
     }
   }
 

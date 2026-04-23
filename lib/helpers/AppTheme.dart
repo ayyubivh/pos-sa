@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:pos_final/constants.dart';
 
 class AppTheme {
@@ -67,7 +66,7 @@ class AppTheme {
           : (muted ? color.withAlpha(200) : color);
     }
 
-    return GoogleFonts.cairo(
+    return TextStyle(fontFamily: 'Cairo', 
       fontSize: finalFontSize!,
       fontWeight: _getFontWeight(fontWeight),
       letterSpacing: letterSpacing,
@@ -80,295 +79,204 @@ class AppTheme {
 
   //App Bar Text
   static final TextTheme lightAppBarTextTheme = TextTheme(
-    displayLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    displayLarge: TextStyle(fontFamily: 'Cairo', 
         fontSize: 102,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
-      ),
     ),
-    displayMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    displayMedium: TextStyle(fontFamily: 'Cairo', 
         fontSize: 64,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
-      ),
     ),
-    displaySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    displaySmall: TextStyle(fontFamily: 'Cairo', 
         fontSize: 51,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
-      ),
     ),
-    headlineMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    headlineMedium: TextStyle(fontFamily: 'Cairo', 
         fontSize: 36,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
-      ),
     ),
-    headlineSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    headlineSmall: TextStyle(fontFamily: 'Cairo', 
         fontSize: 25,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
-      ),
     ),
-    titleLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    titleLarge: TextStyle(fontFamily: 'Cairo', 
         fontSize: 18,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
-      ),
     ),
-    titleMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    titleMedium: TextStyle(fontFamily: 'Cairo', 
         fontSize: 17,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w500,
-      ),
     ),
-    titleSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    titleSmall: TextStyle(fontFamily: 'Cairo', 
         fontSize: 15,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w500,
-      ),
     ),
-    bodyLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    bodyLarge: TextStyle(fontFamily: 'Cairo', 
         fontSize: 16,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w400,
-      ),
     ),
-    bodyMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    bodyMedium: TextStyle(fontFamily: 'Cairo', 
         fontSize: 14,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w400,
-      ),
     ),
-    labelLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    labelLarge: TextStyle(fontFamily: 'Cairo', 
         fontSize: 15,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w400,
-      ),
     ),
-    bodySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    bodySmall: TextStyle(fontFamily: 'Cairo', 
         fontSize: 13,
         color: kMutedTextColor,
         fontWeight: FontWeight.w400,
-      ),
     ),
-    labelSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    labelSmall: TextStyle(fontFamily: 'Cairo', 
         fontSize: 11,
         color: kMutedTextColor,
         fontWeight: FontWeight.w400,
-      ),
     ),
   );
   static final TextTheme darkAppBarTextTheme = TextTheme(
-    displayLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 102, color: Color(0xffffffff)),
-    ),
-    displayMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 64, color: Color(0xffffffff)),
-    ),
-    displaySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 51, color: Color(0xffffffff)),
-    ),
-    headlineMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 36, color: Color(0xffffffff)),
-    ),
-    headlineSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 25, color: Color(0xffffffff)),
-    ),
-    titleLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 20, color: Color(0xffffffff)),
-    ),
-    titleMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 17, color: Color(0xffffffff)),
-    ),
-    titleSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 15, color: Color(0xffffffff)),
-    ),
-    bodyLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 16, color: Color(0xffffffff)),
-    ),
-    bodyMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 14, color: Color(0xffffffff)),
-    ),
-    labelLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 15, color: Color(0xffffffff)),
-    ),
-    bodySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 13, color: Color(0xffffffff)),
-    ),
-    labelSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 11, color: Color(0xffffffff)),
-    ),
+    displayLarge: TextStyle(fontFamily: 'Cairo', fontSize: 102, color: Color(0xffffffff)),
+    displayMedium: TextStyle(fontFamily: 'Cairo', fontSize: 64, color: Color(0xffffffff)),
+    displaySmall: TextStyle(fontFamily: 'Cairo', fontSize: 51, color: Color(0xffffffff)),
+    headlineMedium: TextStyle(fontFamily: 'Cairo', fontSize: 36, color: Color(0xffffffff)),
+    headlineSmall: TextStyle(fontFamily: 'Cairo', fontSize: 25, color: Color(0xffffffff)),
+    titleLarge: TextStyle(fontFamily: 'Cairo', fontSize: 20, color: Color(0xffffffff)),
+    titleMedium: TextStyle(fontFamily: 'Cairo', fontSize: 17, color: Color(0xffffffff)),
+    titleSmall: TextStyle(fontFamily: 'Cairo', fontSize: 15, color: Color(0xffffffff)),
+    bodyLarge: TextStyle(fontFamily: 'Cairo', fontSize: 16, color: Color(0xffffffff)),
+    bodyMedium: TextStyle(fontFamily: 'Cairo', fontSize: 14, color: Color(0xffffffff)),
+    labelLarge: TextStyle(fontFamily: 'Cairo', fontSize: 15, color: Color(0xffffffff)),
+    bodySmall: TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Color(0xffffffff)),
+    labelSmall: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Color(0xffffffff)),
   );
 
   //Text Themes
   static final TextTheme lightTextTheme = TextTheme(
-    displayLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    displayLarge: TextStyle(fontFamily: 'Cairo', 
         fontSize: 96,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
         letterSpacing: -1.5,
         height: 1.1,
-      ),
     ),
-    displayMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    displayMedium: TextStyle(fontFamily: 'Cairo', 
         fontSize: 60,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.8,
         height: 1.15,
-      ),
     ),
-    displaySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    displaySmall: TextStyle(fontFamily: 'Cairo', 
         fontSize: 48,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.5,
         height: 1.2,
-      ),
     ),
-    headlineMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    headlineMedium: TextStyle(fontFamily: 'Cairo', 
         fontSize: 34,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.3,
         height: 1.25,
-      ),
     ),
-    headlineSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    headlineSmall: TextStyle(fontFamily: 'Cairo', 
         fontSize: 24,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.2,
         height: 1.3,
-      ),
     ),
-    titleLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    titleLarge: TextStyle(fontFamily: 'Cairo', 
         fontSize: 18,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.2,
         height: 1.35,
-      ),
     ),
-    titleMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    titleMedium: TextStyle(fontFamily: 'Cairo', 
         fontSize: 16,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w500,
         letterSpacing: -0.1,
         height: 1.4,
-      ),
     ),
-    titleSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    titleSmall: TextStyle(fontFamily: 'Cairo', 
         fontSize: 14,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w500,
         height: 1.4,
-      ),
     ),
-    bodyLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    bodyLarge: TextStyle(fontFamily: 'Cairo', 
         fontSize: 16,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w400,
         height: 1.5,
-      ),
     ),
-    bodyMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    bodyMedium: TextStyle(fontFamily: 'Cairo', 
         fontSize: 14,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w400,
         height: 1.45,
-      ),
     ),
-    labelLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    labelLarge: TextStyle(fontFamily: 'Cairo', 
         fontSize: 15,
         color: kPrimaryTextColor,
         fontWeight: FontWeight.w500,
         letterSpacing: -0.1,
         height: 1.4,
-      ),
     ),
-    bodySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    bodySmall: TextStyle(fontFamily: 'Cairo', 
         fontSize: 13,
         color: kMutedTextColor,
         fontWeight: FontWeight.w400,
         height: 1.4,
-      ),
     ),
-    labelSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(
+    labelSmall: TextStyle(fontFamily: 'Cairo', 
         fontSize: 11,
         color: kMutedTextColor,
         fontWeight: FontWeight.w400,
         letterSpacing: 0.2,
         height: 1.35,
-      ),
     ),
   );
   static final TextTheme darkTextTheme = TextTheme(
-    displayLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 102, color: Colors.white),
+    displayLarge: TextStyle(fontFamily: 'Cairo', fontSize: 102, color: Colors.white
     ),
-    displayMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 64, color: Colors.white),
+    displayMedium: TextStyle(fontFamily: 'Cairo', fontSize: 64, color: Colors.white
     ),
-    displaySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 51, color: Colors.white),
+    displaySmall: TextStyle(fontFamily: 'Cairo', fontSize: 51, color: Colors.white
     ),
-    headlineMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 36, color: Colors.white),
+    headlineMedium: TextStyle(fontFamily: 'Cairo', fontSize: 36, color: Colors.white
     ),
-    headlineSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 25, color: Colors.white),
+    headlineSmall: TextStyle(fontFamily: 'Cairo', fontSize: 25, color: Colors.white
     ),
-    titleLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 18, color: Colors.white),
+    titleLarge: TextStyle(fontFamily: 'Cairo', fontSize: 18, color: Colors.white
     ),
-    titleMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 17, color: Colors.white),
+    titleMedium: TextStyle(fontFamily: 'Cairo', fontSize: 17, color: Colors.white
     ),
-    titleSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 15, color: Colors.white),
+    titleSmall: TextStyle(fontFamily: 'Cairo', fontSize: 15, color: Colors.white
     ),
-    bodyLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 16, color: Colors.white),
+    bodyLarge: TextStyle(fontFamily: 'Cairo', fontSize: 16, color: Colors.white
     ),
-    bodyMedium: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 14, color: Colors.white),
+    bodyMedium: TextStyle(fontFamily: 'Cairo', fontSize: 14, color: Colors.white
     ),
-    labelLarge: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 15, color: Colors.white),
+    labelLarge: TextStyle(fontFamily: 'Cairo', fontSize: 15, color: Colors.white
     ),
-    bodySmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 13, color: Colors.white),
+    bodySmall: TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Colors.white
     ),
-    labelSmall: GoogleFonts.cairo(
-      textStyle: TextStyle(fontSize: 11, color: Colors.white),
+    labelSmall: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: Colors.white
     ),
   );
 
@@ -387,7 +295,7 @@ class AppTheme {
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       iconTheme: IconThemeData(color: kPrimaryTextColor, size: 22),
-      titleTextStyle: GoogleFonts.cairo(
+      titleTextStyle: TextStyle(fontFamily: 'Cairo', 
         color: kPrimaryTextColor,
         fontSize: 18,
         fontWeight: FontWeight.w600,
@@ -405,7 +313,7 @@ class AppTheme {
       margin: EdgeInsets.zero,
     ),
     inputDecorationTheme: InputDecorationTheme(
-      hintStyle: GoogleFonts.cairo(
+      hintStyle: TextStyle(fontFamily: 'Cairo', 
         fontSize: 14,
         color: kMutedTextColor,
         fontWeight: FontWeight.w400,
@@ -433,7 +341,7 @@ class AppTheme {
         borderRadius: BorderRadius.all(Radius.circular(12)),
         borderSide: BorderSide(width: 1.5, color: kErrorColor),
       ),
-      floatingLabelStyle: GoogleFonts.cairo(
+      floatingLabelStyle: TextStyle(fontFamily: 'Cairo', 
         color: kDefaultColor,
         fontWeight: FontWeight.w500,
       ),
@@ -485,8 +393,8 @@ class AppTheme {
     tabBarTheme: TabBarThemeData(
       unselectedLabelColor: kMutedTextColor,
       labelColor: kDefaultColor,
-      labelStyle: GoogleFonts.cairo(fontWeight: FontWeight.w600, fontSize: 14),
-      unselectedLabelStyle: GoogleFonts.cairo(
+      labelStyle: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w600, fontSize: 14),
+      unselectedLabelStyle: TextStyle(fontFamily: 'Cairo', 
         fontWeight: FontWeight.w500,
         fontSize: 14,
       ),
@@ -500,7 +408,7 @@ class AppTheme {
     chipTheme: ChipThemeData(
       backgroundColor: kBackgroundSoftColor,
       selectedColor: kDefaultColor.withAlpha(20),
-      labelStyle: GoogleFonts.cairo(fontSize: 13, fontWeight: FontWeight.w500),
+      labelStyle: TextStyle(fontFamily: 'Cairo', fontSize: 13, fontWeight: FontWeight.w500),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       side: BorderSide(color: kOutlineColor),
     ),
@@ -516,7 +424,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         elevation: 0,
         shadowColor: Colors.transparent,
-        textStyle: GoogleFonts.cairo(
+        textStyle: TextStyle(fontFamily: 'Cairo', 
           fontWeight: FontWeight.w600,
           fontSize: 15,
           letterSpacing: -0.1,
@@ -529,7 +437,7 @@ class AppTheme {
         side: BorderSide(color: kOutlineColor),
         minimumSize: Size(88, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle: GoogleFonts.cairo(
+        textStyle: TextStyle(fontFamily: 'Cairo', 
           fontWeight: FontWeight.w600,
           fontSize: 15,
           letterSpacing: -0.1,
@@ -539,7 +447,7 @@ class AppTheme {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: kDefaultColor,
-        textStyle: GoogleFonts.cairo(fontWeight: FontWeight.w600, fontSize: 15),
+        textStyle: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w600, fontSize: 15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     ),
@@ -548,13 +456,13 @@ class AppTheme {
       elevation: 16,
       shadowColor: Color(0x1A000000),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-      titleTextStyle: GoogleFonts.cairo(
+      titleTextStyle: TextStyle(fontFamily: 'Cairo', 
         color: kPrimaryTextColor,
         fontSize: 18,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.2,
       ),
-      contentTextStyle: GoogleFonts.cairo(
+      contentTextStyle: TextStyle(fontFamily: 'Cairo', 
         color: kMutedTextColor,
         fontSize: 14,
         fontWeight: FontWeight.w400,
@@ -564,7 +472,7 @@ class AppTheme {
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      contentTextStyle: GoogleFonts.cairo(
+      contentTextStyle: TextStyle(fontFamily: 'Cairo', 
         color: Colors.white,
         fontSize: 14,
         fontWeight: FontWeight.w500,

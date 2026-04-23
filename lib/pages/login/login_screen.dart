@@ -23,19 +23,21 @@ class LoginScreen extends StatelessWidget {
       child: BlocConsumer<LoginCubit, LoginState>(
         listener: (context, state) {
           if (state is LoginFailed) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text(
-                    AppLocalizations.of(
-                      context,
-                    ).translate(state.messageKey),
+            final msg = state.debugDetail ??
+                AppLocalizations.of(context).translate(state.messageKey);
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Login Error'),
+                content: SelectableText(msg),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
                   ),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: Colors.red.shade700,
-                ),
-              );
+                ],
+              ),
+            );
           } else if (state is LoginSuccessfully) {
             LoginCubit.get(context).navigateToHome(context);
           }

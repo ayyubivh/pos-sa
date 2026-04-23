@@ -18,7 +18,9 @@ class FieldForceApi extends Api {
         body: body,
       );
       return response.statusCode;
-    } catch (e) {}
+    } catch (e) {
+      return 0;
+    }
   }
 
   //update visit status

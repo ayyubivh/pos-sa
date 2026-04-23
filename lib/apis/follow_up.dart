@@ -34,7 +34,9 @@ class FollowUpApi extends Api {
         body: body,
       );
       return response.statusCode;
-    } catch (e) {}
+    } catch (e) {
+      return 0;
+    }
   }
 
   //update follow up
@@ -49,7 +51,9 @@ class FollowUpApi extends Api {
         body: body,
       );
       return response.statusCode;
-    } catch (e) {}
+    } catch (e) {
+      return 0;
+    }
   }
 
   //post call_logs to api

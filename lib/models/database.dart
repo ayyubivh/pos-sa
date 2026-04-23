@@ -77,8 +77,8 @@ class DbProvider {
   //create tables during the creation of the database itself.
   Future<Database> initializeDatabase(loginUserId) async {
     Directory posDirectory = await getApplicationDocumentsDirectory();
-    String path = join('${posDirectory.path}PosDemo$loginUserId.db');
-    if (Platform.isWindows || Platform.isLinux) {
+    String path = join(posDirectory.path, 'PosDemo$loginUserId.db');
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       return await databaseFactoryFfi.openDatabase(
         path,
         options: OpenDatabaseOptions(

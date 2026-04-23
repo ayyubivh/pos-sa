@@ -361,7 +361,7 @@ class _VisitFormState extends State<VisitForm> {
                             ),
                             SizedBox(height: 16),
                             ElevatedButton.icon(
-                              onPressed: () async {
+                              onPressed: isDesktop ? null : () async {
                                 try {
                                   await Geolocator.getCurrentPosition(
                                     desiredAccuracy: LocationAccuracy.high,
@@ -498,7 +498,7 @@ class _VisitFormState extends State<VisitForm> {
                             };
                             FieldForceApi()
                                 .update(visitDetails, widget.visit['id'])
-                                .then((value) {
+                                ?.then((value) {
                                   if (value != null) {
                                     Fluttertoast.showToast(
                                       msg: AppLocalizations.of(

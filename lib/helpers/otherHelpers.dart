@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:pos_final/helpers/platform_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 // import 'package:call_log/call_log.dart';
@@ -102,14 +103,14 @@ class Helper {
 
   //check internet connectivity
   Future<bool> checkConnectivity() async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.mobile ||
-        connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.ethernet) {
-      return true;
-    } else {
-      return false;
-    }
+    // On desktop, skip the plugin check — always attempt the request
+    // and let the HTTP layer handle actual connectivity failures.
+    if (isDesktop) return true;
+    final result = await Connectivity().checkConnectivity();
+    return result == ConnectivityResult.mobile ||
+        result == ConnectivityResult.wifi ||
+        result == ConnectivityResult.ethernet ||
+        result == ConnectivityResult.other;
   }
 
   //get location name by location_id
@@ -182,6 +183,11 @@ class Helper {
   }
 
   Future<String> barcodeScan() async {
+    if (isDesktop) {
+      // On desktop, barcode input comes via HID keyboard stream — not camera.
+      // Callers that need desktop barcode should use the text field directly.
+      return '';
+    }
     var result = await BarcodeScanner.scan();
     return result.rawContent.trimRight();
   }
@@ -264,7 +270,7 @@ class Helper {
         var lastSync = await System().callLogLastSyncDateTime();
         //difference between time now and last sync
         int getLogBefore = (lastSync != null)
-            ? DateTime.now().difference(DateTime.parse(lastSync)).inMinutes
+            ? DateTime.now().difference(DateTime.parse(lastSync.toString())).inMinutes
             : 1440;
         //set 'from' duration for call_log query
         // ignore: unused_local_variable

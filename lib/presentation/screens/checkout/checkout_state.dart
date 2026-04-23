@@ -868,7 +868,7 @@ class CheckOutState extends State<CheckOut> {
       //save sell in database
       response = await SellDatabase().storeSell(sell);
       //save payments in sell_payments
-      await Sell().makePayment(payments, response);
+      Sell().makePayment(payments, response);
       await SellDatabase().updateSellLine({
         'sell_id': response,
         'is_completed': 1,

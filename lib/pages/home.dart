@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pos_final/helpers/platform_helper.dart';
 import 'package:pos_final/pages/home/widgets/greeting_widget.dart';
 import 'package:pos_final/pages/home/widgets/statistics_widget.dart';
 import 'package:pos_final/pages/notifications/view_model_manger/notifications_cubit.dart';
