@@ -167,7 +167,7 @@ class LoginCubit extends Cubit<LoginState> {
         isLoading = false;
         emit(LoginFailed(
           messageKey: loginResponse?['message_key'] ?? 'invalid_credentials',
-          debugDetail: 'Server said: ${loginResponse.toString()}',
+          debugDetail: loginResponse?['message']?.toString(),
         ));
         return;
       }

@@ -317,7 +317,18 @@ class Helper {
   //fetch formatted business details
   Future<Map<String, dynamic>> getFormattedBusinessDetails() async {
     List business = await System().get('business');
-    String? symbol = business[0]['currency']['symbol'],
+    if (business.isEmpty) {
+      return {
+        'symbol': '',
+        'name': '',
+        'logo': Config().defaultBusinessImage,
+        'currencyPrecision': Config.currencyPrecision,
+        'quantityPrecision': Config.quantityPrecision,
+        'taxLabel': '',
+        'taxNumber': '',
+      };
+    }
+    String? symbol = business[0]['currency']?['symbol'],
         name = business[0]['name'],
         logo = business[0]['logo'],
         taxLabel = business[0]['tax_label_1'],

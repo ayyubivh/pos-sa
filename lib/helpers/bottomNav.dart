@@ -105,10 +105,12 @@ class _MobileLayoutState extends State<_MobileLayout> {
   Future<void> homepageData() async {
     var prefs = await SharedPreferences.getInstance();
     user = await System().get('loggedInUser');
-    userName =
-        ((user['surname'] != null) ? user['surname'] : '') +
-        ' ' +
-        user['first_name'];
+    if (user is Map) {
+      userName =
+          ((user['surname'] != null) ? user['surname'] : '') +
+          ' ' +
+          (user['first_name'] ?? '');
+    }
     await loadPaymentDetails();
     await Helper().getFormattedBusinessDetails().then((value) {
       businessSymbol = value['symbol'];

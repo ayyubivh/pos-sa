@@ -49,17 +49,18 @@ class Api {
     } else if (response.statusCode == 401 ||
         (response.statusCode == 400 &&
             jsonResponse['error'] == 'invalid_grant')) {
-      //Invalid credentials
       return {
         'success': false,
         'error': jsonResponse['error'],
-        'message_key': 'invalid_credentials'
+        'message_key': 'invalid_credentials',
+        'message': jsonResponse['message'] ?? jsonResponse['error_description'],
       };
     } else {
       return {
         'success': false,
         'error': jsonResponse['error'] ?? 'login_failed',
-        'message_key': 'something_went_wrong'
+        'message_key': 'something_went_wrong',
+        'message': jsonResponse['message'] ?? jsonResponse['error_description'],
       };
     }
   }

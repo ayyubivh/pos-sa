@@ -107,14 +107,14 @@ class System {
       where: 'key = ?',
       whereArgs: ['token'],
     );
-    String? token = result[0]['value'].toString();
-    return token;
+    if (result.isEmpty) return '';
+    return result[0]['value']?.toString() ?? '';
   }
 
   // Return permission list
   Future<List> getPermission() async {
     var result = await get('loggedInUser');
-    if (result.containsKey('is_admin') && result['is_admin'] == true) {
+    if (result is Map && result.containsKey('is_admin') && result['is_admin'] == true) {
       return ['all'];
     } else {
       List permissions = await get('user_permissions');
