@@ -1,11 +1,11 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'config.dart';
@@ -19,7 +19,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
 
-  if (isDesktop) {
+  if (kIsWeb) {
+    // Initialize sqflite WASM factory so the same DB code works in the browser.
+    databaseFactory = databaseFactoryFfiWeb;
+  } else if (isDesktop) {
     // Initialize sqflite FFI for desktop SQLite support
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
