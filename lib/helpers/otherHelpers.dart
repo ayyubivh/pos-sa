@@ -10,6 +10,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cron/cron.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:htmltopdfwidgets/htmltopdfwidgets.dart' as pd;
 import 'package:htmltopdfwidgets/htmltopdfwidgets.dart' show HTMLToPdf;
 import 'package:intl/intl.dart';
@@ -195,27 +196,70 @@ class Helper {
   // Convert mm to PDF points (1mm = 72/25.4 points)
   static double _mm(double mm) => mm * 72.0 / 25.4;
 
-  // Get page format based on configured paper size
+  // Get page format based on configured paper size.
+  // Thermal printers use continuous rolls, so pick a very tall logical page
+  // height — this avoids MultiPage's TooManyPagesException when a single
+  // indivisible child (e.g. a tall table) exceeds the page height.
   static pd.PdfPageFormat getPageFormat() {
     switch (Config.printPaperSize) {
       case '56mm':
-        // 56mm width, long roll height
-        return pd.PdfPageFormat(_mm(56), _mm(200), marginAll: _mm(2));
+        return pd.PdfPageFormat(_mm(56), _mm(2000), marginAll: _mm(2));
       case 'card':
         // CR80 standard card: 85.6mm x 54mm
         return pd.PdfPageFormat(_mm(85.6), _mm(54), marginAll: _mm(3));
       case '80mm':
       default:
-        // 80mm width, long roll height
-        return pd.PdfPageFormat(_mm(80), _mm(200), marginAll: _mm(3));
+        return pd.PdfPageFormat(_mm(80), _mm(2000), marginAll: _mm(3));
     }
+  }
+
+  // Cache the bundled Arabic-capable font so we only decode it once.
+  static pd.Font? _arabicFontCache;
+  static Future<pd.Font> _loadArabicFont() async {
+    if (_arabicFontCache != null) return _arabicFontCache!;
+    final data = await rootBundle.load('assets/fonts/cairo.ttf');
+    _arabicFontCache = pd.Font.ttf(data);
+    return _arabicFontCache!;
+  }
+
+  // Strip nodes htmltopdfwidgets can't handle: HTML/IE-conditional comments,
+  // <script>, <style>, <link>, <meta>, and DOCTYPE. Without this, remote
+  // invoice HTML containing things like <!--[if lt IE 9]>...<![endif]-->
+  // throws "Unknown node type" from the parser.
+  String _sanitizeHtmlForPdf(String html) {
+    final patterns = <RegExp>[
+      RegExp(r'<!--[\s\S]*?-->', multiLine: true),
+      RegExp(r'<!\[endif\]-*>', caseSensitive: false),
+      RegExp(r'<!doctype[^>]*>', caseSensitive: false),
+      RegExp(r'<script\b[^>]*>[\s\S]*?</script>', caseSensitive: false),
+      RegExp(r'<style\b[^>]*>[\s\S]*?</style>', caseSensitive: false),
+      RegExp(r'<link\b[^>]*/?>', caseSensitive: false),
+      RegExp(r'<meta\b[^>]*/?>', caseSensitive: false),
+    ];
+    var sanitized = html;
+    for (final p in patterns) {
+      sanitized = sanitized.replaceAll(p, '');
+    }
+    return sanitized;
   }
 
   //convert HTML to PDF bytes using pure-Dart htmltopdfwidgets (avoids native printing crash)
   Future<Uint8List> _htmlToPdfBytes(String html) async {
     final pd.PdfPageFormat pageFormat = getPageFormat();
-    final widgets = await HTMLToPdf().convert(html);
-    final doc = pd.Document();
+    final arabicFont = await _loadArabicFont();
+    final widgets = await HTMLToPdf().convert(
+      _sanitizeHtmlForPdf(html),
+      fontFallback: [arabicFont],
+      fontResolver: (family, bold, italic) async => arabicFont,
+    );
+    final doc = pd.Document(
+      theme: pd.ThemeData.withFont(
+        base: arabicFont,
+        bold: arabicFont,
+        italic: arabicFont,
+        boldItalic: arabicFont,
+      ),
+    );
     doc.addPage(
       pd.MultiPage(
         pageFormat: pageFormat,

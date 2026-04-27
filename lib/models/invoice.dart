@@ -133,6 +133,14 @@ class InvoiceFormatter {
               .toStringAsFixed(2);
       allAmounts['discountAmount'] = discountAmount;
       allAmounts['discountType'] = discountType;
+    } else {
+      allAmounts['taxAmount'] = Helper().formatCurrency(
+        (subTotal * (tax / 100)).toStringAsFixed(2),
+      );
+      allAmounts['totalAmount'] =
+          (subTotal + double.parse(allAmounts['taxAmount'])).toStringAsFixed(2);
+      allAmounts['discountAmount'] = 0.0;
+      allAmounts['discountType'] = '';
     }
     return allAmounts;
   }
@@ -184,8 +192,11 @@ class InvoiceFormatter {
     String invoiceNo = sells[0]['invoice_no'];
     var dateTime = DateTime.parse(sells[0]['transaction_date']);
     var date = DateFormat("dd/MM/yyyy").format(dateTime);
-    var discountType = sells[0]['discount_type'];
-    var discountAmount = sells[0]['discount_amount'];
+    String discountType = (sells[0]['discount_type'] ?? 'fixed').toString();
+    double discountAmount = double.tryParse(
+          (sells[0]['discount_amount'] ?? 0).toString(),
+        ) ??
+        0.0;
     await Helper().getFormattedBusinessDetails().then((value) {
       symbol = value['symbol'];
       businessName = value['name'];
@@ -241,8 +252,8 @@ class InvoiceFormatter {
       symbol: symbol,
     );
 
-    discountAmount = getAmounts['discountAmount'];
-    discountType = getAmounts['discountType'];
+    discountAmount = (getAmounts['discountAmount'] as num).toDouble();
+    discountType = (getAmounts['discountType'] as String?) ?? '';
     String taxAmount = getAmounts['taxAmount'];
     String totalAmount =
         (double.parse(getAmounts['totalAmount']) + sells[0]['shipping_charges'])
@@ -268,7 +279,7 @@ class InvoiceFormatter {
 
     //structure of discount row
     if (discountAmount > 0) {
-      discountAmount = Helper().formatCurrency(discountAmount);
+      String formattedDiscount = Helper().formatCurrency(discountAmount);
       discountHtml =
           '''
       <div class="flex-box">
@@ -276,7 +287,7 @@ class InvoiceFormatter {
             ${AppLocalizations.of(context).translate('discount')} <small>($discountType)</small> :
          </p>
          <p class="width-50 text-right">
-            (-) $symbol $discountAmount
+            (-) $symbol $formattedDiscount
          </p>
       </div>
       ''';
