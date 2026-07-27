@@ -52,27 +52,39 @@ class _GreetingWidgetState extends State<GreetingWidget>
       position: _offsetAnimation,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 16,
-              offset: Offset(0, 6),
+              color: Color(0x08000000),
+              blurRadius: 10,
+              offset: Offset(0, 3),
+            ),
+            BoxShadow(
+              color: Color(0x05000000),
+              blurRadius: 20,
+              offset: Offset(0, 8),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              width: 38,
-              height: 38,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFFE7F0FB),
-                borderRadius: BorderRadius.circular(10),
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF0F4C81).withAlpha(20),
+                    const Color(0xFF0F4C81).withAlpha(10),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
                 Icons.person_rounded,
@@ -80,16 +92,31 @@ class _GreetingWidgetState extends State<GreetingWidget>
                 size: 20,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
-              child: Text(
-                '${AppLocalizations.of(context).translate('welcome')} ${widget.userName}',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: widget.themeData.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF0F172A),
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context).translate('welcome'),
+                    style: widget.themeData.textTheme.bodySmall?.copyWith(
+                      color: const Color(0xFF64748B),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    widget.userName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: widget.themeData.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF0F172A),
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

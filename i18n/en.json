@@ -126,6 +126,14 @@
   "contact_payment": "Customer Accounts",
   "payments": "Add Payment",
   "reports": "Reports",
+  "sales_overview": "Sales Overview",
+  "total_sales": "Total Sales",
+  "transactions": "Transactions",
+  "avg_per_day": "Avg / Day",
+  "last_7_days": "7D",
+  "last_30_days": "30D",
+  "last_90_days": "90D",
+  "no_sales_data": "No sales data for this range",
   "add_quotation": "Add Quotation",
   "quotation": "Quotation",
   "save": "Save",
@@ -344,5 +352,10 @@
   "visit_photo": "Visit Photo",
   "write_summarize_discussion": "Write something to summarize discussion",
   "scheduling": "Scheduling",
-  "additional_details": "Additional Details"
+  "additional_details": "Additional Details",
+  "edit_price": "Edit Price",
+  "direct_checkout": "Direct Proceed",
+  "select_printer": "Select Printer",
+  "printer_theming": "Printer Theming",
+  "a4_printer": "A4 Printer"
 }

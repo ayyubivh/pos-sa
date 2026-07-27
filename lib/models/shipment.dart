@@ -1,19 +1,23 @@
 class ShipmentModel {
-  List<String> _shipmentStatus = [
+  final List<String> _shipmentStatus = [
     'Ordered',
     'Packed',
     'Shipped',
     'Delivered',
-    'Cancelled'
+    'Cancelled',
   ];
 
   List<String> get shipmentStatus => _shipmentStatus;
 
-  updateShipment({int? id, String? status, String? deliveredTo}) {
+  Map<String, dynamic> updateShipment({
+    int? id,
+    String? status,
+    String? deliveredTo,
+  }) {
     Map<String, dynamic> shipment = {
       'id': id,
       'shipping_status': status!.toLowerCase(),
-      'delivered_to': deliveredTo
+      'delivered_to': deliveredTo,
     };
     return shipment;
   }

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:intl/intl.dart';
 
+import '../config.dart';
 import '../helpers/otherHelpers.dart';
 import '../locale/MyLocalizations.dart';
 import '../domain/models/payment_database.dart';
@@ -19,25 +20,28 @@ class InvoiceFormatter {
   Future<String> generateProductDetails(sellId, context) async {
     //fetch products from sellLine by sellId
     List products = await SellDatabase().get(sellId: sellId);
-    String product = '''
+    bool isNarrow =
+        Config.printPaperSize == '56mm' || Config.printPaperSize == 'card';
+    String product =
+        '''
           <tr class="bb-lg">
-               
-               <th width="30%">
+
+               <th width="${isNarrow ? '35%' : '30%'}">
                      <p>${AppLocalizations.of(context).translate('products')}</p>
                </th>
-               
-               <th width="20%">
-                     <p>${AppLocalizations.of(context).translate('quantity')}</p>
+
+               <th width="${isNarrow ? '15%' : '20%'}">
+                     <p>${isNarrow ? 'Qty' : AppLocalizations.of(context).translate('quantity')}</p>
                </th>
-               
-               <th width="20%">
-                     <p>${AppLocalizations.of(context).translate('unit_price')}</p>
+
+               <th width="25%">
+                     <p>${isNarrow ? 'Price' : AppLocalizations.of(context).translate('unit_price')}</p>
                </th>
-               
-               <th width="20%">
-                     <p>${AppLocalizations.of(context).translate('sub_total')}</p>
+
+               <th width="25%">
+                     <p>${isNarrow ? 'Total' : AppLocalizations.of(context).translate('sub_total')}</p>
                </th>
-               
+
             </tr>
     ''';
     subTotal = 0.00;
@@ -48,49 +52,48 @@ class InvoiceFormatter {
       String productQuantity = products[i]['quantity'].toString();
       Map<String, dynamic> inlineAmounts = await Helper()
           .calculateTaxAndDiscount(
-              discountAmount: products[i]['discount_amount'],
-              discountType: products[i]['discount_type'],
-              unitPrice: products[i]['unit_price'],
-              taxId: products[i]['tax_rate_id']);
+            discountAmount: products[i]['discount_amount'],
+            discountType: products[i]['discount_type'],
+            unitPrice: products[i]['unit_price'],
+            taxId: products[i]['tax_rate_id'],
+          );
       inlineDiscountAmount += inlineAmounts['discountAmount'];
       inlineTaxAmount += inlineAmounts['taxAmount'];
       String productPrice = await Helper().calculateTotal(
-          taxId: products[i]['tax_rate_id'],
-          discountAmount: products[i]['discount_amount'],
-          discountType: products[i]['discount_type'],
-          unitPrice: products[i]['unit_price']);
+        taxId: products[i]['tax_rate_id'],
+        discountAmount: products[i]['discount_amount'],
+        discountType: products[i]['discount_type'],
+        unitPrice: products[i]['unit_price'],
+      );
       String totalProductsPrice =
           (products[i]['quantity'] * double.parse(productPrice)).toString();
       subTotal += double.parse(totalProductsPrice);
-      product = product +
-          '''
-          <tr class="bb-lg">
-          
-               <td width="30%">               
-                     <p>$productName, $productSku</p>
+      product =
+          '''$product          <tr class="bb-lg">
+
+               <td width="${isNarrow ? '35%' : '30%'}">
+                     <p>$productName${isNarrow ? '' : ', $productSku'}</p>
                </td>
-               
-               
-               <td  width="20%">               
+
+               <td width="${isNarrow ? '15%' : '20%'}">
                      <p>${Helper().formatQuantity(productQuantity)}</p>
                </td>
-               
-               
-               <td width="20%">               
+
+               <td width="25%">
                      <p>${Helper().formatCurrency(productPrice)}</p>
                </td>
-               
-               <td width="20%">               
+
+               <td width="25%">
                      <p>${Helper().formatCurrency(totalProductsPrice)}</p>
                </td>
-               
+
             </tr>
     ''';
     }
     return product;
   }
 
-  setTax(taxId) {
+  void setTax(taxId) {
     System().get('tax').then((value) {
       value.forEach((element) {
         if (element['id'] == taxId) {
@@ -101,32 +104,43 @@ class InvoiceFormatter {
     });
   }
 
-  Map<String, dynamic> getTotalAmount(
-      {required String discountType,
-      required double discountAmount,
-      required String symbol}) {
+  Map<String, dynamic> getTotalAmount({
+    required String discountType,
+    required double discountAmount,
+    required String symbol,
+  }) {
     Map<String, dynamic> allAmounts = {};
     if (discountType == "fixed") {
       discountType = "$symbol $discountAmount";
       String tAmount = (subTotal - discountAmount).toString();
       allAmounts['taxAmount'] = Helper().formatCurrency(
-          (double.parse(tAmount) * (tax / 100)).toStringAsFixed(2));
+        (double.parse(tAmount) * (tax / 100)).toStringAsFixed(2),
+      );
       allAmounts['totalAmount'] =
           (double.parse(tAmount) + double.parse(allAmounts['taxAmount']))
               .toString();
       allAmounts['discountAmount'] = discountAmount;
       allAmounts['discountType'] = discountType;
     } else if (discountType == "percentage") {
-      discountType = discountAmount.toString() + " %";
+      discountType = "$discountAmount %";
       discountAmount = subTotal * (discountAmount / 100);
       String tAmount = (subTotal - discountAmount).toString();
       allAmounts['taxAmount'] = Helper().formatCurrency(
-          (double.parse(tAmount) * (tax / 100)).toStringAsFixed(2));
+        (double.parse(tAmount) * (tax / 100)).toStringAsFixed(2),
+      );
       allAmounts['totalAmount'] =
           (double.parse(tAmount) + double.parse(allAmounts['taxAmount']))
               .toStringAsFixed(2);
       allAmounts['discountAmount'] = discountAmount;
       allAmounts['discountType'] = discountType;
+    } else {
+      allAmounts['taxAmount'] = Helper().formatCurrency(
+        (subTotal * (tax / 100)).toStringAsFixed(2),
+      );
+      allAmounts['totalAmount'] =
+          (subTotal + double.parse(allAmounts['taxAmount'])).toStringAsFixed(2);
+      allAmounts['discountAmount'] = 0.0;
+      allAmounts['discountType'] = '';
     }
     return allAmounts;
   }
@@ -145,8 +159,9 @@ class InvoiceFormatter {
     setTax(taxId);
     String products = await generateProductDetails(sellId, context);
     List sells = await SellDatabase().getSellBySellId(sellId);
-    var customer =
-        await Contact().getCustomerDetailById(sells[0]['contact_id']);
+    var customer = await Contact().getCustomerDetailById(
+      sells[0]['contact_id'],
+    );
     var landmark = '',
         city = '',
         state = '',
@@ -155,26 +170,33 @@ class InvoiceFormatter {
         businessMobile = '';
     List locations = await System().get('location');
     var location;
-    locations.forEach((element) {
+    for (var element in locations) {
       if (element['id'] == sells[0]['location_id']) {
         location = element;
-        landmark =
-            (location['landmark'] != null) ? location['landmark'] + ',' : '';
+        landmark = (location['landmark'] != null)
+            ? location['landmark'] + ','
+            : '';
         city = (location['city'] != null) ? location['city'] + ',' : '';
         state = (location['state'] != null) ? location['state'] + ',' : '';
-        zipCode =
-            (location['zip_code'] != null) ? location['zip_code'] + ',' : '';
-        country =
-            (location['country'] != null) ? location['country'] + ',' : '';
-        businessMobile =
-            (location['mobile'] != null) ? location['mobile'] + ',' : '';
+        zipCode = (location['zip_code'] != null)
+            ? location['zip_code'] + ','
+            : '';
+        country = (location['country'] != null)
+            ? location['country'] + ','
+            : '';
+        businessMobile = (location['mobile'] != null)
+            ? location['mobile'] + ','
+            : '';
       }
-    });
+    }
     String invoiceNo = sells[0]['invoice_no'];
     var dateTime = DateTime.parse(sells[0]['transaction_date']);
     var date = DateFormat("dd/MM/yyyy").format(dateTime);
-    var discountType = sells[0]['discount_type'];
-    var discountAmount = sells[0]['discount_amount'];
+    String discountType = (sells[0]['discount_type'] ?? 'fixed').toString();
+    double discountAmount = double.tryParse(
+          (sells[0]['discount_amount'] ?? 0).toString(),
+        ) ??
+        0.0;
     await Helper().getFormattedBusinessDetails().then((value) {
       symbol = value['symbol'];
       businessName = value['name'];
@@ -189,17 +211,21 @@ class InvoiceFormatter {
         ? customer['address_line_2'] + ','
         : '';
     var customerCity = (customer['city'] != null) ? customer['city'] + ',' : '';
-    var customerState =
-    (customer['state'] != null) ? customer['state'] + ',' : '';
-    var customerCountry =
-    (customer['country'] != null) ? customer['country'] : '';
+    var customerState = (customer['state'] != null)
+        ? customer['state'] + ','
+        : '';
+    var customerCountry = (customer['country'] != null)
+        ? customer['country']
+        : '';
     var customerMobile = customer['mobile'];
-    List paymentList =
-    await PaymentDatabase().get(sells[0]['id'], allColumns: true);
+    List paymentList = await PaymentDatabase().get(
+      sells[0]['id'],
+      allColumns: true,
+    );
     double totalPaidAmount = 0.0;
     String payments = '';
-    paymentList.forEach((element) {
-      var sign;
+    for (var element in paymentList) {
+      String sign;
       if (element['is_return'] == 0) {
         sign = '+';
         totalPaidAmount += element['amount'];
@@ -210,30 +236,32 @@ class InvoiceFormatter {
       var method = element['method'];
       var paidAmount = element['amount'];
       if (element['amount'] > 0) {
-        payments += '''
+        payments +=
+            '''
         <div class="flex-box">
          <p class="width-50 text-left">$method ($sign) ($date) </p>
          <p class="width-50 text-right">$symbol ${Helper().formatCurrency(paidAmount)}</p>
       </div>
       ''';
       }
-    });
+    }
 
     Map<String, dynamic> getAmounts = getTotalAmount(
-        discountType: discountType,
-        discountAmount: discountAmount,
-        symbol: symbol);
+      discountType: discountType,
+      discountAmount: discountAmount,
+      symbol: symbol,
+    );
 
-    discountAmount = getAmounts['discountAmount'];
-    discountType = getAmounts['discountType'];
+    discountAmount = (getAmounts['discountAmount'] as num).toDouble();
+    discountType = (getAmounts['discountType'] as String?) ?? '';
     String taxAmount = getAmounts['taxAmount'];
     String totalAmount =
         (double.parse(getAmounts['totalAmount']) + sells[0]['shipping_charges'])
             .toStringAsFixed(2);
     String sTotal = subTotal.toString();
-    var totalReceived;
-    var returnAmount;
-    var dueAmount;
+    String totalReceived;
+    dynamic returnAmount;
+    dynamic dueAmount;
     if (totalPaidAmount > double.parse(totalAmount)) {
       returnAmount = totalPaidAmount - double.parse(totalAmount);
       totalReceived = totalAmount;
@@ -251,14 +279,15 @@ class InvoiceFormatter {
 
     //structure of discount row
     if (discountAmount > 0) {
-      discountAmount = Helper().formatCurrency(discountAmount);
-      discountHtml = '''
+      String formattedDiscount = Helper().formatCurrency(discountAmount);
+      discountHtml =
+          '''
       <div class="flex-box">
          <p class="width-50 text-left">
             ${AppLocalizations.of(context).translate('discount')} <small>($discountType)</small> :
          </p>
          <p class="width-50 text-right">
-            (-) $symbol $discountAmount
+            (-) $symbol $formattedDiscount
          </p>
       </div>
       ''';
@@ -267,7 +296,8 @@ class InvoiceFormatter {
     //structure of inline discount row
     if (inlineDiscountAmount > 0) {
       String inlineDiscount = Helper().formatCurrency(inlineDiscountAmount);
-      inlineDiscountHtml = '''
+      inlineDiscountHtml =
+          '''
       <div class="flex-box">
          <p class="width-50 text-left">
             ${AppLocalizations.of(context).translate('discount')} :
@@ -281,7 +311,8 @@ class InvoiceFormatter {
 
     //structure of shippingCharge row
     if (sells[0]['shipping_charges'] >= 0.01) {
-      shippingHtml += '''
+      shippingHtml +=
+          '''
       <div class="flex-box">
          <p class="width-50 text-left">
             ${AppLocalizations.of(context).translate('shipping_charges')}:
@@ -295,7 +326,8 @@ class InvoiceFormatter {
 
     //structure of tax row
     if (taxName != "taxRates") {
-      taxHtml = '''
+      taxHtml =
+          '''
       <div class="flex-box">
          <p class="width-50 text-left">
             ${AppLocalizations.of(context).translate('tax')} ($taxName):
@@ -310,7 +342,8 @@ class InvoiceFormatter {
     //structure of inline tax row
     if (inlineTaxAmount > 0) {
       String inlineTax = Helper().formatCurrency(inlineTaxAmount);
-      inlineTaxesHtml = '''
+      inlineTaxesHtml =
+          '''
       <div class="flex-box">
          <p class="width-50 text-left">
             ${AppLocalizations.of(context).translate('tax')} :
@@ -325,7 +358,8 @@ class InvoiceFormatter {
     //structure of due
     if (dueAmount > 0) {
       dueAmount = Helper().formatCurrency(dueAmount);
-      dueHtml = '''
+      dueHtml =
+          '''
       <div class="flex-box">
          <p class="width-50 text-left">
             ${AppLocalizations.of(context).translate('total')} ${AppLocalizations.of(context).translate('due')}
@@ -336,12 +370,14 @@ class InvoiceFormatter {
       </div>
     ''';
     }
-    String address =
-            "$customerAddress1 $customerAddress2 $customerCity $customerState $customerCountry",
-        totalTax =
-            '${(inlineTaxAmount + double.parse(taxAmount.toString())).toString()}',
-        totalDiscount =
-            '${(inlineDiscountAmount + double.parse(discountAmount.toString())).toString()}';
+    String
+    address =
+        "$customerAddress1 $customerAddress2 $customerCity $customerState $customerCountry",
+    totalTax = (inlineTaxAmount + double.parse(taxAmount.toString()))
+        .toString(),
+    totalDiscount =
+        (inlineDiscountAmount + double.parse(discountAmount.toString()))
+            .toString();
 
     // qr code generation
     // Uint8List qr = await QR().getQrData(
@@ -362,14 +398,22 @@ class InvoiceFormatter {
     // String base64Image = base64Encode(qr);
 
     //structure
-    String invoice = '''
+    int paperWidthPx = Config.printPaperSize == '56mm'
+        ? 160
+        : Config.printPaperSize == 'card'
+        ? 240
+        : 220;
+    String invoice =
+        '''
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=${paperWidthPx}px, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Receipt-$invoiceNo</title>
+    </head>
+    <body style="width: 100%; margin: 0; padding: 0;">
     <section class="invoice print_section" id="receipt_section">
-   <!-- business information here -->
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-   <!-- <link rel="stylesheet" href="style.css"> -->
-   <title>Receipt-$invoiceNo</title>
    <div class="ticket">
       <div class="text-box">
          <!-- Logo -->
@@ -459,57 +503,48 @@ class InvoiceFormatter {
    <!-- <button id="btnPrint" class="hidden-print">Print</button>
       <script src="script.js"></script> -->
    <style type="text/css">
-   
-      @media  print {
       * {
-      font-size: 12px;
-      font-family: 'Times New Roman';
-      word-break: break-all;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-size: ${Config.printPaperSize == '56mm'
+            ? '9px'
+            : Config.printPaperSize == 'card'
+            ? '8px'
+            : '11px'};
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      word-break: break-word;
       }
-      .headings{
-      font-size: 16px;
+      body, html {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      }
+      .headings {
+      font-size: ${Config.printPaperSize == '56mm'
+            ? '11px'
+            : Config.printPaperSize == 'card'
+            ? '10px'
+            : '14px'};
       font-weight: 700;
       text-transform: uppercase;
       }
-      .sub-headings{
-      font-size: 15px;
+      .sub-headings {
+      font-size: ${Config.printPaperSize == '56mm'
+            ? '10px'
+            : Config.printPaperSize == 'card'
+            ? '9px'
+            : '12px'};
       font-weight: 700;
       }
-      .border-top{
+      .border-top {
       border-top: 1px solid #242424;
       }
-      .border-bottom{
+      .border-bottom {
       border-bottom: 1px solid #242424;
       }
-      .border-bottom-dotted{
+      .border-bottom-dotted {
       border-bottom: 1px dotted darkgray;
-      }
-      td.serial_number, th.serial_number{
-      width: 5%;
-      max-width: 5%;
-      }
-      td.description,
-      th.description {
-      width: 35%;
-      max-width: 35%;
-      word-break: break-all;
-      }
-      td.quantity,
-      th.quantity {
-      width: 15%;
-      max-width: 15%;
-      word-break: break-all;
-      }
-      td.unit_price, th.unit_price{
-      width: 25%;
-      max-width: 25%;
-      word-break: break-all;
-      }
-      td.price,
-      th.price {
-      width: 20%;
-      max-width: 20%;
-      word-break: break-all;
       }
       .centered {
       text-align: center;
@@ -518,21 +553,37 @@ class InvoiceFormatter {
       .ticket {
       width: 100%;
       max-width: 100%;
+      padding: ${Config.printPaperSize == '56mm' ? '1px' : '2px'};
       }
       img {
-      max-width: inherit;
+      max-width: 100%;
       width: auto;
       }
-      .hidden-print,
-      .hidden-print * {
+      .hidden-print, .hidden-print * {
       display: none !important;
       }
+      table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      }
+      th, td {
+      padding: 2px 1px;
+      text-align: left;
+      vertical-align: top;
+      overflow: hidden;
+      word-break: break-word;
+      font-size: ${Config.printPaperSize == '56mm'
+            ? '8px'
+            : Config.printPaperSize == 'card'
+            ? '7px'
+            : '10px'};
       }
       .table-info {
       width: 100%;
       }
       .table-info tr:first-child td, .table-info tr:first-child th {
-      padding-top: 8px;
+      padding-top: 4px;
       }
       .table-info th {
       text-align: left;
@@ -540,27 +591,19 @@ class InvoiceFormatter {
       .table-info td {
       text-align: right;
       }
-      .logo {
-      float: left;
-      width:35%;
-      padding: 10px;
-      }
-      .text-with-image {
-      float: left;
-      width:65%;
-      }
       .text-box {
       width: 100%;
       height: auto;
       }
       .m-0 {
-      margin:0;
+      margin: 0;
       }
       .textbox-info {
       clear: both;
+      margin-bottom: 2px;
       }
       .textbox-info p {
-      margin-bottom: 0px
+      margin-bottom: 0px;
       }
       .flex-box {
       display: flex;
@@ -570,9 +613,29 @@ class InvoiceFormatter {
       width: 50%;
       margin-bottom: 0px;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: ${Config.printPaperSize == '56mm'
+            ? '8px'
+            : Config.printPaperSize == 'card'
+            ? '7px'
+            : '10px'};
+      }
+      .width-50 {
+      width: 50%;
+      }
+      .text-left {
+      text-align: left;
+      }
+      .text-right {
+      text-align: right;
       }
       .table-f-12 th, .table-f-12 td {
-      font-size: 12px;
+      font-size: ${Config.printPaperSize == '56mm'
+            ? '8px'
+            : Config.printPaperSize == 'card'
+            ? '7px'
+            : '10px'};
       word-break: break-word;
       }
       .bw {
@@ -581,8 +644,26 @@ class InvoiceFormatter {
       .bb-lg {
       border-bottom: 1px solid lightgray;
       }
+      .mb-10 {
+      margin-bottom: ${Config.printPaperSize == '56mm' ? '3px' : '5px'};
+      }
+      p {
+      margin: 1px 0;
+      line-height: 1.3;
+      }
+      @media print {
+      * {
+      font-size: ${Config.printPaperSize == '56mm'
+            ? '9px'
+            : Config.printPaperSize == 'card'
+            ? '8px'
+            : '11px'};
+      }
+      }
    </style>
 </section>
+</body>
+</html>
     ''';
     return invoice;
   }

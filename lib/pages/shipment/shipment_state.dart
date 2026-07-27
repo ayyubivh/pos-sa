@@ -5,8 +5,8 @@ class _ShipmentState extends State<Shipment> {
   DateTime selectedDate = DateTime.now();
   String? nextPage = '', selectedStatus = '', selectedInlineStatus;
   List<dynamic> shipments = [];
-  TextEditingController deliveredToController = new TextEditingController();
-  ScrollController _scrollController = new ScrollController();
+  TextEditingController deliveredToController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   static int themeType = 1;
   ThemeData themeData = AppTheme.getThemeFromThemeMode(themeType);
@@ -26,13 +26,10 @@ class _ShipmentState extends State<Shipment> {
     });
   }
 
-  getShipments() async {
+  Future<void> getShipments() async {
     var date = selectedDate.toLocal().toString().split(' ')[0];
     nextPage =
-        Api().baseUrl +
-        Api().apiUrl +
-        "/sell/?start_date=$date"
-            "&shipping_status=$selectedStatus";
+        "${Api().baseUrl}${Api().apiUrl}/sell/?start_date=$date&shipping_status=$selectedStatus";
     generateShipmentList();
   }
 
@@ -122,12 +119,13 @@ class _ShipmentState extends State<Shipment> {
       firstDate: DateTime(2015),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != selectedDate)
+    if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
         shipments = [];
         getShipments();
       });
+    }
   }
 
   //widget shipment
@@ -364,6 +362,9 @@ class _ShipmentState extends State<Shipment> {
                           ),
                         ),
                         Visibility(
+                          visible:
+                              (deliverTo.toString().trim() != '' &&
+                              deliverTo != null),
                           child: Row(
                             children: [
                               Icon(
@@ -380,9 +381,6 @@ class _ShipmentState extends State<Shipment> {
                               ),
                             ],
                           ),
-                          visible:
-                              (deliverTo.toString().trim() != '' &&
-                              deliverTo != null),
                         ),
                       ],
                     ),
@@ -451,11 +449,11 @@ class _ShipmentState extends State<Shipment> {
 
   //Retrieve shipment list from api
   //generate shipment list
-  generateShipmentList() async {
+  Future<void> generateShipmentList() async {
     setState(() {
       /* isLoading = false;*/
     });
-    final dio = new Dio();
+    final dio = Dio();
     var token = await System().getToken();
     dio.options.headers['content-Type'] = 'application/json';
     dio.options.headers["Authorization"] = "Bearer $token";
@@ -486,14 +484,14 @@ class _ShipmentState extends State<Shipment> {
     }
   }
 
-  shippingDialog(int index, {String? details, String? address}) {
+  void shippingDialog(int index, {String? details, String? address}) {
     showDialog(
       barrierDismissible: true,
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text("${shipments[index]['invoice_no']}"),
-          content: Container(
+          content: SizedBox(
             width: double.maxFinite,
             child: ListView(
               shrinkWrap: true,
@@ -559,7 +557,7 @@ class _ShipmentState extends State<Shipment> {
                 await ShipmentApi().updateShipmentStatus(data).then((value) {
                   selectedInlineStatus = null;
                   Navigator.pop(context);
-                  if (this.mounted) {
+                  if (mounted) {
                     setState(() {
                       shipments = [];
                       getShipments();

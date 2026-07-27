@@ -12,9 +12,9 @@ class LoginScreen extends StatelessWidget {
   static const Color _bg = Color(0xFFF8FAFC);
   static const Color _bgSoft = Color(0xFFF1F5F9);
   static const Color _primaryText = Color(0xFF0F172A);
-  static const Color _mutedText = Color(0xFF6B7280);
+  static const Color _mutedText = Color(0xFF64748B);
   static const Color _accent = Color(0xFF0F4C81);
-  static const Color _outline = Color(0xFFE5E7EB);
+  static const Color _outline = Color(0xFFE2E8F0);
 
   @override
   Widget build(BuildContext context) {
@@ -23,19 +23,21 @@ class LoginScreen extends StatelessWidget {
       child: BlocConsumer<LoginCubit, LoginState>(
         listener: (context, state) {
           if (state is LoginFailed) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text(
-                    AppLocalizations.of(
-                      context,
-                    ).translate('invalid_credentials'),
+            final msg = state.debugDetail ??
+                AppLocalizations.of(context).translate(state.messageKey);
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Login Error'),
+                content: SelectableText(msg),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
                   ),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: Colors.red.shade700,
-                ),
-              );
+                ],
+              ),
+            );
           } else if (state is LoginSuccessfully) {
             LoginCubit.get(context).navigateToHome(context);
           }

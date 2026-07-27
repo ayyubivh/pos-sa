@@ -31,8 +31,8 @@ class _SplashState extends State<Splash> {
   static const Color _bgSoft = Color(0xFFF1F5F9);
   static const Color _primary = Color(0xFF0F172A);
   static const Color _accent = Color(0xFF0F4C81);
-  static const Color _muted = Color(0xFF6B7280);
-  static const Color _outline = Color(0xFFE5E7EB);
+  static const Color _muted = Color(0xFF64748B);
+  static const Color _outline = Color(0xFFE2E8F0);
 
   @override
   void initState() {
@@ -259,15 +259,16 @@ class _SplashState extends State<Splash> {
             ),
             const SizedBox(height: 12),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 'Streamlined POS workflow with a refined,\ndistraction-free interface.',
                 textAlign: TextAlign.center,
                 style: AppTheme.getTextStyle(
                   themeData.textTheme.bodyLarge,
                   color: _muted,
-                  fontWeight: 500,
-                  height: 1.5,
+                  fontWeight: 400,
+                  height: 1.6,
+                  letterSpacing: 0,
                 ),
               ),
             ),
@@ -276,25 +277,30 @@ class _SplashState extends State<Splash> {
         const SizedBox(height: 48),
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: _accent.withValues(alpha: 0.15),
+                color: _accent.withAlpha(30),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
+              ),
+              BoxShadow(
+                color: _accent.withAlpha(10),
+                blurRadius: 40,
+                offset: const Offset(0, 16),
               ),
             ],
           ),
           child: ElevatedButton(
             onPressed: _isContinuing ? null : _handleContinue,
             style: ElevatedButton.styleFrom(
-              minimumSize: const Size.fromHeight(64),
+              minimumSize: const Size.fromHeight(58),
               elevation: 0,
               backgroundColor: _accent,
               foregroundColor: Colors.white,
-              disabledBackgroundColor: _accent.withValues(alpha: 0.6),
+              disabledBackgroundColor: _accent.withAlpha(150),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
             child: _isContinuing

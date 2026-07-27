@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:pos_final/helpers/http_logger.dart';
 
 import '../models/system.dart';
 import 'api.dart';
@@ -10,10 +10,9 @@ class Tax extends Api {
 
   Future<List> get() async {
     try {
-      String url = this.baseUrl + this.apiUrl + "/tax";
+      String url = baseUrl + apiUrl + "/tax";
       var token = await System().getToken();
-      var response =
-          await http.get(Uri.parse(url), headers: this.getHeader('$token'));
+      var response = await http.get(Uri.parse(url), headers: getHeader(token));
       taxes = jsonDecode(response.body);
       var taxList = taxes['data'];
       System().insert('tax', jsonEncode(taxList));

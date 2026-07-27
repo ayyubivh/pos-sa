@@ -9,6 +9,11 @@ class AppColors {
   static const Color backgroundSoft = kBackgroundSoftColor;
   static const Color surface = kSurfaceColor;
   static const Color textPrimary = kPrimaryTextColor;
+  static const Color textSecondary = kSecondaryTextColor;
   static const Color textMuted = kMutedTextColor;
   static const Color outline = kOutlineColor;
+  static const Color success = kSuccessColor;
+  static const Color warning = kWarningColor;
+  static const Color error = kErrorColor;
+  static const Color cardHover = kCardHoverColor;
 }

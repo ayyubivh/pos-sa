@@ -70,6 +70,11 @@ dependencies:
   
   # Background Tasks
   cron: ^0.6.0
+
+  # Desktop Support
+  window_manager: ^0.3.8
+  file_selector: ^1.0.3
+  local_notifier: ^0.1.6
   
   # Toast Messages
   fluttertoast: ^8.2.4
@@ -81,6 +86,7 @@ dependencies:
   # Database
   sqflite: ^2.3.2
   sqflite_common_ffi: ^2.3.2
+  sqflite_common_ffi_web: ^0.4.5+4
   
   # Image & Camera
   image_picker: ^1.0.7
@@ -100,6 +106,9 @@ dependencies:
     sdk: flutter
   syncfusion_flutter_datepicker: ^32.1.24
   search_choices: ^2.3.1
+
+  # Charts
+  fl_chart: ^0.68.0
 
 dev_dependencies:
   flutter_test:

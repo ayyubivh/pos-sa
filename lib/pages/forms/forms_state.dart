@@ -361,7 +361,7 @@ class _VisitFormState extends State<VisitForm> {
                             ),
                             SizedBox(height: 16),
                             ElevatedButton.icon(
-                              onPressed: () async {
+                              onPressed: isDesktop ? null : () async {
                                 try {
                                   await Geolocator.getCurrentPosition(
                                     desiredAccuracy: LocationAccuracy.high,
@@ -498,7 +498,7 @@ class _VisitFormState extends State<VisitForm> {
                             };
                             FieldForceApi()
                                 .update(visitDetails, widget.visit['id'])
-                                .then((value) {
+                                ?.then((value) {
                                   if (value != null) {
                                     Fluttertoast.showToast(
                                       msg: AppLocalizations.of(
@@ -883,12 +883,13 @@ class _FollowUpFormState extends State<FollowUpForm> {
                           }
                         },
                         validator: (value) {
-                          if (value == null || value.isEmpty)
+                          if (value == null || value.isEmpty) {
                             return AppLocalizations.of(
                               context,
                             ).translate('required');
-                          else
+                          } else {
                             return null;
+                          }
                         },
                       ),
                       SizedBox(height: 12),
@@ -935,12 +936,13 @@ class _FollowUpFormState extends State<FollowUpForm> {
                           }
                         },
                         validator: (value) {
-                          if (value == null || value.isEmpty)
+                          if (value == null || value.isEmpty) {
                             return AppLocalizations.of(
                               context,
                             ).translate('required');
-                          else
+                          } else {
                             return null;
+                          }
                         },
                       ),
                     ],

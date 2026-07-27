@@ -1,5 +1,4 @@
 // import 'package:call_log/call_log.dart';
-import 'package:intl/intl.dart';
 
 class CallLogModel {
   // createLog(CallLogEntry callLog) {

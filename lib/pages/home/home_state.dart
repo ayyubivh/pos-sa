@@ -2,7 +2,7 @@ part of 'package:pos_final/pages/home.dart';
 
 class _HomeState extends State<Home> {
   var user,
-      note = new TextEditingController(),
+      note = TextEditingController(),
       clockInTime = DateTime.now(),
       selectedLanguage;
   LatLng? currentLoc;
@@ -43,26 +43,29 @@ class _HomeState extends State<Home> {
   static const Color _bgSoft = Color(0xFFF1F5F9);
   static const Color _surface = Color(0xFFFFFFFF);
   static const Color _primaryText = Color(0xFF0F172A);
-  static const Color _mutedText = Color(0xFF6B7280);
+  static const Color _mutedText = Color(0xFF64748B);
   static const Color _accent = Color(0xFF0F4C81);
-  static const Color _outline = Color(0xFFE5E7EB);
+  static const Color _outline = Color(0xFFE2E8F0);
 
   @override
   void initState() {
     super.initState();
-    getPermission();
+    // Attendance/GPS features are mobile-only
+    if (isMobile) getPermission();
     homepageData();
     Helper().syncCallLogs();
   }
 
   //function to set homepage details
-  homepageData() async {
+  Future<void> homepageData() async {
     var prefs = await SharedPreferences.getInstance();
     user = await System().get('loggedInUser');
-    userName =
-        ((user['surname'] != null) ? user['surname'] : "") +
-        ' ' +
-        user['first_name'];
+    if (user is Map) {
+      userName =
+          ((user['surname'] != null) ? user['surname'] : '') +
+          ' ' +
+          (user['first_name'] ?? '');
+    }
     await loadPaymentDetails();
     await Helper().getFormattedBusinessDetails().then((value) {
       businessSymbol = value['symbol'];
@@ -73,11 +76,12 @@ class _HomeState extends State<Home> {
     });
     selectedLanguage =
         prefs.getString('language_code') ?? Config().defaultLanguage;
+    Config.printerType = prefs.getString('printer_type') ?? 'Thermal';
     setState(() {});
   }
 
   //permission for displaying Attendance Button
-  checkIOButtonDisplay() async {
+  Future<void> checkIOButtonDisplay() async {
     await Attendance().getCheckInTime(Config.userId).then((value) {
       if (value != null) {
         clockInTime = DateTime.parse(value);
@@ -107,7 +111,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -227,16 +231,21 @@ class _HomeState extends State<Home> {
 
   Widget _buildQuickActionsCard() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: _surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: _outline),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _outline, width: 0.5),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 28,
-            offset: Offset(0, 10),
+            color: Color(0x08000000),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 24,
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -246,16 +255,18 @@ class _HomeState extends State<Home> {
           Text(
             'Quick Actions',
             style: themeData.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: _primaryText,
+              letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             'Shortcuts for your most-used workflows.',
-            style: themeData.textTheme.bodyMedium?.copyWith(
+            style: themeData.textTheme.bodySmall?.copyWith(
               color: _mutedText,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w400,
+              fontSize: 13,
             ),
           ),
           const SizedBox(height: 16),
@@ -272,6 +283,14 @@ class _HomeState extends State<Home> {
                     icon: Icons.language_rounded,
                     onTap: _showLanguageDialog,
                   ),
+                  _quickActionTile(
+                    width: tileWidth,
+                    label: AppLocalizations.of(context).translate('products'),
+                    icon: Icons.inventory_2_rounded,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/products');
+                    },
+                  ),
                   if (accessExpenses)
                     _quickActionTile(
                       width: tileWidth,
@@ -279,34 +298,34 @@ class _HomeState extends State<Home> {
                       icon: Icons.receipt_long_rounded,
                       onTap: () => _navigateIfOnline('/expense'),
                     ),
-                  _quickActionTile(
-                    width: tileWidth,
-                    label: AppLocalizations.of(
-                      context,
-                    ).translate('contact_payment'),
-                    icon: Icons.payments_rounded,
-                    onTap: () => _navigateIfOnline('/contactPayment'),
-                  ),
-                  _quickActionTile(
-                    width: tileWidth,
-                    label: AppLocalizations.of(context).translate('follow_ups'),
-                    icon: Icons.support_agent_rounded,
-                    onTap: () => _navigateIfOnline('/followUp'),
-                  ),
+                  // _quickActionTile(
+                  //   width: tileWidth,
+                  //   label: AppLocalizations.of(
+                  //     context,
+                  //   ).translate('contact_payment'),
+                  //   icon: Icons.payments_rounded,
+                  //   onTap: () => _navigateIfOnline('/contactPayment'),
+                  // ),
+                  // _quickActionTile(
+                  //   width: tileWidth,
+                  //   label: AppLocalizations.of(context).translate('follow_ups'),
+                  //   icon: Icons.support_agent_rounded,
+                  //   onTap: () => _navigateIfOnline('/followUp'),
+                  // ),
                   _quickActionTile(
                     width: tileWidth,
                     label: AppLocalizations.of(context).translate('suppliersC'),
                     icon: Icons.groups_rounded,
                     onTap: () => _navigateIfOnline('/leads'),
                   ),
-                  _quickActionTile(
-                    width: tileWidth,
-                    label: AppLocalizations.of(context).translate('shipment'),
-                    icon: Icons.local_shipping_rounded,
-                    onTap: () {
-                      Navigator.pushNamed(context, '/shipment');
-                    },
-                  ),
+                  // _quickActionTile(
+                  //   width: tileWidth,
+                  //   label: AppLocalizations.of(context).translate('shipment'),
+                  //   icon: Icons.local_shipping_rounded,
+                  //   onTap: () {
+                  //     Navigator.pushNamed(context, '/shipment');
+                  //   },
+                  // ),
                   _quickActionTile(
                     width: tileWidth,
                     label: AppLocalizations.of(context).translate('payments'),
@@ -341,22 +360,30 @@ class _HomeState extends State<Home> {
     return SizedBox(
       width: width,
       child: Material(
-        color: const Color(0xFFFAFBFD),
-        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFFF8FAFD),
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           onTap: onTap,
           child: Container(
-            constraints: const BoxConstraints(minHeight: 52),
+            constraints: const BoxConstraints(minHeight: 48),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _outline),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _outline, width: 0.5),
             ),
             child: Row(
               children: [
-                Icon(icon, color: _accent, size: 18),
-                const SizedBox(width: 8),
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: _accent.withAlpha(14),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: _accent, size: 16),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     label,
@@ -364,7 +391,8 @@ class _HomeState extends State<Home> {
                     overflow: TextOverflow.ellipsis,
                     style: themeData.textTheme.bodySmall?.copyWith(
                       color: _primaryText,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 13,
                     ),
                   ),
                 ),
@@ -377,14 +405,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _navigateIfOnline(String routeName) async {
-    if (await Helper().checkConnectivity()) {
-      Navigator.pushNamed(context, routeName);
-      return;
-    }
-
-    Fluttertoast.showToast(
-      msg: AppLocalizations.of(context).translate('check_connectivity'),
-    );
+    Navigator.pushNamed(context, routeName);
   }
 
   Future<void> _showLanguageDialog() async {
@@ -421,7 +442,7 @@ class _HomeState extends State<Home> {
                   Expanded(
                     child: ListView.separated(
                       itemCount: Config().lang.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 6),
+                      separatorBuilder: (_, _) => const SizedBox(height: 6),
                       itemBuilder: (context, index) {
                         final locale = Config().lang[index];
                         final code = locale['languageCode'] as String;
@@ -485,6 +506,112 @@ class _HomeState extends State<Home> {
           ),
         );
       },
+    );
+  }
+
+  Future<void> _showPrinterSettingsDialog() async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentPrinter = Config.printerType;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: _surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (bottomSheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 6, 14, 10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context).translate('select_printer'),
+                  style: themeData.textTheme.titleSmall?.copyWith(
+                    color: _primaryText,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _printerOption(
+                  label: AppLocalizations.of(
+                    context,
+                  ).translate('printer_theming'),
+                  value: 'Thermal',
+                  isSelected: currentPrinter == 'Thermal',
+                  onTap: () async {
+                    await prefs.setString('printer_type', 'Thermal');
+                    Config.printerType = 'Thermal';
+                    Navigator.pop(bottomSheetContext);
+                    setState(() {});
+                  },
+                ),
+                const SizedBox(height: 8),
+                _printerOption(
+                  label: AppLocalizations.of(context).translate('a4_printer'),
+                  value: 'A4',
+                  isSelected: currentPrinter == 'A4',
+                  onTap: () async {
+                    await prefs.setString('printer_type', 'A4');
+                    Config.printerType = 'A4';
+                    Navigator.pop(bottomSheetContext);
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _printerOption({
+    required String label,
+    required String value,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: isSelected
+                ? _accent.withValues(alpha: 0.08)
+                : const Color(0xFFFAFBFD),
+            border: Border.all(color: isSelected ? _accent : _outline),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                isSelected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_off_rounded,
+                size: 18,
+                color: isSelected ? _accent : _mutedText,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: themeData.textTheme.bodyMedium?.copyWith(
+                    color: _primaryText,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -560,31 +687,16 @@ class _HomeState extends State<Home> {
                       onTap: () => _navigateFromDrawer('/contactPayment'),
                     ),
                     _drawerItem(
-                      icon: Icons.support_agent_rounded,
-                      title: AppLocalizations.of(
-                        context,
-                      ).translate('follow_ups'),
-                      onTap: () => _navigateFromDrawer('/followUp'),
-                    ),
-                    if (Config().showFieldForce)
-                      _drawerItem(
-                        icon: MdiIcons.humanMale,
-                        title: AppLocalizations.of(
-                          context,
-                        ).translate('field_force_visits'),
-                        onTap: () => _navigateFromDrawer('/fieldForce'),
-                      ),
-                    _drawerItem(
                       icon: Icons.contacts_rounded,
                       title: AppLocalizations.of(context).translate('contacts'),
                       onTap: () => _navigateFromDrawer('/leads'),
                     ),
                     _drawerItem(
-                      icon: Icons.local_shipping_rounded,
-                      title: AppLocalizations.of(context).translate('shipment'),
+                      icon: Icons.settings_rounded,
+                      title: AppLocalizations.of(context).translate('settings'),
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/shipment');
+                        _showPrinterSettingsDialog();
                       },
                     ),
                   ],
@@ -613,18 +725,18 @@ class _HomeState extends State<Home> {
     required VoidCallback onTap,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Material(
         color: _surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _outline),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _outline, width: 0.5),
             ),
             child: Row(
               children: [
@@ -632,25 +744,25 @@ class _HomeState extends State<Home> {
                   width: 34,
                   height: 34,
                   decoration: BoxDecoration(
-                    color: _accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    color: _accent.withAlpha(14),
+                    borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Icon(icon, size: 20, color: _accent),
+                  child: Icon(icon, size: 18, color: _accent),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     title,
-                    style: themeData.textTheme.titleSmall?.copyWith(
+                    style: themeData.textTheme.bodyMedium?.copyWith(
                       color: _primaryText,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
-                  size: 20,
-                  color: _mutedText,
+                  size: 18,
+                  color: _mutedText.withAlpha(150),
                 ),
               ],
             ),
@@ -666,7 +778,7 @@ class _HomeState extends State<Home> {
   }
 
   //on sync
-  sync() async {
+  Future<void> sync() async {
     if (!syncPressed) {
       syncPressed = true;
       showDialog(
@@ -700,16 +812,21 @@ class _HomeState extends State<Home> {
   Widget paymentDetails() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: _surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: _outline),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _outline, width: 0.5),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 28,
-            offset: Offset(0, 10),
+            color: Color(0x08000000),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 24,
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -719,17 +836,21 @@ class _HomeState extends State<Home> {
           Text(
             AppLocalizations.of(context).translate('payment_details'),
             style: themeData.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: _primaryText,
+              letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           if (method.isEmpty)
-            Text(
-              'No payment data available yet.',
-              style: themeData.textTheme.bodyMedium?.copyWith(
-                color: _mutedText,
-                fontWeight: FontWeight.w500,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'No payment data available yet.',
+                style: themeData.textTheme.bodyMedium?.copyWith(
+                  color: _mutedText,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
           ListView.builder(
@@ -739,27 +860,27 @@ class _HomeState extends State<Home> {
             shrinkWrap: true,
             itemBuilder: (context, index) {
               return Container(
-                margin: const EdgeInsets.only(bottom: 10),
+                margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
+                  horizontal: 14,
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFAFBFD),
+                  color: const Color(0xFFF8FAFD),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _outline),
+                  border: Border.all(color: _outline, width: 0.5),
                 ),
                 child: Row(
                   children: [
                     Container(
-                      width: 6,
-                      height: 30,
+                      width: 4,
+                      height: 28,
                       decoration: BoxDecoration(
-                        color: _accent.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(8),
+                        color: _accent,
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         method[index]['key'],
@@ -773,7 +894,8 @@ class _HomeState extends State<Home> {
                       '$businessSymbol ${Helper().formatCurrency(method[index]['value'])}',
                       style: themeData.textTheme.bodyMedium?.copyWith(
                         color: _primaryText,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.2,
                       ),
                     ),
                   ],
@@ -787,7 +909,7 @@ class _HomeState extends State<Home> {
   }
 
   //get permission
-  getPermission() async {
+  Future<void> getPermission() async {
     List<PermissionStatus> status = [
       await Permission.location.status,
       await Permission.storage.status,
@@ -832,7 +954,7 @@ class _HomeState extends State<Home> {
         );
         var paidAmount = 0.0;
         var returnAmount = 0.0;
-        payment.forEach((element) {
+        for (var element in payment) {
           if (element['is_return'] == 0) {
             paidAmount += element['amount'];
             payments.add({
@@ -842,7 +964,7 @@ class _HomeState extends State<Home> {
           } else {
             returnAmount += element['amount'];
           }
-        });
+        }
         totalSalesAmount = (totalSalesAmount + sell['invoice_amount']);
         totalReceivedAmount =
             (totalReceivedAmount + (paidAmount - returnAmount));
@@ -853,7 +975,7 @@ class _HomeState extends State<Home> {
   }
 
   //load payment details
-  loadPaymentDetails() async {
+  Future<void> loadPaymentDetails() async {
     var paymentMethod = [];
     //fetch different payment methods
     await System().get('payment_methods').then((value) {
@@ -867,7 +989,7 @@ class _HomeState extends State<Home> {
 
     await loadStatistics().then((value) {
       Future.delayed(Duration(seconds: 1), () {
-        payments.forEach((row) {
+        for (var row in payments) {
           if (row['key'] == 'cash') {
             byCash += row['value'];
           }
@@ -898,26 +1020,34 @@ class _HomeState extends State<Home> {
           if (row['key'] == 'custom_pay_3') {
             byCustomPayment_3 += row['value'];
           }
-        });
-        paymentMethod.forEach((row) {
-          if (byCash > 0 && row['key'] == 'cash')
+        }
+        for (var row in paymentMethod) {
+          if (byCash > 0 && row['key'] == 'cash') {
             method.add({'key': row['value'], 'value': byCash});
-          if (byCard > 0 && row['key'] == 'card')
+          }
+          if (byCard > 0 && row['key'] == 'card') {
             method.add({'key': row['value'], 'value': byCard});
-          if (byCheque > 0 && row['key'] == 'cheque')
+          }
+          if (byCheque > 0 && row['key'] == 'cheque') {
             method.add({'key': row['value'], 'value': byCheque});
-          if (byBankTransfer > 0 && row['key'] == 'bank_transfer')
+          }
+          if (byBankTransfer > 0 && row['key'] == 'bank_transfer') {
             method.add({'key': row['value'], 'value': byBankTransfer});
-          if (byOther > 0 && row['key'] == 'other')
+          }
+          if (byOther > 0 && row['key'] == 'other') {
             method.add({'key': row['value'], 'value': byOther});
-          if (byCustomPayment_1 > 0 && row['key'] == 'custom_pay_1')
+          }
+          if (byCustomPayment_1 > 0 && row['key'] == 'custom_pay_1') {
             method.add({'key': row['value'], 'value': byCustomPayment_1});
-          if (byCustomPayment_2 > 0 && row['key'] == 'custom_pay_2')
+          }
+          if (byCustomPayment_2 > 0 && row['key'] == 'custom_pay_2') {
             method.add({'key': row['value'], 'value': byCustomPayment_2});
-          if (byCustomPayment_3 > 0 && row['key'] == 'custom_pay_3')
+          }
+          if (byCustomPayment_3 > 0 && row['key'] == 'custom_pay_3') {
             method.add({'key': row['value'], 'value': byCustomPayment_3});
-        });
-        if (this.mounted) {
+          }
+        }
+        if (mounted) {
           setState(() {});
         }
       });

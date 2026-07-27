@@ -17,11 +17,12 @@ import '../../helpers/icons.dart';
 import '../../helpers/otherHelpers.dart';
 import '../../locale/MyLocalizations.dart';
 import 'package:flutter_flip_card/flutter_flip_card.dart';
-import '../../pages/elements.dart';
 
 part 'cart/cart_state.dart';
 
 class Cart extends StatefulWidget {
+  const Cart({super.key});
+
   @override
   CartState createState() => CartState();
 }

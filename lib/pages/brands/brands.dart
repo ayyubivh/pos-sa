@@ -17,45 +17,47 @@ class BrandsScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => BrandsCubit()..getBrands(),
       child: Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            elevation: 0,
-            title: Text(AppLocalizations.of(context).translate('brands'),
-                style: AppTheme.getTextStyle(themeData.textTheme.titleLarge,
-                    fontWeight: 600)),
+        appBar: AppBar(
+          centerTitle: true,
+          elevation: 0,
+          title: Text(
+            AppLocalizations.of(context).translate('brands'),
+            style: AppTheme.getTextStyle(
+              themeData.textTheme.titleLarge,
+              fontWeight: 600,
+            ),
           ),
-          body: BlocBuilder<BrandsCubit, BrandsState>(
-            builder: (context, state) {
-              if (state is BrandsGetDataFailure)
-                return Center(
-                  child: Text(state.errorMessage),
-                );
-              else if (state is BrandsGetDataSuccessful) {
-                if(state.brandsModel.isEmpty){
-                  return Helper().noDataWidget(context);
-                }
-                return ListView.builder(
-                    itemCount: state.brandsModel.length,
-                    itemBuilder: (context, index) => Card(
-                          color: Color(0xffedecf2),
-                          elevation: 5,
-                          child: Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: ListTile(
-                              leading: Icon(Icons.category_outlined),
-                              title: Text(state.brandsModel[index].name),
-                              subtitle: Text(
-                                  state.brandsModel[index].description ??
-                                      ''),
-                            ),
-                          ),
-                        ));
+        ),
+        body: BlocBuilder<BrandsCubit, BrandsState>(
+          builder: (context, state) {
+            if (state is BrandsGetDataFailure) {
+              return Center(child: Text(state.errorMessage));
+            } else if (state is BrandsGetDataSuccessful) {
+              if (state.brandsModel.isEmpty) {
+                return Helper().noDataWidget(context);
               }
-              return Center(
-                child: CircularProgressIndicator(),
+              return ListView.builder(
+                itemCount: state.brandsModel.length,
+                itemBuilder: (context, index) => Card(
+                  color: Color(0xffedecf2),
+                  elevation: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: ListTile(
+                      leading: Icon(Icons.category_outlined),
+                      title: Text(state.brandsModel[index].name),
+                      subtitle: Text(
+                        state.brandsModel[index].description ?? '',
+                      ),
+                    ),
+                  ),
+                ),
               );
-            },
-          )),
+            }
+            return Center(child: CircularProgressIndicator());
+          },
+        ),
+      ),
     );
   }
 }

@@ -126,6 +126,14 @@
   "contact_payment": "حسابات العملاء",
   "payments": "اضافه بيع",
   "reports": "تقارير",
+  "sales_overview": "نظرة عامة على المبيعات",
+  "total_sales": "إجمالي المبيعات",
+  "transactions": "المعاملات",
+  "avg_per_day": "المتوسط / يوم",
+  "last_7_days": "٧ أيام",
+  "last_30_days": "٣٠ يوم",
+  "last_90_days": "٩٠ يوم",
+  "no_sales_data": "لا توجد بيانات مبيعات لهذه الفترة",
   "add_quotation": "إضافة عرض سعر",
   "quotation": "عرض السعر",
   "save": "حفظ",
@@ -338,5 +346,10 @@
   "new_password": "كلمه المرور الجديده",
   "log_out": "تسجيل الخروج",
   "add_customer_success": "تم اضافه العميل بنجاح",
-  "purchases": "المشتريات"
+  "purchases": "المشتريات",
+  "edit_price": "تعديل السعر",
+  "direct_checkout": "الانتقال المباشر",
+  "select_printer": "اختر الطابعة",
+  "printer_theming": "الطابعة الحرارية",
+  "a4_printer": "طابعة A4"
 }

@@ -22,6 +22,9 @@ class Config {
       currencyPrecision = 2,
       callLogSyncDuration = 30;
 
+  // Print paper size: '80mm', '56mm', or 'card'
+  static String printPaperSize = '80mm';
+
   //List of locale language code
   List locale = [
     'en',
@@ -64,6 +67,8 @@ class Config {
     // {'languageCode': 'it', 'countryCode': '', 'name': 'italian'},
     // {'languageCode': 'my', 'countryCode': '', 'name': 'မြန်မာ'},
   ];
+
+  static String printerType = 'Thermal';
 
   //final initialPosition = LatLng(20.46752985010792, 82.92005813910752);
   final String googleAPIKey = 'AIzaSyDtorf5cQD5g7V4K2R0JVl8DcnnqiZS5Qw';

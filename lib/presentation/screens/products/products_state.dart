@@ -12,7 +12,9 @@ class _ProductsState extends State<Products> {
       gridView = false,
       canAddSell = false,
       canViewProducts = false,
-      usePriceGroup = true;
+      usePriceGroup = true,
+      directCheckout = false,
+      isLoading = false;
 
   int selectedLocationId = 0,
       categoryId = 0,
@@ -21,6 +23,7 @@ class _ProductsState extends State<Products> {
       cartCount = 0,
       sellingPriceGroupId = 0,
       offset = 0;
+  bool canEditPrice = false;
   int? byAlphabets, byPrice;
 
   List<DropdownMenuItem<int>> _categoryMenuItems = [],
@@ -40,6 +43,17 @@ class _ProductsState extends State<Products> {
   final _formKey = GlobalKey<FormState>();
   final ScrollController _scrollController = ScrollController();
 
+  bool _canAddProductToCart(Map<String, dynamic>? product) {
+    if (product == null) return false;
+
+    final enableStock = int.tryParse(product['enable_stock'].toString()) ?? 0;
+    if (enableStock == 0) return true;
+
+    final stockAvailable =
+        double.tryParse(product['stock_available'].toString()) ?? 0;
+    return stockAvailable > 0;
+  }
+
   @override
   void dispose() {
     searchController.dispose();
@@ -57,7 +71,7 @@ class _ProductsState extends State<Products> {
         productList();
       }
     });
-    setLocationMap();
+
     categoryList();
     subCategoryList(categoryId);
     brandList();
@@ -66,26 +80,26 @@ class _ProductsState extends State<Products> {
 
   @override
   Future<void> didChangeDependencies() async {
-    argument = ModalRoute.of(context)!.settings.arguments as Map?;
+    var newArgument = ModalRoute.of(context)!.settings.arguments as Map?;
+    int initLocationId = selectedLocationId;
+
     //Arguments sellId & locationId is send from edit.
-    if (argument != null) {
-      Future.delayed(Duration(milliseconds: 200), () {
-        if (mounted) {
-          setState(() {
-            selectedLocationId = argument!['locationId'];
-            canChangeLocation = false;
-          });
-        }
-      });
+    if (newArgument != null) {
+      argument = newArgument;
+      initLocationId = newArgument['locationId'];
+      canChangeLocation = false;
+      // We set the location synchronously here so that the initial product
+      // load (setInitDetails) correctly fetches products for this location.
+      selectedLocationId = initLocationId;
     } else {
       canChangeLocation = true;
     }
-    await setInitDetails(selectedLocationId);
+    await setInitDetails(initLocationId);
     super.didChangeDependencies();
   }
 
   //Set location & product
-  Future<void> setInitDetails(selectedLocationId) async {
+  Future<void> setInitDetails(int initLocationId) async {
     //check subscription
     var activeSubscriptionDetails = await System().get('active-subscription');
     if (activeSubscriptionDetails.length > 0) {
@@ -100,10 +114,15 @@ class _ProductsState extends State<Products> {
     await Helper().getFormattedBusinessDetails().then((value) {
       symbol = value['symbol'] + ' ';
     });
-    setDefaultLocation(selectedLocationId);
+    await setLocationMap();
+    setDefaultLocation(initLocationId);
+    await priceGroupList();
     products = [];
     offset = 0;
-    productList();
+    // Ensure that if we have a selected location we fetch products right away
+    if (selectedLocationId != 0) {
+      productList();
+    }
   }
 
   //Fetch permission from database
@@ -114,6 +133,9 @@ class _ProductsState extends State<Products> {
     if (await Helper().getPermission("product.view")) {
       canViewProducts = true;
     }
+    canEditPrice = await Helper().getPermission(
+      "edit_product_price_from_pos_screen",
+    );
   }
 
   //set selling Price Group Id
@@ -137,21 +159,15 @@ class _ProductsState extends State<Products> {
 
   //set product list
   Future<void> productList() async {
-    offset++;
-    //check last sync, if difference is 10 minutes then sync again.
-    String? lastSync = await System().getProductLastSync();
-    final date2 = DateTime.now();
-    if (lastSync == null ||
-        (date2.difference(DateTime.parse(lastSync)).inMinutes > 10)) {
-      if (await Helper().checkConnectivity()) {
-        await Variations().refresh();
-        await System().insertProductLastSyncDateTimeNow();
-      }
+    if (offset == 0) {
+      if (mounted) setState(() => isLoading = true);
     }
+    offset++;
+    // We removed the 10 minute bulk sync because we are fetching live from the API on demand.
 
     findSellingPriceGroupId(selectedLocationId);
     await Variations()
-        .get(
+        .getFromApi(
           brandId: brandId,
           categoryId: categoryId,
           subCategoryId: subCategoryId,
@@ -163,19 +179,27 @@ class _ProductsState extends State<Products> {
           byPrice: byPrice,
         )
         .then((element) {
-          element.forEach((product) {
-            double price = 0;
-            if (product['selling_price_group'] != null) {
-              jsonDecode(product['selling_price_group']).forEach((element) {
-                if (element['key'] == sellingPriceGroupId) {
-                  price = double.parse(element['value'].toString());
-                }
+          if (mounted) {
+            setState(() {
+              if (offset == 1) {
+                products = []; // Just to be safe for initial clear
+              }
+              isLoading = false;
+            });
+            for (var product in element) {
+              double price = 0;
+              if (product['selling_price_group'] != null) {
+                jsonDecode(product['selling_price_group']).forEach((e) {
+                  if (e['key'] == sellingPriceGroupId) {
+                    price = double.parse(e['value'].toString());
+                  }
+                });
+              }
+              setState(() {
+                products.add(ProductModel().product(product, price));
               });
             }
-            setState(() {
-              products.add(ProductModel().product(product, price));
-            });
-          });
+          }
         });
   }
 
@@ -246,9 +270,12 @@ class _ProductsState extends State<Products> {
         ),
       );
 
+      bool hasPriceGroup = false;
+
       for (var element in locationListMap) {
         if (element['id'] == selectedLocationId &&
             element['selling_price_group_id'] != null) {
+          hasPriceGroup = true;
           _priceGroupMenuItems.add(
             DropdownMenuItem(
               value: true,
@@ -258,6 +285,10 @@ class _ProductsState extends State<Products> {
             ),
           );
         }
+      }
+
+      if (!hasPriceGroup && usePriceGroup) {
+        usePriceGroup = false;
       }
     });
   }
@@ -446,9 +477,9 @@ class _ProductsState extends State<Products> {
                           isSelected: byAlphabets != null,
                           onTap: () {
                             setState(() {
-                              if (byAlphabets == null)
+                              if (byAlphabets == null) {
                                 byAlphabets = 0;
-                              else if (byAlphabets == 0)
+                              } else if (byAlphabets == 0)
                                 byAlphabets = 1;
                               else
                                 byAlphabets = null;
@@ -466,9 +497,9 @@ class _ProductsState extends State<Products> {
                           isSelected: byPrice != null,
                           onTap: () {
                             setState(() {
-                              if (byPrice == null)
+                              if (byPrice == null) {
                                 byPrice = 0;
-                              else if (byPrice == 0)
+                              } else if (byPrice == 0)
                                 byPrice = 1;
                               else
                                 byPrice = null;
@@ -488,6 +519,14 @@ class _ProductsState extends State<Products> {
                       (val) {
                         setState(() => inStock = val);
                         refreshProducts();
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    _buildSwitchTile(
+                      AppLocalizations.of(context).translate('direct_checkout'),
+                      directCheckout,
+                      (val) {
+                        setState(() => directCheckout = val);
                       },
                     ),
                     SizedBox(height: 16),
@@ -584,7 +623,7 @@ class _ProductsState extends State<Products> {
       decoration: BoxDecoration(
         color: kSurfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: kOutlineColor),
+        border: Border.all(color: kOutlineColor, width: 0.5),
       ),
       child: SwitchListTile(
         title: Text(
@@ -597,6 +636,8 @@ class _ProductsState extends State<Products> {
         value: value,
         onChanged: onChanged,
         activeThumbColor: kDefaultColor,
+        contentPadding: EdgeInsets.symmetric(horizontal: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -624,7 +665,7 @@ class _ProductsState extends State<Products> {
           decoration: BoxDecoration(
             color: kSurfaceColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kOutlineColor),
+            border: Border.all(color: kOutlineColor, width: 0.5),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<T>(
@@ -632,7 +673,12 @@ class _ProductsState extends State<Products> {
               value: value,
               items: items,
               onChanged: onChanged,
-              icon: Icon(Icons.keyboard_arrow_down, color: kMutedTextColor),
+              icon: Icon(
+                Icons.keyboard_arrow_down,
+                color: kMutedTextColor,
+                size: 20,
+              ),
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
         ),
@@ -665,12 +711,12 @@ class _ProductsState extends State<Products> {
                     vertical: 12,
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: kOutlineColor, width: 0.5),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: kDefaultColor, width: 1),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: kDefaultColor, width: 1.5),
                   ),
                 ),
                 onEditingComplete: () {
@@ -715,13 +761,13 @@ class _ProductsState extends State<Products> {
           )
           .then((value) async {
             if (canAddSell) {
-              if (value.length > 0) {
+              if (value.isNotEmpty) {
                 double price = 0;
                 var product;
                 if (value[0]['selling_price_group'] != null) {
-                  jsonDecode(value[0]['selling_price_group']).forEach((
-                    element,
-                  ) {
+                  jsonDecode(
+                    value[0]['selling_price_group'].toString(),
+                  ).forEach((element) {
                     if (element['key'] == sellingPriceGroupId) {
                       price = double.parse(element['value'].toString());
                     }
@@ -730,7 +776,7 @@ class _ProductsState extends State<Products> {
                 setState(() {
                   product = ProductModel().product(value[0], price);
                 });
-                if (product != null && product['stock_available'] > 0) {
+                if (_canAddProductToCart(product)) {
                   Fluttertoast.showToast(
                     msg: AppLocalizations.of(
                       context,
@@ -771,6 +817,25 @@ class _ProductsState extends State<Products> {
   }
 
   Widget _productsList() {
+    if (isLoading && products.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: kDefaultColor),
+            SizedBox(height: 16),
+            Text(
+              AppLocalizations.of(context).translate('sync_in_progress'),
+              style: AppTheme.getTextStyle(
+                themeData.textTheme.bodyMedium,
+                color: kMutedTextColor,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (products.isEmpty) {
       return Center(
         child: Column(
@@ -806,6 +871,12 @@ class _ProductsState extends State<Products> {
                 product: products[index],
                 symbol: symbol,
                 onTap: () => onTapProduct(index),
+                canEditPrice: canEditPrice,
+                onEditPrice: (newPrice) {
+                  setState(() {
+                    products[index]['unit_price'] = newPrice;
+                  });
+                },
               );
             },
           )
@@ -819,6 +890,12 @@ class _ProductsState extends State<Products> {
                 product: products[index],
                 symbol: symbol,
                 onTap: () => onTapProduct(index),
+                canEditPrice: canEditPrice,
+                onEditPrice: (newPrice) {
+                  setState(() {
+                    products[index]['unit_price'] = newPrice;
+                  });
+                },
               );
             },
           );
@@ -828,7 +905,7 @@ class _ProductsState extends State<Products> {
   Future<void> onTapProduct(int index) async {
     if (canAddSell) {
       if (canMakeSell) {
-        if (products[index]['stock_available'] > 0) {
+        if (_canAddProductToCart(Map<String, dynamic>.from(products[index]))) {
           Fluttertoast.showToast(
             msg: AppLocalizations.of(context).translate('added_to_cart'),
           );
@@ -838,6 +915,13 @@ class _ProductsState extends State<Products> {
           );
           if (argument != null) {
             selectedLocationId = argument!['locationId'];
+          }
+          if (directCheckout) {
+            Navigator.pushNamed(
+              context,
+              '/cart',
+              arguments: Helper().argument(locId: selectedLocationId),
+            );
           }
         } else {
           Fluttertoast.showToast(
@@ -857,6 +941,12 @@ class _ProductsState extends State<Products> {
   }
 
   Future<void> setLocationMap() async {
+    setState(() {
+      locationListMap = [
+        {'id': 0, 'name': 'set location', 'selling_price_group_id': null},
+      ];
+    });
+
     await System().get('location').then((value) async {
       value.forEach((element) {
         if (element['is_active'].toString() == '1') {
@@ -890,8 +980,9 @@ class _ProductsState extends State<Products> {
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       padding: EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: kBackgroundSoftColor,
-        borderRadius: BorderRadius.circular(12),
+        color: kDefaultColor.withAlpha(10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: kDefaultColor.withAlpha(25), width: 0.5),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(

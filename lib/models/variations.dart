@@ -12,12 +12,13 @@ class Variations {
   late DbProvider dbProvider;
 
   Variations() {
-    dbProvider = new DbProvider();
+    dbProvider = DbProvider();
   }
 
   //save variations and variations_locations
-  store() async {
-    String? link = ApiEndPoints.baseUrl + Api().apiUrl + "/variation?per_page=3000&not_for_selling=0";
+  Future<void> store() async {
+    String? link =
+        "${ApiEndPoints.baseUrl}${Api().apiUrl}/variation?per_page=3000&not_for_selling=0";
     do {
       Map response = await VariationsApi().get("$link");
       List products = await response['products'];
@@ -26,7 +27,7 @@ class Variations {
       List processedProductIds = [];
 
       //save variations
-      products.forEach((variation) {
+      for (var variation in products) {
         Map<String, dynamic> tempProduct = {};
         tempProduct['product_id'] = variation['product_id'];
         tempProduct['variation_id'] = variation['variation_id'];
@@ -34,7 +35,8 @@ class Variations {
         tempProduct['product_variation_name'] =
             variation['product_variation_name'];
         tempProduct['variation_name'] = variation['variation_name'];
-        tempProduct['display_name'] = variation['product_name'] +
+        tempProduct['display_name'] =
+            variation['product_name'] +
             " " +
             variation['product_variation_name'] +
             " " +
@@ -57,7 +59,7 @@ class Variations {
           variation['selling_price_group'].forEach((group) {
             groupId.add({
               'key': group['price_group_id'],
-              'value': group['price_inc_tax']
+              'value': group['price_inc_tax'],
             });
           });
           tempProduct['selling_price_group'] = jsonEncode(groupId);
@@ -67,7 +69,7 @@ class Variations {
           if (!processedProductIds.contains(variation['product_id'])) {
             var tempProductLocation = {
               'product_id': variation['product_id'],
-              'location_id': value['id']
+              'location_id': value['id'],
             };
             batch.insert('product_locations', tempProductLocation);
           }
@@ -81,30 +83,32 @@ class Variations {
             tempProductDetail['product_id'] = variationDetail['product_id'];
             tempProductDetail['variation_id'] = variationDetail['variation_id'];
             tempProductDetail['location_id'] = variationDetail['location_id'];
-            tempProductDetail['qty_available'] =
-                double.parse(variationDetail['qty_available']);
+            tempProductDetail['qty_available'] = double.parse(
+              variationDetail['qty_available'],
+            );
             batch.insert('variations_location_details', tempProductDetail);
           });
         }
         batch.insert('variations', tempProduct);
-      });
+      }
       link = response['nextLink'];
       await batch.commit(noResult: true);
     } while (link != null);
   }
 
   //get all variations
-  get(
-      {brandId,
-      categoryId,
-      subCategoryId,
-      searchTerm,
-      locationId,
-      inStock,
-      barcode,
-      offset,
-      byAlphabets,
-      byPrice}) async {
+  Future<List<Map<String, Object?>>> get({
+    brandId,
+    categoryId,
+    subCategoryId,
+    searchTerm,
+    locationId,
+    inStock,
+    barcode,
+    offset,
+    byAlphabets,
+    byPrice,
+  }) async {
     final db = await dbProvider.database;
     inStock = (inStock == null) ? false : inStock;
 
@@ -150,39 +154,135 @@ class Variations {
 
     //get product last sync datetime
     String productLastSync = await System().getProductLastSync();
-    var result = db.rawQuery('SELECT DISTINCT V.* ,'
-        'CASE WHEN (qty_available IS NULL AND enable_stock = 0) THEN 9999 '
-        'WHEN (qty_available IS NULL AND enable_stock = 1) THEN 0 '
-        'ELSE (qty_available - COALESCE('
-        ' (SELECT SUM(SL.quantity) FROM sell_lines AS SL JOIN sell AS S on SL.sell_id = S.id'
-        ' WHERE (SL.is_completed = 0 OR S.transaction_date > "$productLastSync") AND'
-        ' S.location_id = $locationId AND SL.variation_id=V.variation_id AND S.is_quotation = 0), 0))'
-        'END as "stock_available" '
-        'FROM "variations" as V '
-        'JOIN "product_locations" as PL '
-        'on (V.product_id = PL.product_id AND PL.location_id = $locationId )'
-        ' LEFT JOIN "variations_location_details" as VLD '
-        'ON V.variation_id = VLD.variation_id AND VLD.location_id = $locationId '
-        '$where ORDER BY ${order}id LIMIT 10 OFFSET ($offset-1)*10');
+    var result = db.rawQuery(
+      'SELECT DISTINCT V.* ,'
+      'CASE WHEN (qty_available IS NULL AND enable_stock = 0) THEN 9999 '
+      'WHEN (qty_available IS NULL AND enable_stock = 1) THEN 0 '
+      'ELSE (qty_available - COALESCE('
+      ' (SELECT SUM(SL.quantity) FROM sell_lines AS SL JOIN sell AS S on SL.sell_id = S.id'
+      ' WHERE (SL.is_completed = 0 OR S.transaction_date > "$productLastSync") AND'
+      ' S.location_id = $locationId AND SL.variation_id=V.variation_id AND S.is_quotation = 0), 0))'
+      'END as "stock_available" '
+      'FROM "variations" as V '
+      'JOIN "product_locations" as PL '
+      'on (V.product_id = PL.product_id AND PL.location_id = $locationId )'
+      ' LEFT JOIN "variations_location_details" as VLD '
+      'ON V.variation_id = VLD.variation_id AND VLD.location_id = $locationId '
+      '$where ORDER BY ${order}id LIMIT 10 OFFSET ($offset-1)*10',
+    );
+    return result;
+  }
+
+  //get variations from API directly
+  Future<List<Map<String, dynamic>>> getFromApi({
+    brandId,
+    categoryId,
+    subCategoryId,
+    searchTerm,
+    locationId,
+    inStock,
+    barcode,
+    offset,
+    byAlphabets,
+    byPrice,
+  }) async {
+    inStock = (inStock == null) ? false : inStock;
+    String url =
+        "${ApiEndPoints.baseUrl}${Api().apiUrl}/variation?per_page=10&page=$offset";
+
+    if (locationId != null && locationId != 0) {
+      url += "&location_id=$locationId";
+    }
+    if (brandId != null && brandId != 0) url += "&brand_id=$brandId";
+    if (categoryId != null && categoryId != 0) {
+      url += "&category_id=$categoryId";
+    }
+    if (subCategoryId != null && subCategoryId != 0) {
+      url += "&sub_category_id=$subCategoryId";
+    }
+    if (searchTerm != null && searchTerm.length > 0) url += "&name=$searchTerm";
+
+    // We fetch from network
+    var response = await VariationsApi().get(url);
+    List products = response['products'] ?? [];
+    List<Map<String, dynamic>> result = [];
+
+    for (var variation in products) {
+      double stockAvailable = 0;
+      if (variation['variation_location_details'] != null &&
+          variation['variation_location_details'].length > 0) {
+        for (var loc in variation['variation_location_details']) {
+          if (loc['location_id'].toString() == locationId.toString()) {
+            stockAvailable =
+                double.tryParse(loc['qty_available'].toString()) ?? 0;
+          }
+        }
+      }
+
+      // If filtering by stock
+      if (inStock && stockAvailable <= 0 && variation['enable_stock'] == 1) {
+        continue;
+      }
+
+      String displayName = "";
+      if (variation['product_name'] != null) {
+        displayName += variation['product_name'] + " ";
+      }
+      if (variation['product_variation_name'] != null) {
+        displayName += variation['product_variation_name'] + " ";
+      }
+      if (variation['variation_name'] != null) {
+        displayName += variation['variation_name'];
+      }
+
+      result.add({
+        'product_id': variation['product_id'],
+        'variation_id': variation['variation_id'],
+        'product_name': variation['product_name'],
+        'display_name': displayName.trim(),
+        'sku': variation['sku'],
+        'sub_sku': variation['sub_sku'],
+        'enable_stock': variation['enable_stock'],
+        'tax_id': variation['tax_id'],
+        'sell_price_inc_tax': variation['sell_price_inc_tax'],
+        'product_image_url': variation['product_image_url'],
+        'selling_price_group': variation['selling_price_group'] != null
+            ? jsonEncode(
+                variation['selling_price_group']
+                    .map(
+                      (group) => {
+                        'key': group['price_group_id'],
+                        'value': group['price_inc_tax'],
+                      },
+                    )
+                    .toList(),
+              )
+            : null,
+        'stock_available': stockAvailable,
+      });
+    }
+
     return result;
   }
 
   //total no. of rows in variations table
-  checkProductTable({var locationId}) async {
+  Future<int> checkProductTable({var locationId}) async {
     final db = await dbProvider.database;
     var res = (locationId != null)
-        ? await db.rawQuery('SELECT count(*)'
+        ? await db.rawQuery(
+            'SELECT count(*)'
             'FROM "variations" as V '
             'JOIN "product_locations" as PL '
             'on (V.product_id = PL.product_id AND PL.location_id = $locationId )'
             ' LEFT JOIN "variations_location_details" as VLD '
-            'ON V.variation_id = VLD.variation_id AND VLD.location_id = $locationId ')
+            'ON V.variation_id = VLD.variation_id AND VLD.location_id = $locationId ',
+          )
         : await db.rawQuery("SELECT count(*) FROM variations", null);
-    return res[0]['count(*)'];
+    return Sqflite.firstIntValue(res) ?? 0;
   }
 
-//  refresh variations and variations_locations
-  refresh() async {
+  //  refresh variations and variations_locations
+  Future<void> refresh() async {
     var count = await checkProductTable();
     if (count > 0) {
       deleteVariationDetails().then((value) async {
@@ -194,7 +294,7 @@ class Variations {
   }
 
   //empty variations
-  deleteVariationDetails() async {
+  Future<void> deleteVariationDetails() async {
     final db = await dbProvider.database;
     await db.rawQuery("DELETE FROM variations");
     await db.rawQuery("DELETE FROM variations_location_details");

@@ -8,8 +8,8 @@ class CartState extends State<Cart> {
   Map? argument = {};
   String symbol = '';
   var sellDetail, selectedDiscountType = "fixed";
-  final discountController = new TextEditingController();
-  final searchController = new TextEditingController();
+  final discountController = TextEditingController();
+  final searchController = TextEditingController();
   var invoiceAmount,
       taxListMap = [
         {'id': 0, 'name': 'Tax rate', 'amount': 0},
@@ -43,7 +43,7 @@ class CartState extends State<Cart> {
     super.dispose();
   }
 
-  cartList() async {
+  Future<void> cartList() async {
     cartItems = [];
     (argument!['sellId'] != null)
         ? cartItems = await SellDatabase().getInCompleteLines(
@@ -53,7 +53,7 @@ class CartState extends State<Cart> {
         : cartItems = await SellDatabase().getInCompleteLines(
             argument!['locationId'],
           );
-    if (this.mounted) {
+    if (mounted) {
       setState(() {
         if (editItem == null) {
           proceedNext = true;
@@ -62,7 +62,7 @@ class CartState extends State<Cart> {
     }
   }
 
-  editCart(sellId) async {
+  Future<void> editCart(sellId) async {
     sellDetail = await SellDatabase().getSellBySellId(sellId);
     selectedTaxId = (sellDetail[0]['tax_rate_id'] != null)
         ? sellDetail[0]['tax_rate_id']
@@ -72,7 +72,7 @@ class CartState extends State<Cart> {
     discountAmount = sellDetail[0]['discount_amount'];
     discountController.text = discountAmount.toString();
     calculateSubtotal(selectedTaxId, selectedDiscountType, discountAmount);
-    if (this.mounted) {
+    if (mounted) {
       setState(() {});
     }
   }
@@ -152,7 +152,7 @@ class CartState extends State<Cart> {
             Container(
               height: MySize.safeHeight! * 0.65,
               color: customAppTheme.bgLayer1,
-              child: (cartItems.length > 0)
+              child: (cartItems.isNotEmpty)
                   ? itemList()
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -196,10 +196,7 @@ class CartState extends State<Cart> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
                                 Text(
-                                  AppLocalizations.of(
-                                        context,
-                                      ).translate('discount') +
-                                      ' : ',
+                                  '${AppLocalizations.of(context).translate('discount')} : ',
                                   style: AppTheme.getTextStyle(
                                     themeData.textTheme.bodyLarge,
                                     color: Colors.white,
@@ -208,32 +205,50 @@ class CartState extends State<Cart> {
                                   ),
                                 ),
                                 discount(),
+                                SizedBox(width: MySize.size12),
                                 Expanded(
-                                  child: Container(
-                                    height: MySize.size50,
+                                  child: SizedBox(
+                                    height: MySize.size60,
                                     child: TextFormField(
                                       cursorColor: Colors.white,
                                       controller: discountController,
                                       decoration: InputDecoration(
-                                        labelStyle: TextStyle(
-                                          color: Colors.grey[400],
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.symmetric(
+                                          vertical: MySize.size12!,
+                                          horizontal: MySize.size12!,
                                         ),
+                                        labelStyle: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: MySize.size14,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.white.withAlpha(50),
                                         enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            MySize.size8!,
+                                          ),
                                           borderSide: BorderSide(
                                             width: 1,
-                                            color: Colors.grey,
-                                          ), //<-- SEE HERE
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color: Colors.white,
-                                            width: 2.0,
+                                            color: Colors.white24,
                                           ),
                                         ),
-                                        prefix: Text(
-                                          (selectedDiscountType == 'fixed')
-                                              ? symbol
-                                              : '',
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            MySize.size8!,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Colors.white,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        prefixText:
+                                            (selectedDiscountType == 'fixed')
+                                            ? symbol
+                                            : '',
+                                        prefixStyle: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                         labelText: AppLocalizations.of(
                                           context,
@@ -241,7 +256,7 @@ class CartState extends State<Cart> {
                                       ),
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontWeight: FontWeight.w400,
+                                        fontWeight: FontWeight.w500,
                                         letterSpacing: -0.2,
                                       ),
                                       textAlign: TextAlign.end,
@@ -262,12 +277,7 @@ class CartState extends State<Cart> {
                                                   maxDiscountValue!) {
                                             Fluttertoast.showToast(
                                               msg:
-                                                  AppLocalizations.of(
-                                                    context,
-                                                  ).translate(
-                                                    'discount_error_message',
-                                                  ) +
-                                                  " $maxDiscountValue",
+                                                  "${AppLocalizations.of(context).translate('discount_error_message')} $maxDiscountValue",
                                             );
                                             proceedNext = false;
                                           } else {
@@ -281,6 +291,7 @@ class CartState extends State<Cart> {
                               ],
                             ),
                           ),
+                          SizedBox(height: MySize.size16),
                           Container(
                             padding: EdgeInsets.only(
                               left: MySize.size24!,
@@ -290,10 +301,7 @@ class CartState extends State<Cart> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
                                 Text(
-                                  AppLocalizations.of(
-                                        context,
-                                      ).translate('tax') +
-                                      ' : ',
+                                  '${AppLocalizations.of(context).translate('tax')} : ',
                                   style: AppTheme.getTextStyle(
                                     themeData.textTheme.bodyLarge,
                                     color: Colors.white,
@@ -303,10 +311,7 @@ class CartState extends State<Cart> {
                                 ),
                                 taxes(),
                                 Text(
-                                  AppLocalizations.of(
-                                        context,
-                                      ).translate('total') +
-                                      ' : ',
+                                  '${AppLocalizations.of(context).translate('total')} : ',
                                   style: AppTheme.getTextStyle(
                                     themeData.textTheme.titleMedium,
                                     fontWeight: 700,
@@ -334,28 +339,56 @@ class CartState extends State<Cart> {
                           ),
                           Visibility(
                             visible:
-                                (cartItems.length > 0 && proceedNext == true),
-                            child: cartBottomBar(
-                              '/customer',
-                              AppLocalizations.of(
-                                context,
-                              ).translate('customer'),
-                              context,
-                              Helper().argument(
-                                locId: argument!['locationId'],
-                                taxId: selectedTaxId,
-                                discountType: selectedDiscountType,
-                                discountAmount: discountAmount,
-                                invoiceAmount: calculateSubtotal(
-                                  selectedTaxId,
-                                  selectedDiscountType,
-                                  discountAmount,
+                                (cartItems.isNotEmpty && proceedNext == true),
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.only(top: MySize.size16!),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/customer',
+                                    arguments: Helper().argument(
+                                      locId: argument!['locationId'],
+                                      taxId: selectedTaxId,
+                                      discountType: selectedDiscountType,
+                                      discountAmount: discountAmount,
+                                      invoiceAmount: calculateSubtotal(
+                                        selectedTaxId,
+                                        selectedDiscountType,
+                                        discountAmount,
+                                      ),
+                                      sellId: argument!['sellId'],
+                                      isQuotation: argument!['is_quotation'],
+                                      customerId: (argument!['sellId'] != null)
+                                          ? selectedContactId
+                                          : null,
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Color(0xff3C6255),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: MySize.size14!,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      MySize.size12!,
+                                    ),
+                                  ),
+                                  elevation: 0,
                                 ),
-                                sellId: argument!['sellId'],
-                                isQuotation: argument!['is_quotation'],
-                                customerId: (argument!['sellId'] != null)
-                                    ? selectedContactId
-                                    : null,
+                                child: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate('continue').toUpperCase(),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: MySize.size14,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -382,10 +415,7 @@ class CartState extends State<Cart> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
                                 Text(
-                                  AppLocalizations.of(
-                                        context,
-                                      ).translate('sub_total') +
-                                      ' : ',
+                                  '${AppLocalizations.of(context).translate('sub_total')} : ',
                                   style: AppTheme.getTextStyle(
                                     themeData.textTheme.titleMedium,
                                     fontWeight: 700,
@@ -406,13 +436,45 @@ class CartState extends State<Cart> {
                               ],
                             ),
                           ),
-                          TextButton(
+                          SizedBox(height: MySize.size16),
+                          ElevatedButton(
                             onPressed: () {
                               cong1.flipcard();
                             },
-                            child: Text(
-                              "Continue",
-                              style: TextStyle(color: Colors.white),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white.withOpacity(0.1),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: MySize.size32!,
+                                vertical: MySize.size12!,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  MySize.size12!,
+                                ),
+                                side: BorderSide(color: Colors.white30),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).translate("continue").toUpperCase(),
+                                  style: TextStyle(
+                                    fontSize: MySize.size14,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                SizedBox(width: MySize.size8),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: MySize.size12,
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -482,7 +544,7 @@ class CartState extends State<Cart> {
   }
 
   //show items dialog list
-  itemDialog(List items) {
+  void itemDialog(List items) {
     showDialog(
       barrierDismissible: true,
       context: context,
@@ -495,7 +557,7 @@ class CartState extends State<Cart> {
             width: MySize.screenWidth! * 0.8,
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: (items.length != 0) ? items.length : 0,
+              itemCount: (items.isNotEmpty) ? items.length : 0,
               itemBuilder: ((context, index) {
                 return Card(
                   elevation: 4,
@@ -590,12 +652,14 @@ class CartState extends State<Cart> {
           locationId: argument!['locationId'],
           offset: 0,
           inStock: true,
-          searchTerm: '$searchText',
+          searchTerm: searchText,
         )
         .then((value) {
-          value.forEach((element) {
+          for (var element in value) {
             if (element['selling_price_group'] != null) {
-              jsonDecode(element['selling_price_group']).forEach((element) {
+              jsonDecode(element['selling_price_group'].toString()).forEach((
+                element,
+              ) {
                 if (element['key'] == sellingPriceGroupId) {
                   price = element['value'];
                 }
@@ -604,13 +668,13 @@ class CartState extends State<Cart> {
             setState(() {
               products.add(ProductModel().product(element, price));
             });
-          });
+          }
         });
     return products;
   }
 
   //set selling price group Id
-  getSellingPriceGroupId() async {
+  Future<void> getSellingPriceGroupId() async {
     await System().get('location').then((value) {
       value.forEach((element) {
         if (element['id'] == argument!['locationId'] &&
@@ -624,7 +688,7 @@ class CartState extends State<Cart> {
   }
 
   //add product to cart after scanning barcode
-  getScannedProduct(String barcode) async {
+  Future<void> getScannedProduct(String barcode) async {
     await Variations()
         .get(
           locationId: argument!['locationId'],
@@ -633,11 +697,13 @@ class CartState extends State<Cart> {
           searchTerm: '',
         )
         .then((value) async {
-          if (value.length > 0) {
+          if (value.isNotEmpty) {
             var price;
             var product;
             if (value[0]['selling_price_group'] != null) {
-              jsonDecode(value[0]['selling_price_group']).forEach((element) {
+              jsonDecode(value[0]['selling_price_group'].toString()).forEach((
+                element,
+              ) {
                 if (element['key'] == sellingPriceGroupId) {
                   price = element['value'];
                 }
@@ -755,22 +821,7 @@ class CartState extends State<Cart> {
                                               MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
-                                              AppLocalizations.of(
-                                                    context,
-                                                  ).translate('total') +
-                                                  ' : ' +
-                                                  symbol +
-                                                  Helper().formatCurrency(
-                                                    (double.parse(
-                                                          calculateInlineUnitPrice(
-                                                            cartItems[index]['unit_price'],
-                                                            cartItems[index]['tax_rate_id'],
-                                                            cartItems[index]['discount_type'],
-                                                            cartItems[index]['discount_amount'],
-                                                          ),
-                                                        ) *
-                                                        cartItems[index]['quantity']),
-                                                  ),
+                                              '${AppLocalizations.of(context).translate('total')} : $symbol${Helper().formatCurrency((double.parse(calculateInlineUnitPrice(cartItems[index]['unit_price'], cartItems[index]['tax_rate_id'], cartItems[index]['discount_type'], cartItems[index]['discount_amount'])) * cartItems[index]['quantity']))}',
                                               style: TextStyle(
                                                 color: Colors.white,
                                               ),
@@ -931,8 +982,9 @@ class CartState extends State<Cart> {
                                               if (newQuantity != "" &&
                                                   double.parse(newQuantity) >
                                                       0) {
-                                                if (!proceedNext)
+                                                if (!proceedNext) {
                                                   proceedNext = true;
+                                                }
                                                 if (cartItems[index]['stock_available'] >=
                                                     double.parse(newQuantity)) {
                                                   SellDatabase().update(
@@ -947,12 +999,7 @@ class CartState extends State<Cart> {
                                                 } else {
                                                   Fluttertoast.showToast(
                                                     msg:
-                                                        "${cartItems[index]['stock_available']}" +
-                                                        AppLocalizations.of(
-                                                          context,
-                                                        ).translate(
-                                                          'stock_available',
-                                                        ),
+                                                        "${cartItems[index]['stock_available']}${AppLocalizations.of(context).translate('stock_available')}",
                                                   );
                                                 }
                                               } else if (newQuantity == "") {
@@ -997,12 +1044,7 @@ class CartState extends State<Cart> {
                                                   cartItems[index]['stock_available'];
                                               Fluttertoast.showToast(
                                                 msg:
-                                                    "$stockAvailable" +
-                                                    AppLocalizations.of(
-                                                      context,
-                                                    ).translate(
-                                                      'stock_available',
-                                                    ),
+                                                    "$stockAvailable${AppLocalizations.of(context).translate('stock_available')}",
                                               );
                                             }
                                           },
@@ -1146,10 +1188,7 @@ class CartState extends State<Cart> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: <Widget>[
                         Text(
-                          AppLocalizations.of(
-                                context,
-                              ).translate('discount_type') +
-                              ' : ',
+                          '${AppLocalizations.of(context).translate('discount_type')} : ',
                         ),
                         inLineDiscount(index),
                       ],
@@ -1168,7 +1207,7 @@ class CartState extends State<Cart> {
                         cursorColor: Colors.white,
                         initialValue: index['discount_amount'].toString(),
                         decoration: InputDecoration(
-                          labelStyle: TextStyle(color: Colors.white),
+                          labelStyle: TextStyle(color: Colors.black),
                           prefix: Text(symbol),
                           labelText: AppLocalizations.of(
                             context,
@@ -1176,7 +1215,7 @@ class CartState extends State<Cart> {
                         ),
                         style: TextStyle(
                           fontWeight: FontWeight.w400,
-                          color: Colors.white,
+                          color: Colors.black,
                           letterSpacing: -0.2,
                         ),
                         textAlign: TextAlign.end,
@@ -1201,7 +1240,7 @@ class CartState extends State<Cart> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(AppLocalizations.of(context).translate('tax') + ' : '),
+                  Text('${AppLocalizations.of(context).translate('tax')} : '),
                   inLineTax(index),
                 ],
               ),
@@ -1212,15 +1251,27 @@ class CartState extends State<Cart> {
     );
   }
 
-  setTaxMap() {
+  void setTaxMap() {
     System().get('tax').then((value) {
-      value.forEach((element) {
-        taxListMap.add({
-          'id': element['id'],
-          'name': element['name'],
-          'amount': double.parse(element['amount'].toString()),
+      if (mounted) {
+        setState(() {
+          taxListMap = [
+            {'id': 0, 'name': 'Tax rate', 'amount': 0},
+          ];
+          final seenIds = <int>{0};
+          for (var element in value) {
+            final id = int.tryParse(element['id'].toString()) ?? 0;
+            if (id != 0 && !seenIds.contains(id)) {
+              taxListMap.add({
+                'id': id,
+                'name': element['name'],
+                'amount': double.tryParse(element['amount'].toString()) ?? 0.0,
+              });
+              seenIds.add(id);
+            }
+          }
         });
-      });
+      }
     });
   }
 
@@ -1232,7 +1283,12 @@ class CartState extends State<Cart> {
       child: DropdownButton(
         dropdownColor: Colors.white,
         icon: Icon(Icons.arrow_drop_down),
-        value: (index['tax_rate_id'] != null) ? index['tax_rate_id'] : 0,
+        value:
+            taxListMap.any(
+              (element) => element['id'] == (index['tax_rate_id'] ?? 0),
+            )
+            ? (index['tax_rate_id'] ?? 0)
+            : 0,
         items: taxListMap.map<DropdownMenuItem<int>>((Map value) {
           return DropdownMenuItem<int>(
             value: value['id'],
@@ -1277,15 +1333,22 @@ class CartState extends State<Cart> {
   Widget discount() {
     return DropdownButtonHideUnderline(
       child: DropdownButton(
-        dropdownColor: Colors.white,
-        icon: Icon(Icons.arrow_drop_down, color: Colors.white),
+        dropdownColor: Color(0xff3C6255),
+        icon: Icon(Icons.arrow_drop_down, color: Colors.white70),
         value: selectedDiscountType,
         items: <String>['fixed', 'percentage'].map<DropdownMenuItem<String>>((
           String value,
         ) {
           return DropdownMenuItem<String>(
             value: value,
-            child: Text(value, style: TextStyle(color: Colors.white)),
+            child: Text(
+              value.toUpperCase(),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: MySize.size12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           );
         }).toList(),
         onChanged: (newValue) {
@@ -1306,9 +1369,11 @@ class CartState extends State<Cart> {
   Widget taxes() {
     return DropdownButtonHideUnderline(
       child: DropdownButton(
-        dropdownColor: Colors.white,
-        icon: Icon(Icons.arrow_drop_down, color: Colors.white),
-        value: selectedTaxId,
+        dropdownColor: Color(0xff3C6255),
+        icon: Icon(Icons.arrow_drop_down, color: Colors.white70),
+        value: taxListMap.any((element) => element['id'] == selectedTaxId)
+            ? selectedTaxId
+            : 0,
         items: taxListMap.map<DropdownMenuItem<int>>((Map value) {
           return DropdownMenuItem<int>(
             value: value['id'],
@@ -1316,7 +1381,11 @@ class CartState extends State<Cart> {
               value['name'],
               softWrap: true,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: MySize.size14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           );
         }).toList(),
@@ -1332,15 +1401,13 @@ class CartState extends State<Cart> {
   //calculate inline total
   String calculateInlineUnitPrice(price, taxId, discountType, discountAmount) {
     double subTotal;
-    var taxAmount;
-    taxListMap.forEach((value) {
+    Object? taxAmount;
+    for (var value in taxListMap) {
       if (value['id'] == taxId) {
         taxAmount = value['amount'];
       }
-    });
-    if (taxAmount == null) {
-      taxAmount = 0;
     }
+    taxAmount ??= 0;
     if (discountType == 'fixed') {
       var unitPrice = price - discountAmount;
       subTotal = unitPrice + (unitPrice * taxAmount / 100);
@@ -1354,7 +1421,7 @@ class CartState extends State<Cart> {
   //calculate subTotal
   double calculateSubTotal() {
     var subTotal = 0.0;
-    cartItems.forEach((element) {
+    for (var element in cartItems) {
       subTotal +=
           (double.parse(
             calculateInlineUnitPrice(
@@ -1365,24 +1432,22 @@ class CartState extends State<Cart> {
             ),
           ) *
           element['quantity']);
-    });
+    }
     return subTotal;
   }
 
   //calculate total
   double calculateSubtotal(taxId, discountType, discountAmount) {
     double subTotal = calculateSubTotal();
-    var finalTotal;
-    var taxAmount;
-    taxListMap.forEach((value) {
+    double finalTotal;
+    num? taxAmount;
+    for (var value in taxListMap) {
       if (value['id'] == taxId) {
-        taxAmount = value['amount'];
+        taxAmount = value['amount'] as num;
       }
-    });
-
-    if (taxAmount == null) {
-      taxAmount = 0;
     }
+
+    taxAmount ??= 0;
     if (discountType == 'fixed') {
       var total = subTotal - discountAmount;
       finalTotal = total + (total * taxAmount / 100);
@@ -1395,17 +1460,18 @@ class CartState extends State<Cart> {
   }
 
   //fetch default discount and tax from database
-  getDefaultValues() async {
+  Future<void> getDefaultValues() async {
     var businessDetails = await System().get('business');
     await Helper().getFormattedBusinessDetails().then((value) {
       symbol = "${value['symbol']} ";
     });
     var userDetails = await System().get('loggedInUser');
     setState(() {
-      if (userDetails['max_sales_discount_percent'] != null)
+      if (userDetails['max_sales_discount_percent'] != null) {
         maxDiscountValue = double.parse(
           userDetails['max_sales_discount_percent'],
         );
+      }
     });
     if (sellDetail == null && businessDetails[0]['default_sales_tax'] != null) {
       setState(() {
@@ -1425,10 +1491,7 @@ class CartState extends State<Cart> {
         if (maxDiscountValue != null && discountAmount! > maxDiscountValue!) {
           Fluttertoast.showToast(
             msg:
-                AppLocalizations.of(
-                  context,
-                ).translate('discount_error_message') +
-                " $maxDiscountValue",
+                "${AppLocalizations.of(context).translate('discount_error_message')} $maxDiscountValue",
           );
           proceedNext = false;
         }
@@ -1437,7 +1500,7 @@ class CartState extends State<Cart> {
   }
 
   //Fetch permission from database
-  getPermission() async {
+  Future<void> getPermission() async {
     canEditPrice = await Helper().getPermission(
       "edit_product_price_from_pos_screen",
     );

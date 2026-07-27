@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pos_final/api_end_points.dart';
 
 abstract final class DioServiceHelper {
@@ -12,6 +13,17 @@ abstract final class DioServiceHelper {
       headers: headers,
       receiveDataWhenStatusError: true,
     ));
+
+    if (kDebugMode) {
+      dio.interceptors.add(LogInterceptor(
+        request: true,
+        requestHeader: true,
+        requestBody: true,
+        responseHeader: true,
+        responseBody: true,
+        error: true,
+      ));
+    }
     var result = await dio.get(endPoint, queryParameters: query);
     return result;
   }

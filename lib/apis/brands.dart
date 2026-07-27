@@ -15,7 +15,9 @@ class BrandsServices extends Api {
     String token = await System().getToken();
     try {
       final Response<dynamic> response = await DioServiceHelper.getData(
-          endPoint:ApiEndPoints.allBrands,headers: this.getHeader(token));
+        endPoint: ApiEndPoints.allBrands,
+        headers: getHeader(token),
+      );
       return ApiResponse.withSuccess(response);
     } catch (e) {
       log("ERROR ${e.toString()}");

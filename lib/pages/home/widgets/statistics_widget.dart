@@ -4,7 +4,8 @@ import 'package:pos_final/helpers/otherHelpers.dart';
 import 'package:pos_final/locale/MyLocalizations.dart';
 
 class Statistics extends StatelessWidget {
-  Statistics({
+  const Statistics({
+    super.key,
     this.businessSymbol = '',
     this.totalSales,
     this.totalSalesAmount = 0,
@@ -67,36 +68,42 @@ class Statistics extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x14000000),
-                blurRadius: 16,
-                offset: Offset(0, 6),
+                color: Color(0x08000000),
+                blurRadius: 10,
+                offset: Offset(0, 3),
+              ),
+              BoxShadow(
+                color: Color(0x05000000),
+                blurRadius: 20,
+                offset: Offset(0, 8),
               ),
             ],
           ),
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 34,
-                height: 34,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: _iconBg[index],
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(_icons[index], size: 19, color: _iconColor[index]),
+                child: Icon(_icons[index], size: 18, color: _iconColor[index]),
               ),
               const SizedBox(height: 10),
               Text(
                 AppLocalizations.of(context).translate(_labels[index]),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: themeData.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF334155),
+                style: themeData.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF64748B),
+                  fontSize: 12,
                 ),
               ),
               const Spacer(),
@@ -105,8 +112,9 @@ class Statistics extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: themeData.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
+                  letterSpacing: -0.2,
                 ),
               ),
             ],

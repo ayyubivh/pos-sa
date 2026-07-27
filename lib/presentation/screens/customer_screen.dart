@@ -14,7 +14,8 @@ import '../../domain/models/sell.dart';
 import '../../domain/models/sell_database.dart';
 import '../../helpers/otherHelpers.dart';
 import '../../locale/MyLocalizations.dart';
-import '../../pages/elements.dart';
+
+import '../../helpers/SizeConfig.dart';
 
 part 'customer/customer_state.dart';
 

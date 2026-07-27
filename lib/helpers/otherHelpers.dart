@@ -1,14 +1,18 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:pos_final/helpers/platform_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 // import 'package:call_log/call_log.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cron/cron.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:htmltopdfwidgets/htmltopdfwidgets.dart' as pd;
+import 'package:htmltopdfwidgets/htmltopdfwidgets.dart' show HTMLToPdf;
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -100,14 +104,14 @@ class Helper {
 
   //check internet connectivity
   Future<bool> checkConnectivity() async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.mobile ||
-        connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.ethernet) {
-      return true;
-    } else {
-      return false;
-    }
+    // On desktop, skip the plugin check — always attempt the request
+    // and let the HTTP layer handle actual connectivity failures.
+    if (isDesktop) return true;
+    final result = await Connectivity().checkConnectivity();
+    return result == ConnectivityResult.mobile ||
+        result == ConnectivityResult.wifi ||
+        result == ConnectivityResult.ethernet ||
+        result == ConnectivityResult.other;
   }
 
   //get location name by location_id
@@ -180,8 +184,89 @@ class Helper {
   }
 
   Future<String> barcodeScan() async {
+    if (isDesktop) {
+      // On desktop, barcode input comes via HID keyboard stream — not camera.
+      // Callers that need desktop barcode should use the text field directly.
+      return '';
+    }
     var result = await BarcodeScanner.scan();
     return result.rawContent.trimRight();
+  }
+
+  // Convert mm to PDF points (1mm = 72/25.4 points)
+  static double _mm(double mm) => mm * 72.0 / 25.4;
+
+  // Get page format based on configured paper size.
+  // Thermal printers use continuous rolls, so pick a very tall logical page
+  // height — this avoids MultiPage's TooManyPagesException when a single
+  // indivisible child (e.g. a tall table) exceeds the page height.
+  static pd.PdfPageFormat getPageFormat() {
+    switch (Config.printPaperSize) {
+      case '56mm':
+        return pd.PdfPageFormat(_mm(56), _mm(2000), marginAll: _mm(2));
+      case 'card':
+        // CR80 standard card: 85.6mm x 54mm
+        return pd.PdfPageFormat(_mm(85.6), _mm(54), marginAll: _mm(3));
+      case '80mm':
+      default:
+        return pd.PdfPageFormat(_mm(80), _mm(2000), marginAll: _mm(3));
+    }
+  }
+
+  // Cache the bundled Arabic-capable font so we only decode it once.
+  static pd.Font? _arabicFontCache;
+  static Future<pd.Font> _loadArabicFont() async {
+    if (_arabicFontCache != null) return _arabicFontCache!;
+    final data = await rootBundle.load('assets/fonts/cairo.ttf');
+    _arabicFontCache = pd.Font.ttf(data);
+    return _arabicFontCache!;
+  }
+
+  // Strip nodes htmltopdfwidgets can't handle: HTML/IE-conditional comments,
+  // <script>, <style>, <link>, <meta>, and DOCTYPE. Without this, remote
+  // invoice HTML containing things like <!--[if lt IE 9]>...<![endif]-->
+  // throws "Unknown node type" from the parser.
+  String _sanitizeHtmlForPdf(String html) {
+    final patterns = <RegExp>[
+      RegExp(r'<!--[\s\S]*?-->', multiLine: true),
+      RegExp(r'<!\[endif\]-*>', caseSensitive: false),
+      RegExp(r'<!doctype[^>]*>', caseSensitive: false),
+      RegExp(r'<script\b[^>]*>[\s\S]*?</script>', caseSensitive: false),
+      RegExp(r'<style\b[^>]*>[\s\S]*?</style>', caseSensitive: false),
+      RegExp(r'<link\b[^>]*/?>', caseSensitive: false),
+      RegExp(r'<meta\b[^>]*/?>', caseSensitive: false),
+    ];
+    var sanitized = html;
+    for (final p in patterns) {
+      sanitized = sanitized.replaceAll(p, '');
+    }
+    return sanitized;
+  }
+
+  //convert HTML to PDF bytes using pure-Dart htmltopdfwidgets (avoids native printing crash)
+  Future<Uint8List> _htmlToPdfBytes(String html) async {
+    final pd.PdfPageFormat pageFormat = getPageFormat();
+    final arabicFont = await _loadArabicFont();
+    final widgets = await HTMLToPdf().convert(
+      _sanitizeHtmlForPdf(html),
+      fontFallback: [arabicFont],
+      fontResolver: (family, bold, italic) async => arabicFont,
+    );
+    final doc = pd.Document(
+      theme: pd.ThemeData.withFont(
+        base: arabicFont,
+        bold: arabicFont,
+        italic: arabicFont,
+        boldItalic: arabicFont,
+      ),
+    );
+    doc.addPage(
+      pd.MultiPage(
+        pageFormat: pageFormat,
+        build: (pd.Context context) => widgets,
+      ),
+    );
+    return doc.save();
   }
 
   //function for formatting invoice
@@ -189,10 +274,9 @@ class Helper {
     String invoice0 = (invoice != null)
         ? invoice
         : await InvoiceFormatter().generateInvoice(sellId, taxId, context);
+    final pdfBytes = await _htmlToPdfBytes(invoice0);
     await Printing.layoutPdf(
-      onLayout: (pd.PdfPageFormat format) async {
-        return await Printing.convertHtml(format: format, html: invoice0);
-      },
+      onLayout: (pd.PdfPageFormat format) async => pdfBytes,
     );
   }
 
@@ -230,7 +314,7 @@ class Helper {
         var lastSync = await System().callLogLastSyncDateTime();
         //difference between time now and last sync
         int getLogBefore = (lastSync != null)
-            ? DateTime.now().difference(DateTime.parse(lastSync)).inMinutes
+            ? DateTime.now().difference(DateTime.parse(lastSync.toString())).inMinutes
             : 1440;
         //set 'from' duration for call_log query
         // ignore: unused_local_variable
@@ -268,10 +352,7 @@ class Helper {
     var targetPath = await getTemporaryDirectory();
     var targetFileName = "invoice_no: ${Random().nextInt(100)}.pdf";
     final String path = targetPath.path + targetFileName;
-    final pdfDocument = await Printing.convertHtml(
-      format: pd.PdfPageFormat(5595.44, 841),
-      html: invoice0,
-    );
+    final pdfDocument = await _htmlToPdfBytes(invoice0);
     await File(path).writeAsBytes(pdfDocument);
     await Printing.sharePdf(bytes: pdfDocument, filename: targetFileName);
     //to get file path use generatedPdfFile.path
@@ -280,7 +361,18 @@ class Helper {
   //fetch formatted business details
   Future<Map<String, dynamic>> getFormattedBusinessDetails() async {
     List business = await System().get('business');
-    String? symbol = business[0]['currency']['symbol'],
+    if (business.isEmpty) {
+      return {
+        'symbol': '',
+        'name': '',
+        'logo': Config().defaultBusinessImage,
+        'currencyPrecision': Config.currencyPrecision,
+        'quantityPrecision': Config.quantityPrecision,
+        'taxLabel': '',
+        'taxNumber': '',
+      };
+    }
+    String? symbol = business[0]['currency']?['symbol'],
         name = business[0]['name'],
         logo = business[0]['logo'],
         taxLabel = business[0]['tax_label_1'],

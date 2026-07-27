@@ -1275,16 +1275,26 @@ class _SalesState extends State<Sales> {
 
   Future<void> _printInvoice(int? index, bool isLocal) async {
     if (index == null) return;
-    var item = isLocal ? sellList[index] : allSalesListMap[index];
-    if (await Helper().checkConnectivity() && item['invoice_url'] != null) {
-      final response = await http.Client().get(Uri.parse(item['invoice_url']));
-      if (response.statusCode == 200) {
-        await Helper().printDocument(
-          item['id'] ?? 0,
-          item['tax_rate_id'] ?? 0,
-          context,
-          invoice: response.body,
+    try {
+      var item = isLocal ? sellList[index] : allSalesListMap[index];
+      if (await Helper().checkConnectivity() && item['invoice_url'] != null) {
+        final response = await http.Client().get(
+          Uri.parse(item['invoice_url']),
         );
+        if (response.statusCode == 200) {
+          await Helper().printDocument(
+            item['id'] ?? 0,
+            item['tax_rate_id'] ?? 0,
+            context,
+            invoice: response.body,
+          );
+        } else {
+          await Helper().printDocument(
+            item['id'] ?? 0,
+            item['tax_rate_id'] ?? 0,
+            context,
+          );
+        }
       } else {
         await Helper().printDocument(
           item['id'] ?? 0,
@@ -1292,28 +1302,35 @@ class _SalesState extends State<Sales> {
           context,
         );
       }
-    } else {
-      await Helper().printDocument(
-        item['id'] ?? 0,
-        item['tax_rate_id'] ?? 0,
-        context,
-      );
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Print failed: ${e.toString()}');
     }
   }
 
   Future<void> _shareInvoice(int? index, bool isLocal) async {
     if (index == null) return;
-    var item = isLocal ? sellList[index] : allSalesListMap[index];
-    if (await Helper().checkConnectivity() && item['invoice_url'] != null) {
-      final response = await http.Client().get(Uri.parse(item['invoice_url']));
-      if (response.statusCode == 200) {
-        await Helper().savePdf(
-          item['id'] ?? 0,
-          item['tax_rate_id'] ?? 0,
-          context,
-          item['invoice_no'],
-          invoice: response.body,
+    try {
+      var item = isLocal ? sellList[index] : allSalesListMap[index];
+      if (await Helper().checkConnectivity() && item['invoice_url'] != null) {
+        final response = await http.Client().get(
+          Uri.parse(item['invoice_url']),
         );
+        if (response.statusCode == 200) {
+          await Helper().savePdf(
+            item['id'] ?? 0,
+            item['tax_rate_id'] ?? 0,
+            context,
+            item['invoice_no'],
+            invoice: response.body,
+          );
+        } else {
+          await Helper().savePdf(
+            item['id'] ?? 0,
+            item['tax_rate_id'] ?? 0,
+            context,
+            item['invoice_no'],
+          );
+        }
       } else {
         await Helper().savePdf(
           item['id'] ?? 0,
@@ -1322,13 +1339,8 @@ class _SalesState extends State<Sales> {
           item['invoice_no'],
         );
       }
-    } else {
-      await Helper().savePdf(
-        item['id'] ?? 0,
-        item['tax_rate_id'] ?? 0,
-        context,
-        item['invoice_no'],
-      );
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Share failed: ${e.toString()}');
     }
   }
 
@@ -1489,12 +1501,15 @@ class _SalesState extends State<Sales> {
     if (status != null) {
       String s = status.toLowerCase();
       if (s == AppLocalizations.of(context).translate('paid').toLowerCase() ||
-          s == 'paid')
+          s == 'paid') {
         return Colors.green;
+      }
       if (s == 'due') return Colors.red;
       if (s == 'partial' ||
-          s == AppLocalizations.of(context).translate('partial').toLowerCase())
+          s ==
+              AppLocalizations.of(context).translate('partial').toLowerCase()) {
         return Colors.orange;
+      }
       return Colors.blueGrey;
     }
     return Colors.black12;
@@ -1503,8 +1518,9 @@ class _SalesState extends State<Sales> {
   //status status of recent sales
   String checkStatus(double invoiceAmount, double pendingAmount) {
     if (pendingAmount == invoiceAmount) return 'due';
-    if (pendingAmount >= 0.01)
+    if (pendingAmount >= 0.01) {
       return AppLocalizations.of(context).translate('partial');
+    }
     return AppLocalizations.of(context).translate('paid');
   }
 }

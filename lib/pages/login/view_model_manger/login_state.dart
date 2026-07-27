@@ -13,4 +13,9 @@ class LoginShowLoadingDialogue extends LoginState {}
 
 class LoginSuccessfully extends LoginState {}
 
-class LoginFailed extends LoginState {}
+class LoginFailed extends LoginState {
+  final String messageKey;
+  final String? debugDetail;
+
+  LoginFailed({this.messageKey = 'something_went_wrong', this.debugDetail});
+}
